@@ -56,6 +56,20 @@
             width: 100%;
         }
 
+        input[type="text"] {
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background-color: #333;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            min-width: 180px;
+            flex: 1; 
+            max-width: 300px;
+        }
+        input[type="text"]:focus { border-color: #555; }
+
         select {
             padding: 10px 15px;
             border-radius: 20px;
@@ -240,6 +254,8 @@
     <h1>📻 Global Radio Tuner</h1>
     
     <div class="controls-row">
+        <input type="text" id="searchInput" placeholder="Search Station Name..." onkeyup="if(event.key === 'Enter') startSearch()">
+        
         <select id="countrySelect">
             <option value="">Select Country (Any)</option>
         </select>
@@ -389,11 +405,13 @@
         const grid = document.getElementById('stationGrid');
         grid.innerHTML = '<div class="message-box">Scanning frequencies...</div>';
         
+        const term = document.getElementById('searchInput').value;
         const country = document.getElementById('countrySelect').value;
         const genre = document.getElementById('genreSelect').value;
 
         let url = `${MIRRORS[mirrorIdx]}/stations/search?limit=60&hidebroken=true&order=clickcount&reverse=true`;
         
+        if(term) url += `&name=${encodeURIComponent(term)}`;
         if(country) url += `&countrycode=${country}`;
         if(genre) url += `&tag=${genre}`;
         
