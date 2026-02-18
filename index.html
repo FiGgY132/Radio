@@ -281,6 +281,7 @@
             <option value="metal">Metal</option>
             <option value="reggae">Reggae</option>
             <option value="soul">Soul</option>
+            <option value="hardcore">Hardcore</option>
         </select>
 
         <button class="btn-find" onclick="startSearch()">Find Stations</button>
@@ -533,7 +534,7 @@
             const actualDeg = randomDeg % 360;
             canvas.style.transform = `rotate(${actualDeg}deg)`;
             
-            const slice = currentStations.slice(0, 8);
+            const slice = currentStations.slice(0, 16);
             const winner = slice[Math.floor(Math.random() * slice.length)];
             playStation(winner);
             
