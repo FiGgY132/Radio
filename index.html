@@ -16,6 +16,26 @@
             --accent-purple: #9b59b6;
         }
 
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -65,10 +85,14 @@
             font-size: 0.9rem;
             outline: none;
             min-width: 180px;
-            flex: 1; 
+            flex: 1;
             max-width: 300px;
+            transition: border-color 0.3s;
         }
-        input[type="text"]:focus { border-color: #555; }
+        
+        input[type="text"]:focus { 
+            border-color: var(--text-sub); 
+        }
 
         select {
             padding: 10px 15px;
@@ -87,6 +111,7 @@
             background-position: right .8em top 50%;
             background-size: .65em auto;
             padding-right: 30px;
+            transition: border-color 0.3s;
         }
 
         button {
@@ -97,19 +122,28 @@
             font-size: 0.9rem;
             cursor: pointer;
             color: white;
-            transition: transform 0.1s, opacity 0.2s;
+            transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        button:active { transform: scale(0.95); }
-        button:hover { opacity: 0.9; }
+        
+        button:active { 
+            transform: scale(0.95); 
+        }
+        
+        button:hover { 
+            opacity: 0.9; 
+        }
 
         .btn-find { background-color: var(--accent-green); color: #000; }
         .btn-fav { background-color: var(--accent-red); }
         .btn-wheel { background-color: var(--accent-purple); }
 
-        .btn-fav.active { border: 2px solid white; box-shadow: 0 0 10px rgba(255, 71, 87, 0.5); }
+        .btn-fav.active { 
+            border: 2px solid white; 
+            box-shadow: 0 0 10px rgba(255, 71, 87, 0.5); 
+        }
 
         main {
             flex: 1;
@@ -131,57 +165,78 @@
             align-items: center;
             text-align: center;
             position: relative;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.2s;
             border: 1px solid #222;
+            animation: fadeUp 0.4s ease-out backwards;
         }
-        .station-card:hover { background-color: #252525; }
+        
+        .station-card:hover { 
+            background-color: #252525;
+            transform: translateY(-2px);
+        }
 
         .fav-icon {
             position: absolute;
-            top: 10px; right: 10px;
+            top: 10px; 
+            right: 10px;
             font-size: 1.2rem;
             color: #444;
             cursor: pointer;
             z-index: 10;
             transition: color 0.2s, transform 0.2s;
         }
-        .fav-icon:hover { color: white; }
-        .fav-icon.is-saved { color: var(--accent-red); }
-        .fav-icon:active { transform: scale(1.2); }
+        
+        .fav-icon:hover { 
+            color: white; 
+        }
+        
+        .fav-icon.is-saved { 
+            color: var(--accent-red); 
+        }
+        
+        .fav-icon:active { 
+            transform: scale(1.3); 
+        }
 
         .station-img {
-            width: 80px; height: 80px;
+            width: 80px; 
+            height: 80px;
             border-radius: 50%;
             object-fit: cover;
             background: #333;
             margin-bottom: 15px;
             pointer-events: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
         }
 
-        .station-name { 
-            font-weight: bold; 
-            font-size: 0.95rem; 
-            margin-bottom: 5px; 
+        .station-card:hover .station-img {
+            transform: scale(1.05);
+        }
+
+        .station-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
             color: white;
             line-height: 1.2;
-            overflow: hidden; 
-            display: -webkit-box; 
-            -webkit-line-clamp: 2; 
-            -webkit-box-orient: vertical; 
-            pointer-events: none; 
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            pointer-events: none;
         }
 
         .station-tags {
             font-size: 0.75rem;
             color: var(--text-sub);
             pointer-events: none;
-            overflow: hidden; 
-            white-space: nowrap; 
+            overflow: hidden;
+            white-space: nowrap;
             text-overflow: ellipsis;
             width: 100%;
         }
-        
+
         .player-bar {
             background: #111;
             border-top: 1px solid #333;
@@ -190,20 +245,62 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: background-color 0.3s;
+        }
+
+        .player-info { 
+            width: 40%; 
+            overflow: hidden; 
+            white-space: nowrap; 
         }
         
-        .player-info { width: 40%; overflow: hidden; white-space: nowrap; }
-        .player-status { font-size: 0.75rem; color: var(--accent-green); }
-        audio { width: 55%; height: 40px; }
+        .player-status { 
+            font-size: 0.85rem; 
+            color: var(--accent-green); 
+            display: flex;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 8px; 
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .connecting-spinner {
+            display: inline-block;
+            width: 10px; 
+            height: 10px;
+            border: 2px solid #555;
+            border-top-color: var(--accent-green);
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: spin 1s linear infinite;
+        }
+
+        audio { 
+            width: 55%; 
+            height: 40px; 
+        }
 
         #wheelModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
             background: rgba(0,0,0,0.95);
             z-index: 2000;
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            animation: fadeIn 0.3s ease-out;
         }
 
         .wheel-wrapper {
@@ -215,44 +312,78 @@
         }
 
         canvas {
-            width: 100%; height: 100%;
+            width: 100%; 
+            height: 100%;
             border-radius: 50%;
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
         }
 
         .wheel-pointer {
-            position: absolute; top: -15px; left: 50%;
+            position: absolute; 
+            top: -15px; 
+            left: 50%;
             transform: translateX(-50%);
-            width: 0; height: 0; 
-            border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid white;
+            width: 0; 
+            height: 0;
+            border-left: 20px solid transparent; 
+            border-right: 20px solid transparent; 
+            border-top: 40px solid white;
             z-index: 10;
         }
 
         .spin-btn {
-            position: absolute; top: 50%; left: 50%;
+            position: absolute; 
+            top: 50%; 
+            left: 50%;
             transform: translate(-50%, -50%);
-            width: 80px; height: 80px;
+            width: 80px; 
+            height: 80px;
             border-radius: 50%;
-            background: white; border: 4px solid var(--accent-green);
-            color: black; font-weight: 900; font-size: 1.2rem;
-            cursor: pointer; z-index: 20;
+            background: white; 
+            border: 4px solid var(--accent-green);
+            color: black; 
+            font-weight: 900; 
+            font-size: 1.2rem;
+            cursor: pointer; 
+            z-index: 20;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: transform 0.1s;
         }
-        .spin-btn:active { transform: translate(-50%, -50%) scale(0.95); }
+        
+        .spin-btn:active { 
+            transform: translate(-50%, -50%) scale(0.95); 
+        }
 
-        .close-wheel { margin-top: 20px; background: transparent; border: 1px solid white; color: white; padding: 10px 30px; border-radius: 20px; }
-        .message-box { text-align: center; color: #888; margin-top: 50px; grid-column: 1 / -1; }
+        .close-wheel { 
+            margin-top: 20px; 
+            background: transparent; 
+            border: 1px solid white; 
+            color: white; 
+            padding: 10px 30px; 
+            border-radius: 20px; 
+            transition: background 0.2s, color 0.2s;
+        }
 
+        .close-wheel:hover {
+            background: white;
+            color: black;
+        }
+        
+        .message-box { 
+            text-align: center; 
+            color: #888; 
+            margin-top: 50px; 
+            grid-column: 1 / -1; 
+            animation: fadeIn 0.5s ease;
+        }
     </style>
 </head>
 <body>
-
 <header>
     <h1>📻 Global Radio Tuner</h1>
-    
     <div class="controls-row">
         <input type="text" id="searchInput" placeholder="Search Station Name..." onkeyup="if(event.key === 'Enter') startSearch()">
         
@@ -267,6 +398,8 @@
             <option value="jazz">Jazz</option>
             <option value="classical">Classical</option>
             <option value="electronic">Electronic</option>
+            <option value="hardcore">Hardcore</option>
+            <option value="dance">Dance</option>
             <option value="hip hop">Hip Hop</option>
             <option value="news">News</option>
             <option value="country">Country</option>
@@ -274,14 +407,15 @@
             <option value="ambient">Ambient</option>
             <option value="80s">80s</option>
             <option value="90s">90s</option>
+			<option value="2000s">2000s</option>
+            <option value="2010s">2010s</option>
+            <option value="2020s">2020s</option>
             <option value="talk">Talk</option>
-            <option value="dance">Dance</option>
             <option value="oldies">Oldies</option>
             <option value="blues">Blues</option>
             <option value="metal">Metal</option>
             <option value="reggae">Reggae</option>
             <option value="soul">Soul</option>
-            <option value="hardcore">Hardcore</option>
         </select>
 
         <button class="btn-find" onclick="startSearch()">Find Stations</button>
@@ -295,7 +429,7 @@
 </main>
 
 <div class="player-bar">
-    <div class="player-info">
+    <div class="player-info" aria-live="polite">
         <div style="font-weight:bold" id="pName">Select Station</div>
         <div class="player-status" id="pStatus">Ready</div>
     </div>
@@ -319,17 +453,16 @@
         "https://at1.api.radio-browser.info/json"
     ];
     let mirrorIdx = 0;
-    
-    let currentStations = []; 
-    let favorites = []; 
+    let currentStations = [];
+    let favorites = [];
     let isViewingFavs = false;
     let wheelCtx = document.getElementById('wheelCanvas').getContext('2d');
     let isSpinning = false;
 
     window.onload = async () => {
         loadFavorites();
-        await loadCountries(); 
-        startSearch(true); 
+        await loadCountries();
+        startSearch(true);
     };
 
     function loadFavorites() {
@@ -379,7 +512,6 @@
         }
         
         saveFavorites();
-        
         const btn = event.target;
         btn.classList.toggle('is-saved');
     }
@@ -396,15 +528,15 @@
         } else {
             btn.classList.remove('active');
             btn.innerText = "❤️ My Favorites";
-            startSearch(); 
+            startSearch();
         }
     }
 
     async function startSearch(isInit = false) {
-        if(isViewingFavs) toggleViewFavorites(); 
-
+        if(isViewingFavs) toggleViewFavorites();
+        
         const grid = document.getElementById('stationGrid');
-        grid.innerHTML = '<div class="message-box">Scanning frequencies...</div>';
+        grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies...</div>';
         
         const term = document.getElementById('searchInput').value;
         const country = document.getElementById('countrySelect').value;
@@ -422,7 +554,6 @@
             currentStations = await resp.json();
             renderGrid(currentStations);
         } catch(e) {
-            console.log("Mirror failed, switching...");
             mirrorIdx++;
             if(mirrorIdx < MIRRORS.length) startSearch(isInit);
             else grid.innerHTML = '<div class="message-box">All servers busy. Please refresh.</div>';
@@ -437,12 +568,13 @@
             return;
         }
 
-        data.forEach(s => {
+        data.forEach((s, index) => {
             const isFav = favorites.some(f => f.stationuuid === s.stationuuid);
             const heartClass = isFav ? 'is-saved' : '';
 
             const div = document.createElement('div');
             div.className = 'station-card';
+            div.style.animationDelay = `${(index % 20) * 0.04}s`; 
             div.onclick = () => playStation(s);
             div.innerHTML = `
                 <div class="fav-icon ${heartClass}" onclick="toggleFavorite(event, '${s.stationuuid}')">❤</div>
@@ -456,9 +588,22 @@
 
     function playStation(s) {
         const audio = document.getElementById('audioPlayer');
-        document.getElementById('pName').innerText = s.name;
-        document.getElementById('pStatus').innerText = "Connecting...";
+        const statusEl = document.getElementById('pStatus');
         
+        document.getElementById('pName').innerText = s.name;
+        statusEl.innerHTML = '<span class="connecting-spinner"></span>Connecting...';
+        statusEl.style.color = "var(--text-sub)";
+
+        audio.onerror = () => {
+            statusEl.innerHTML = "Stream Offline / Incompatible";
+            statusEl.style.color = "var(--accent-red)";
+        };
+
+        audio.onplaying = () => {
+            statusEl.innerHTML = '<span class="live-dot"></span>Live';
+            statusEl.style.color = "var(--accent-green)";
+        };
+
         let streamUrl = s.url_resolved;
         if(window.location.protocol === 'https:' && streamUrl.startsWith('http:')) {
             streamUrl = streamUrl.replace('http:', 'https:');
@@ -466,15 +611,23 @@
 
         if(Hls.isSupported() && streamUrl.includes('.m3u8')) {
             const hls = new Hls();
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                if (data.fatal) {
+                    statusEl.innerHTML = "Stream Offline / Incompatible";
+                    statusEl.style.color = "var(--accent-red)";
+                }
+            });
             hls.loadSource(streamUrl);
             hls.attachMedia(audio);
             hls.on(Hls.Events.MANIFEST_PARSED, () => audio.play());
         } else {
             audio.src = streamUrl;
             audio.load();
-            audio.play().catch(e => console.log("Auto-play blocked", e));
+            audio.play().catch(() => {
+                statusEl.innerHTML = "Playback Blocked / Failed";
+                statusEl.style.color = "var(--accent-red)";
+            });
         }
-        document.getElementById('pStatus').innerText = "Live";
     }
 
     function openWheel() {
@@ -485,7 +638,7 @@
 
     function drawWheel() {
         const colors = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c'];
-        const slice = currentStations.slice(0, 16); 
+        const slice = currentStations.slice(0, 16);
         const arc = 2 * Math.PI / slice.length;
         
         wheelCtx.clearRect(0, 0, 600, 600);
@@ -523,7 +676,7 @@
         if(isSpinning) return;
         isSpinning = true;
         const canvas = document.getElementById('wheelCanvas');
-        const randomDeg = Math.floor(2000 + Math.random() * 2000); 
+        const randomDeg = Math.floor(2000 + Math.random() * 2000);
         
         canvas.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
         canvas.style.transform = `rotate(${randomDeg}deg)`;
@@ -535,7 +688,11 @@
             canvas.style.transform = `rotate(${actualDeg}deg)`;
             
             const slice = currentStations.slice(0, 16);
-            const winner = slice[Math.floor(Math.random() * slice.length)];
+            const degreesPerSlice = 360 / slice.length;
+            const pointerAngle = (270 - actualDeg + 360) % 360;
+            const winningIndex = Math.floor(pointerAngle / degreesPerSlice);
+            const winner = slice[winningIndex];
+            
             playStation(winner);
             
             setTimeout(() => {
