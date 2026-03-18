@@ -36,6 +36,12 @@
             to { opacity: 1; }
         }
 
+        /* --- VISUALIZER ANIMATION --- */
+        @keyframes eq {
+            0% { height: 20%; }
+            100% { height: 100%; }
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -246,13 +252,47 @@
             align-items: center;
             justify-content: space-between;
             transition: background-color 0.3s;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .player-info { 
-            width: 40%; 
+            width: 30%; 
+            min-width: 150px;
             overflow: hidden; 
             white-space: nowrap; 
         }
+
+        .player-name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- VISUALIZER CSS --- */
+        .visualizer {
+            display: none;
+            gap: 3px;
+            height: 14px;
+            align-items: flex-end;
+            margin-bottom: 2px;
+        }
+
+        .visualizer.active {
+            display: flex;
+        }
+
+        .visualizer .bar {
+            width: 3px;
+            background: var(--accent-green);
+            border-radius: 2px;
+            animation: eq 0.6s ease-in-out infinite alternate;
+        }
+
+        .visualizer .bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
+        .visualizer .bar:nth-child(2) { animation-delay: 0.3s; height: 100%; }
+        .visualizer .bar:nth-child(3) { animation-delay: 0.0s; height: 80%; }
+        .visualizer .bar:nth-child(4) { animation-delay: 0.4s; height: 40%; }
         
         .player-status { 
             font-size: 0.85rem; 
@@ -260,6 +300,32 @@
             display: flex;
             align-items: center;
             margin-top: 4px;
+        }
+
+        /* --- VOLUME CONTROLS CSS --- */
+        .custom-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: auto;
+        }
+
+        .mute-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .mute-btn:hover { opacity: 0.8; transform: none; }
+        .mute-btn:active { transform: none; }
+
+        input[type="range"] {
+            accent-color: var(--accent-green);
+            width: 80px;
+            cursor: pointer;
         }
 
         .live-dot {
@@ -284,7 +350,8 @@
         }
 
         audio { 
-            width: 55%; 
+            width: 40%; 
+            min-width: 200px;
             height: 40px; 
         }
 
@@ -407,7 +474,7 @@
             <option value="ambient">Ambient</option>
             <option value="80s">80s</option>
             <option value="90s">90s</option>
-			<option value="2000s">2000s</option>
+            <option value="2000s">2000s</option>
             <option value="2010s">2010s</option>
             <option value="2020s">2020s</option>
             <option value="talk">Talk</option>
@@ -430,9 +497,20 @@
 
 <div class="player-bar">
     <div class="player-info" aria-live="polite">
-        <div style="font-weight:bold" id="pName">Select Station</div>
+        <div class="player-name-wrapper">
+            <div style="font-weight:bold" id="pName">Select Station</div>
+            <div class="visualizer" id="audioVisualizer">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+        </div>
         <div class="player-status" id="pStatus">Ready</div>
     </div>
+
+    <div class="custom-controls">
+        <button id="muteBtn" class="mute-btn" onclick="toggleMute()">🔊</button>
+        <input type="range" id="volSlider" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
+    </div>
+
     <audio id="audioPlayer" controls playsinline></audio>
 </div>
 
@@ -459,10 +537,17 @@
     let wheelCtx = document.getElementById('wheelCanvas').getContext('2d');
     let isSpinning = false;
 
+    // References for Enhancements
+    const audio = document.getElementById('audioPlayer');
+    const visualizer = document.getElementById('audioVisualizer');
+    const muteBtn = document.getElementById('muteBtn');
+    const volSlider = document.getElementById('volSlider');
+
     window.onload = async () => {
         loadFavorites();
         await loadCountries();
         startSearch(true);
+        setupAudioListeners();
     };
 
     function loadFavorites() {
@@ -586,33 +671,82 @@
         });
     }
 
+    // --- ENHANCEMENT 1: Logic for Volume & Mute ---
+    function toggleMute() {
+        audio.muted = !audio.muted;
+        updateVolumeUI();
+    }
+
+    function changeVolume(val) {
+        audio.volume = val;
+        if(val > 0) audio.muted = false;
+        updateVolumeUI();
+    }
+
+    function updateVolumeUI() {
+        if (audio.muted || audio.volume == 0) {
+            muteBtn.innerText = "🔇";
+            if(audio.volume == 0) volSlider.value = 0;
+        } else {
+            muteBtn.innerText = audio.volume < 0.5 ? "🔈" : "🔊";
+            volSlider.value = audio.volume;
+        }
+    }
+
+    // --- ENHANCEMENT 2: Setup global audio listeners for the visualizer ---
+    function setupAudioListeners() {
+        const statusEl = document.getElementById('pStatus');
+
+        audio.onplaying = () => {
+            statusEl.innerHTML = '<span class="live-dot"></span>Live';
+            statusEl.style.color = "var(--accent-green)";
+            visualizer.classList.add('active'); // Turn ON visualizer
+        };
+
+        audio.onpause = () => {
+            visualizer.classList.remove('active'); // Turn OFF visualizer
+            statusEl.innerHTML = "Paused";
+            statusEl.style.color = "var(--text-sub)";
+        };
+
+        // Sync native volume changes with our custom sliders
+        audio.onvolumechange = updateVolumeUI;
+    }
+
     function playStation(s) {
-        const audio = document.getElementById('audioPlayer');
         const statusEl = document.getElementById('pStatus');
         
         document.getElementById('pName').innerText = s.name;
         statusEl.innerHTML = '<span class="connecting-spinner"></span>Connecting...';
         statusEl.style.color = "var(--text-sub)";
-
-        audio.onerror = () => {
-            statusEl.innerHTML = "Stream Offline / Incompatible";
-            statusEl.style.color = "var(--accent-red)";
-        };
-
-        audio.onplaying = () => {
-            statusEl.innerHTML = '<span class="live-dot"></span>Live';
-            statusEl.style.color = "var(--accent-green)";
-        };
+        visualizer.classList.remove('active'); // Reset visualizer while connecting
 
         let streamUrl = s.url_resolved;
+        let isMixedContentUpgraded = false;
+
+        // --- ENHANCEMENT 3: Mixed Content Handling ---
         if(window.location.protocol === 'https:' && streamUrl.startsWith('http:')) {
             streamUrl = streamUrl.replace('http:', 'https:');
+            isMixedContentUpgraded = true;
         }
+
+        // Custom error handling for this specific station attempt
+        audio.onerror = () => {
+            visualizer.classList.remove('active');
+            if(isMixedContentUpgraded) {
+                // If we forced HTTPS but it fails, it usually means the server doesn't support it
+                statusEl.innerHTML = "Blocked: Station HTTP only"; 
+            } else {
+                statusEl.innerHTML = "Stream Offline / Incompatible";
+            }
+            statusEl.style.color = "var(--accent-red)";
+        };
 
         if(Hls.isSupported() && streamUrl.includes('.m3u8')) {
             const hls = new Hls();
             hls.on(Hls.Events.ERROR, function(event, data) {
                 if (data.fatal) {
+                    visualizer.classList.remove('active');
                     statusEl.innerHTML = "Stream Offline / Incompatible";
                     statusEl.style.color = "var(--accent-red)";
                 }
@@ -624,6 +758,7 @@
             audio.src = streamUrl;
             audio.load();
             audio.play().catch(() => {
+                visualizer.classList.remove('active');
                 statusEl.innerHTML = "Playback Blocked / Failed";
                 statusEl.style.color = "var(--accent-red)";
             });
