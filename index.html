@@ -298,7 +298,7 @@
 <main id="stationGrid">
     <div class="message-box">Connecting to Global Radio Network...</div>
 </main>
-
+<audio id="audioPlayer" controls playsinline crossorigin="anonymous"></audio>
 <div class="player-bar">
     <div class="player-info" aria-live="polite">
         <div class="player-name-wrapper">
@@ -431,40 +431,49 @@
         else { muteBtn.innerText = audio.volume < 0.5 ? "🔈" : "🔊"; volSlider.value = audio.volume; }
     }
 
-    // --- High-Fidelity Canvas Visualizer Engine ---
+// --- TRUE Web Audio API Visualizer ---
+    let audioCtx;
+    let analyser;
+    let dataArray;
+    let isAudioCtxSetup = false;
+
+    function initTrueVisualizer() {
+        if (isAudioCtxSetup) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        analyser = audioCtx.createAnalyser();
+        
+        const source = audioCtx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        
+        analyser.fftSize = 64; // Gives us exactly 32 bars of frequency data
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        
+        isAudioCtxSetup = true;
+    }
+
     function drawVisualizer() {
         vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
         
-        // Only generate movement if playing and not muted
-        const isActuallyPlaying = !audio.paused && audio.volume > 0 && !audio.muted;
-
-        if (isActuallyPlaying) {
-            // Randomly update target heights to create "beats"
-            if (Math.random() < 0.3) {
-                for (let i = 0; i < numBars; i++) {
-                    // Simulate bass (higher bars on left) and treble (lower on right)
-                    const frequencyCurve = 1 - (i / numBars) * 0.5; 
-                    targetHeights[i] = Math.random() * vizCanvas.height * frequencyCurve * audio.volume;
-                }
+        if (isAudioCtxSetup && !audio.paused && !audio.muted) {
+            // Pull the actual frequency data from the playing audio!
+            analyser.getByteFrequencyData(dataArray);
+            
+            const barWidth = vizCanvas.width / numBars;
+            const gap = 1;
+            
+            for (let i = 0; i < numBars; i++) {
+                // dataArray values go from 0 to 255. We scale it to fit the canvas height.
+                const percent = dataArray[i] / 255;
+                const h = Math.max(1, percent * vizCanvas.height);
+                
+                vizCtx.fillStyle = '#2ecc71';
+                vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
             }
-        } else {
-            // Drop to zero when paused/muted
-            targetHeights.fill(0);
         }
-
-        const barWidth = vizCanvas.width / numBars;
-        const gap = 1;
-
-        for (let i = 0; i < numBars; i++) {
-            // Easing math: Current height moves 20% closer to the target height every frame
-            barHeights[i] += (targetHeights[i] - barHeights[i]) * 0.2;
-
-            const h = Math.max(1, barHeights[i]); // Minimum 1px height
-            vizCtx.fillStyle = '#2ecc71';
-            vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
-        }
-
-        requestAnimationFrame(drawVisualizer); // Loop forever
+        requestAnimationFrame(drawVisualizer);
     }
 
     function setupAudioListeners() {
@@ -544,6 +553,21 @@
             playStation(slice[Math.floor(pointerAngle / (360 / slice.length))]);
             setTimeout(() => document.getElementById('wheelModal').style.display = 'none', 1000);
         }, 4000);
+    }
+    function setupAudioListeners() {
+        const statusEl = document.getElementById('pStatus');
+        audio.onplaying = () => {
+            if (!isAudioCtxSetup) initTrueVisualizer();
+            if (audioCtx.state === 'suspended') audioCtx.resume(); // Required by browsers
+            
+            statusEl.innerHTML = '<span class="live-dot"></span>Live'; 
+            statusEl.style.color = "var(--accent-green)";
+            vizCanvas.classList.add('active');
+        };
+        audio.onpause = () => {
+            statusEl.innerHTML = "Paused"; statusEl.style.color = "var(--text-sub)";
+        };
+        audio.onvolumechange = updateVolumeUI;
     }
 </script>
 </body>
