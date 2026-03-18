@@ -207,11 +207,10 @@
             display: flex; align-items: center; gap: 15px;
         }
 
-        /* --- NEW CANVAS VISUALIZER --- */
         #visualizerCanvas {
             width: 120px;
             height: 24px;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         #visualizerCanvas.active {
@@ -238,8 +237,6 @@
             border-top-color: var(--accent-green); border-radius: 50%; margin-right: 6px;
             animation: spin 1s linear infinite;
         }
-
-        audio { width: 40%; min-width: 200px; height: 40px; }
 
         #wheelModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -298,7 +295,7 @@
 <main id="stationGrid">
     <div class="message-box">Connecting to Global Radio Network...</div>
 </main>
-<audio id="audioPlayer" controls playsinline crossorigin="anonymous"></audio>
+
 <div class="player-bar">
     <div class="player-info" aria-live="polite">
         <div class="player-name-wrapper">
@@ -313,7 +310,10 @@
         <input type="range" id="volSlider" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
     </div>
 
-    <audio id="audioPlayer" controls playsinline></audio>
+    <div style="display: none;">
+        <audio id="audioPlayerCORS" crossorigin="anonymous" playsinline></audio>
+        <audio id="audioFallback" playsinline></audio>
+    </div>
 </div>
 
 <div id="wheelModal">
@@ -331,16 +331,16 @@
     let mirrorIdx = 0; let currentStations = []; let favorites = []; let isViewingFavs = false;
     let wheelCtx = document.getElementById('wheelCanvas').getContext('2d'); let isSpinning = false;
 
-    const audio = document.getElementById('audioPlayer');
+    const audioCORS = document.getElementById('audioPlayerCORS');
+    const audioFallback = document.getElementById('audioFallback');
+    let activeAudio = audioCORS;
+
     const muteBtn = document.getElementById('muteBtn');
     const volSlider = document.getElementById('volSlider');
     
-    // --- Canvas Visualizer Variables ---
     const vizCanvas = document.getElementById('visualizerCanvas');
     const vizCtx = vizCanvas.getContext('2d');
     const numBars = 24;
-    let barHeights = new Array(numBars).fill(0);
-    let targetHeights = new Array(numBars).fill(0);
 
     window.onload = async () => {
         loadFavorites(); await loadCountries(); startSearch(true); setupAudioListeners(); drawVisualizer();
@@ -360,7 +360,7 @@
             data.forEach(c => {
                 const opt = document.createElement('option'); opt.value = c.iso_3166_1; opt.innerText = c.name; select.appendChild(opt);
             });
-        } catch(e) { console.warn("Could not load countries."); }
+        } catch(e) {}
     }
 
     function toggleFavorite(event, stationUUID) {
@@ -399,7 +399,7 @@
         if(genre) url += `&tag=${genre}`;
         
         try {
-            const resp = await fetch(url); if(!resp.ok) throw new Error("Server Error");
+            const resp = await fetch(url); if(!resp.ok) throw new Error();
             currentStations = await resp.json(); renderGrid(currentStations);
         } catch(e) {
             mirrorIdx++; if(mirrorIdx < MIRRORS.length) startSearch(isInit);
@@ -423,24 +423,30 @@
         });
     }
 
-    // --- Volume Controls ---
-    function toggleMute() { audio.muted = !audio.muted; updateVolumeUI(); }
-    function changeVolume(val) { audio.volume = val; if(val > 0) audio.muted = false; updateVolumeUI(); }
-    function updateVolumeUI() {
-        if (audio.muted || audio.volume == 0) { muteBtn.innerText = "🔇"; if(audio.volume == 0) volSlider.value = 0; } 
-        else { muteBtn.innerText = audio.volume < 0.5 ? "🔈" : "🔊"; volSlider.value = audio.volume; }
+    function toggleMute() { 
+        audioCORS.muted = !audioCORS.muted; 
+        audioFallback.muted = audioCORS.muted;
+        updateVolumeUI(); 
     }
 
-// --- HYBRID Visualizer System ---
-    let audioCtx;
-    let analyser;
-    let dataArray;
-    let isAudioCtxSetup = false;
-    
-    // State flags for our fallback system
-    let useRealVisualizer = true; 
-    let time = 0; // Used for the fallback animation
-    let currentHls = null;
+    function changeVolume(val) { 
+        audioCORS.volume = val; 
+        audioFallback.volume = val;
+        if(val > 0) { audioCORS.muted = false; audioFallback.muted = false; }
+        updateVolumeUI(); 
+    }
+
+    function updateVolumeUI() {
+        if (activeAudio.muted || activeAudio.volume == 0) { 
+            muteBtn.innerText = "🔇"; if(activeAudio.volume == 0) volSlider.value = 0; 
+        } 
+        else { 
+            muteBtn.innerText = activeAudio.volume < 0.5 ? "🔈" : "🔊"; volSlider.value = activeAudio.volume; 
+        }
+    }
+
+    let audioCtx; let analyser; let dataArray; let isAudioCtxSetup = false;
+    let useRealVisualizer = true; let time = 0; let currentHls = null;
 
     function initTrueVisualizer() {
         if (isAudioCtxSetup) return;
@@ -448,26 +454,24 @@
         audioCtx = new AudioContext();
         analyser = audioCtx.createAnalyser();
         
-        const source = audioCtx.createMediaElementSource(audio);
+        const source = audioCtx.createMediaElementSource(audioCORS);
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
         
         analyser.fftSize = 64; 
         const bufferLength = analyser.frequencyBinCount;
         dataArray = new Uint8Array(bufferLength);
-        
         isAudioCtxSetup = true;
     }
 
     function drawVisualizer() {
         vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
         
-        if (!audio.paused && !audio.muted && audio.volume > 0) {
+        if (!activeAudio.paused && !activeAudio.muted && activeAudio.volume > 0) {
             const barWidth = vizCanvas.width / numBars;
             const gap = 1;
 
             if (useRealVisualizer && isAudioCtxSetup) {
-                // TRUE VISUALIZER (Reads actual audio frequencies)
                 analyser.getByteFrequencyData(dataArray);
                 for (let i = 0; i < numBars; i++) {
                     const percent = dataArray[i] / 255;
@@ -476,16 +480,15 @@
                     vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
                 }
             } else {
-                // FALLBACK VISUALIZER (Smooth procedural sine waves)
                 time += 0.15;
                 for (let i = 0; i < numBars; i++) {
                     let wave1 = Math.sin(time + i * 0.5);
                     let wave2 = Math.cos(time * 0.8 - i * 0.2);
                     let heightMod = Math.abs(wave1 * wave2);
                     let bassBias = 1 - (i / numBars) * 0.5;
-                    let h = Math.max(1, heightMod * vizCanvas.height * bassBias * audio.volume);
+                    let h = Math.max(1, heightMod * vizCanvas.height * bassBias * activeAudio.volume);
                     
-                    vizCtx.fillStyle = '#2ecc71'; // You can change this color to easily tell when the fallback is active!
+                    vizCtx.fillStyle = '#2ecc71'; 
                     vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
                 }
             }
@@ -495,21 +498,26 @@
 
     function setupAudioListeners() {
         const statusEl = document.getElementById('pStatus');
-        audio.onplaying = () => {
-            if (!isAudioCtxSetup) initTrueVisualizer();
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); 
-            
-            statusEl.innerHTML = '<span class="live-dot"></span>Live'; 
-            statusEl.style.color = "var(--accent-green)";
-            vizCanvas.classList.add('active');
-        };
-        audio.onpause = () => {
-            statusEl.innerHTML = "Paused"; statusEl.style.color = "var(--text-sub)";
-        };
-        audio.onvolumechange = updateVolumeUI;
+        
+        function bindEvents(audioEl) {
+            audioEl.onplaying = () => {
+                if (audioEl === audioCORS && !isAudioCtxSetup) initTrueVisualizer();
+                if (audioEl === audioCORS && audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); 
+                
+                statusEl.innerHTML = '<span class="live-dot"></span>Live'; 
+                statusEl.style.color = "var(--accent-green)";
+                vizCanvas.classList.add('active');
+            };
+            audioEl.onpause = () => {
+                statusEl.innerHTML = "Paused"; statusEl.style.color = "var(--text-sub)";
+            };
+            audioEl.onvolumechange = updateVolumeUI;
+        }
+
+        bindEvents(audioCORS);
+        bindEvents(audioFallback);
     }
 
-    // --- The Auto-Fallback Player ---
     function playStation(s) {
         const statusEl = document.getElementById('pStatus');
         document.getElementById('pName').innerText = s.name;
@@ -527,7 +535,11 @@
             currentHls = null;
         }
 
-        // Always start by trying to use CORS for the True Visualizer
+        audioCORS.pause();
+        audioCORS.src = '';
+        audioFallback.pause();
+        audioFallback.src = '';
+
         attemptStream(streamUrl, true);
     }
 
@@ -535,18 +547,16 @@
         const statusEl = document.getElementById('pStatus');
         
         if (attemptCors) {
-            audio.crossOrigin = "anonymous";
+            activeAudio = audioCORS;
             useRealVisualizer = true;
         } else {
-            // CORS failed. Remove the attribute to allow playback, and trigger the fallback visualizer
-            audio.removeAttribute("crossorigin");
+            activeAudio = audioFallback;
             useRealVisualizer = false;
         }
 
-        audio.onerror = () => {
+        activeAudio.onerror = () => {
             if (attemptCors) {
-                console.log("CORS blocked the stream. Auto-falling back to standard stream...");
-                attemptStream(url, false); // Try again immediately without CORS
+                attemptStream(url, false);
             } else {
                 vizCanvas.classList.remove('active');
                 statusEl.innerHTML = "Stream Offline / Blocked";
@@ -558,34 +568,29 @@
             currentHls = new Hls();
             currentHls.on(Hls.Events.ERROR, function(e, data) {
                 if (data.fatal) {
-                    if (attemptCors) {
-                        attemptStream(url, false);
-                    } else {
+                    if (attemptCors) { attemptStream(url, false); } 
+                    else {
                         vizCanvas.classList.remove('active'); 
-                        statusEl.innerHTML = "Stream Offline"; 
-                        statusEl.style.color = "var(--accent-red)";
+                        statusEl.innerHTML = "Stream Offline"; statusEl.style.color = "var(--accent-red)";
                     }
                 }
             });
             currentHls.loadSource(url); 
-            currentHls.attachMedia(audio); 
-            currentHls.on(Hls.Events.MANIFEST_PARSED, () => audio.play());
+            currentHls.attachMedia(activeAudio); 
+            currentHls.on(Hls.Events.MANIFEST_PARSED, () => activeAudio.play());
         } else {
-            audio.src = url; 
-            audio.load(); 
-            audio.play().catch(err => {
-                // This catches the DOMException when Play is rejected due to CORS
-                if (attemptCors) {
-                    attemptStream(url, false);
-                } else {
+            activeAudio.src = url; 
+            activeAudio.load(); 
+            activeAudio.play().catch(err => {
+                if (attemptCors) { attemptStream(url, false); } 
+                else {
                     vizCanvas.classList.remove('active'); 
-                    statusEl.innerHTML = "Playback Failed"; 
-                    statusEl.style.color = "var(--accent-red)";
+                    statusEl.innerHTML = "Playback Failed"; statusEl.style.color = "var(--accent-red)";
                 }
             });
         }
     }
-    
+
     function openWheel() {
         if(currentStations.length < 2) return alert("Need at least 2 stations to spin!");
         document.getElementById('wheelModal').style.display = 'flex'; drawWheel();
@@ -617,21 +622,6 @@
             playStation(slice[Math.floor(pointerAngle / (360 / slice.length))]);
             setTimeout(() => document.getElementById('wheelModal').style.display = 'none', 1000);
         }, 4000);
-    }
-    function setupAudioListeners() {
-        const statusEl = document.getElementById('pStatus');
-        audio.onplaying = () => {
-            if (!isAudioCtxSetup) initTrueVisualizer();
-            if (audioCtx.state === 'suspended') audioCtx.resume(); // Required by browsers
-            
-            statusEl.innerHTML = '<span class="live-dot"></span>Live'; 
-            statusEl.style.color = "var(--accent-green)";
-            vizCanvas.classList.add('active');
-        };
-        audio.onpause = () => {
-            statusEl.innerHTML = "Paused"; statusEl.style.color = "var(--text-sub)";
-        };
-        audio.onvolumechange = updateVolumeUI;
     }
 </script>
 </body>
