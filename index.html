@@ -431,11 +431,16 @@
         else { muteBtn.innerText = audio.volume < 0.5 ? "🔈" : "🔊"; volSlider.value = audio.volume; }
     }
 
-// --- TRUE Web Audio API Visualizer ---
+// --- HYBRID Visualizer System ---
     let audioCtx;
     let analyser;
     let dataArray;
     let isAudioCtxSetup = false;
+    
+    // State flags for our fallback system
+    let useRealVisualizer = true; 
+    let time = 0; // Used for the fallback animation
+    let currentHls = null;
 
     function initTrueVisualizer() {
         if (isAudioCtxSetup) return;
@@ -447,7 +452,7 @@
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
         
-        analyser.fftSize = 64; // Gives us exactly 32 bars of frequency data
+        analyser.fftSize = 64; 
         const bufferLength = analyser.frequencyBinCount;
         dataArray = new Uint8Array(bufferLength);
         
@@ -457,20 +462,32 @@
     function drawVisualizer() {
         vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
         
-        if (isAudioCtxSetup && !audio.paused && !audio.muted) {
-            // Pull the actual frequency data from the playing audio!
-            analyser.getByteFrequencyData(dataArray);
-            
+        if (!audio.paused && !audio.muted && audio.volume > 0) {
             const barWidth = vizCanvas.width / numBars;
             const gap = 1;
-            
-            for (let i = 0; i < numBars; i++) {
-                // dataArray values go from 0 to 255. We scale it to fit the canvas height.
-                const percent = dataArray[i] / 255;
-                const h = Math.max(1, percent * vizCanvas.height);
-                
-                vizCtx.fillStyle = '#2ecc71';
-                vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
+
+            if (useRealVisualizer && isAudioCtxSetup) {
+                // TRUE VISUALIZER (Reads actual audio frequencies)
+                analyser.getByteFrequencyData(dataArray);
+                for (let i = 0; i < numBars; i++) {
+                    const percent = dataArray[i] / 255;
+                    const h = Math.max(1, percent * vizCanvas.height);
+                    vizCtx.fillStyle = '#2ecc71';
+                    vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
+                }
+            } else {
+                // FALLBACK VISUALIZER (Smooth procedural sine waves)
+                time += 0.15;
+                for (let i = 0; i < numBars; i++) {
+                    let wave1 = Math.sin(time + i * 0.5);
+                    let wave2 = Math.cos(time * 0.8 - i * 0.2);
+                    let heightMod = Math.abs(wave1 * wave2);
+                    let bassBias = 1 - (i / numBars) * 0.5;
+                    let h = Math.max(1, heightMod * vizCanvas.height * bassBias * audio.volume);
+                    
+                    vizCtx.fillStyle = '#2ecc71'; // You can change this color to easily tell when the fallback is active!
+                    vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
+                }
             }
         }
         requestAnimationFrame(drawVisualizer);
@@ -479,49 +496,96 @@
     function setupAudioListeners() {
         const statusEl = document.getElementById('pStatus');
         audio.onplaying = () => {
-            statusEl.innerHTML = '<span class="live-dot"></span>Live'; statusEl.style.color = "var(--accent-green)";
+            if (!isAudioCtxSetup) initTrueVisualizer();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); 
+            
+            statusEl.innerHTML = '<span class="live-dot"></span>Live'; 
+            statusEl.style.color = "var(--accent-green)";
             vizCanvas.classList.add('active');
         };
         audio.onpause = () => {
             statusEl.innerHTML = "Paused"; statusEl.style.color = "var(--text-sub)";
-            // Don't remove 'active' class immediately so the bars can gracefully fall to 0
         };
         audio.onvolumechange = updateVolumeUI;
     }
 
+    // --- The Auto-Fallback Player ---
     function playStation(s) {
         const statusEl = document.getElementById('pStatus');
         document.getElementById('pName').innerText = s.name;
         statusEl.innerHTML = '<span class="connecting-spinner"></span>Connecting...';
         statusEl.style.color = "var(--text-sub)";
-        vizCanvas.classList.remove('active'); // Hide visualizer during buffering
+        vizCanvas.classList.remove('active');
 
         let streamUrl = s.url_resolved;
-        let isMixedContentUpgraded = false;
-
         if(window.location.protocol === 'https:' && streamUrl.startsWith('http:')) {
-            streamUrl = streamUrl.replace('http:', 'https:'); isMixedContentUpgraded = true;
+            streamUrl = streamUrl.replace('http:', 'https:'); 
+        }
+
+        if (currentHls) {
+            currentHls.destroy();
+            currentHls = null;
+        }
+
+        // Always start by trying to use CORS for the True Visualizer
+        attemptStream(streamUrl, true);
+    }
+
+    function attemptStream(url, attemptCors) {
+        const statusEl = document.getElementById('pStatus');
+        
+        if (attemptCors) {
+            audio.crossOrigin = "anonymous";
+            useRealVisualizer = true;
+        } else {
+            // CORS failed. Remove the attribute to allow playback, and trigger the fallback visualizer
+            audio.removeAttribute("crossorigin");
+            useRealVisualizer = false;
         }
 
         audio.onerror = () => {
-            vizCanvas.classList.remove('active');
-            statusEl.innerHTML = isMixedContentUpgraded ? "Blocked: Station HTTP only" : "Stream Offline / Incompatible";
-            statusEl.style.color = "var(--accent-red)";
+            if (attemptCors) {
+                console.log("CORS blocked the stream. Auto-falling back to standard stream...");
+                attemptStream(url, false); // Try again immediately without CORS
+            } else {
+                vizCanvas.classList.remove('active');
+                statusEl.innerHTML = "Stream Offline / Blocked";
+                statusEl.style.color = "var(--accent-red)";
+            }
         };
 
-        if(Hls.isSupported() && streamUrl.includes('.m3u8')) {
-            const hls = new Hls();
-            hls.on(Hls.Events.ERROR, function(e, data) {
-                if (data.fatal) { vizCanvas.classList.remove('active'); statusEl.innerHTML = "Stream Offline"; statusEl.style.color = "var(--accent-red)"; }
+        if(Hls.isSupported() && url.includes('.m3u8')) {
+            currentHls = new Hls();
+            currentHls.on(Hls.Events.ERROR, function(e, data) {
+                if (data.fatal) {
+                    if (attemptCors) {
+                        attemptStream(url, false);
+                    } else {
+                        vizCanvas.classList.remove('active'); 
+                        statusEl.innerHTML = "Stream Offline"; 
+                        statusEl.style.color = "var(--accent-red)";
+                    }
+                }
             });
-            hls.loadSource(streamUrl); hls.attachMedia(audio); hls.on(Hls.Events.MANIFEST_PARSED, () => audio.play());
+            currentHls.loadSource(url); 
+            currentHls.attachMedia(audio); 
+            currentHls.on(Hls.Events.MANIFEST_PARSED, () => audio.play());
         } else {
-            audio.src = streamUrl; audio.load(); audio.play().catch(() => {
-                vizCanvas.classList.remove('active'); statusEl.innerHTML = "Playback Failed"; statusEl.style.color = "var(--accent-red)";
+            audio.src = url; 
+            audio.load(); 
+            audio.play().catch(err => {
+                // This catches the DOMException when Play is rejected due to CORS
+                if (attemptCors) {
+                    attemptStream(url, false);
+                } else {
+                    vizCanvas.classList.remove('active'); 
+                    statusEl.innerHTML = "Playback Failed"; 
+                    statusEl.style.color = "var(--accent-red)";
+                }
             });
         }
     }
-
+    
     function openWheel() {
         if(currentStations.length < 2) return alert("Need at least 2 stations to spin!");
         document.getElementById('wheelModal').style.display = 'flex'; drawWheel();
