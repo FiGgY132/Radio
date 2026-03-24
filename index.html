@@ -578,7 +578,7 @@
         }
 
         const frag = document.createDocumentFragment();
-
+        data.forEach(s => stationMap.set(s.stationuuid, s));
         data.forEach((s, index) => {
             const isFav    = favouriteSet.has(s.stationuuid);
             const heartCls = isFav ? 'is-saved' : '';
