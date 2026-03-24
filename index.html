@@ -89,9 +89,9 @@
             max-width: 300px;
             transition: border-color 0.3s;
         }
-        
-        input[type="text"]:focus { 
-            border-color: var(--text-sub); 
+
+        input[type="text"]:focus {
+            border-color: var(--text-sub);
         }
 
         select {
@@ -127,7 +127,7 @@
             align-items: center;
             gap: 6px;
         }
-        
+
         button:active { transform: scale(0.95); }
         button:hover { opacity: 0.9; }
 
@@ -159,11 +159,18 @@
             transition: background 0.2s, transform 0.2s;
             border: 1px solid #222;
             animation: fadeUp 0.4s ease-out backwards;
+            cursor: pointer;
         }
-        
-        .station-card:hover { 
+
+        .station-card:hover {
             background-color: #252525;
             transform: translateY(-2px);
+        }
+
+        /* Keyboard focus style for accessibility */
+        .station-card:focus {
+            outline: 2px solid var(--accent-green);
+            outline-offset: 2px;
         }
 
         .fav-icon {
@@ -199,8 +206,8 @@
             transition: background-color 0.3s; flex-wrap: wrap; gap: 10px;
         }
 
-        .player-info { 
-            width: 30%; min-width: 150px; overflow: hidden; white-space: nowrap; 
+        .player-info {
+            width: 30%; min-width: 150px; overflow: hidden; white-space: nowrap;
         }
 
         .player-name-wrapper {
@@ -217,8 +224,8 @@
             display: block;
         }
 
-        .player-status { 
-            font-size: 0.85rem; color: var(--accent-green); 
+        .player-status {
+            font-size: 0.85rem; color: var(--accent-green);
             display: flex; align-items: center; margin-top: 4px;
         }
 
@@ -250,20 +257,21 @@
 
         .wheel-pointer {
             position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 20px solid transparent; 
+            width: 0; height: 0; border-left: 20px solid transparent;
             border-right: 20px solid transparent; border-top: 40px solid white; z-index: 10;
         }
 
         .spin-btn {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80px; height: 80px; border-radius: 50%; background: white; 
-            border: 4px solid var(--accent-green); color: black; font-weight: 900; 
+            width: 80px; height: 80px; border-radius: 50%; background: white;
+            border: 4px solid var(--accent-green); color: black; font-weight: 900;
             font-size: 1.2rem; cursor: pointer; z-index: 20; box-shadow: 0 0 20px rgba(0,0,0,0.8);
             display: flex; justify-content: center; align-items: center; transition: transform 0.1s;
         }
         .spin-btn:active { transform: translate(-50%, -50%) scale(0.95); }
-        .close-wheel { 
-            margin-top: 20px; background: transparent; border: 1px solid white; 
+        .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .close-wheel {
+            margin-top: 20px; background: transparent; border: 1px solid white;
             color: white; padding: 10px 30px; border-radius: 20px; transition: background 0.2s, color 0.2s;
         }
         .close-wheel:hover { background: white; color: black; }
@@ -275,7 +283,7 @@
     <h1>📻 Global Radio Tuner</h1>
     <div class="controls-row">
         <input type="text" id="searchInput" placeholder="Search Station Name..." onkeyup="if(event.key === 'Enter') startSearch()">
-        
+
         <select id="countrySelect"><option value="">Select Country (Any)</option></select>
         <select id="genreSelect">
             <option value="">Select Genre (Any)</option>
@@ -292,7 +300,7 @@
     </div>
 </header>
 
-<main id="stationGrid">
+<main id="stationGrid" role="list" aria-label="Station list">
     <div class="message-box">Connecting to Global Radio Network...</div>
 </main>
 
@@ -300,14 +308,15 @@
     <div class="player-info" aria-live="polite">
         <div class="player-name-wrapper">
             <div style="font-weight:bold" id="pName">Select Station</div>
-            <canvas id="visualizerCanvas" width="120" height="24"></canvas>
+            <canvas id="visualizerCanvas" width="120" height="24" aria-hidden="true"></canvas>
         </div>
         <div class="player-status" id="pStatus">Ready</div>
     </div>
 
     <div class="custom-controls">
-        <button id="muteBtn" class="mute-btn" onclick="toggleMute()">🔊</button>
-        <input type="range" id="volSlider" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
+        <button id="muteBtn" class="mute-btn" onclick="toggleMute()" aria-label="Toggle mute">🔊</button>
+        <input type="range" id="volSlider" min="0" max="1" step="0.01" value="1"
+               oninput="changeVolume(this.value)" aria-label="Volume">
     </div>
 
     <div style="display: none;">
@@ -316,311 +325,605 @@
     </div>
 </div>
 
-<div id="wheelModal">
+<div id="wheelModal" role="dialog" aria-modal="true" aria-label="Spin the wheel">
     <h2 style="color:white; margin-bottom:20px;">Spin the Wheel!</h2>
     <div class="wheel-wrapper">
-        <div class="wheel-pointer"></div>
+        <div class="wheel-pointer" aria-hidden="true"></div>
         <canvas id="wheelCanvas" width="600" height="600"></canvas>
-        <button class="spin-btn" onclick="spinWheel()">SPIN</button>
+        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN</button>
     </div>
-    <button class="close-wheel" onclick="document.getElementById('wheelModal').style.display='none'">Close</button>
+    <button class="close-wheel" onclick="closeWheel()">Close</button>
 </div>
 
 <script>
-    const MIRRORS = ["https://de1.api.radio-browser.info/json", "https://nl1.api.radio-browser.info/json", "https://at1.api.radio-browser.info/json"];
-    let mirrorIdx = 0; let currentStations = []; let favorites = []; let isViewingFavs = false;
-    let wheelCtx = document.getElementById('wheelCanvas').getContext('2d'); let isSpinning = false;
+    // ─── Constants ────────────────────────────────────────────────────────────
+    const MIRRORS = [
+        "https://de1.api.radio-browser.info/json",
+        "https://nl1.api.radio-browser.info/json",
+        "https://at1.api.radio-browser.info/json"
+    ];
 
-    const audioCORS = document.getElementById('audioPlayerCORS');
+    // ─── State ────────────────────────────────────────────────────────────────
+    let mirrorIdx = 0;
+    let currentStations = [];
+    let isViewingFavs = false;
+    let isSpinning = false;
+    let currentHls = null;
+    let searchController = null; 
+    let searchDebounceTimer = null;
+
+ 
+    const stationMap = new Map();
+   
+    let favouriteSet = new Set();
+    let favouriteList = [];  
+
+    // ─── Audio elements ───────────────────────────────────────────────────────
+    const audioCORS     = document.getElementById('audioPlayerCORS');
     const audioFallback = document.getElementById('audioFallback');
-    let activeAudio = audioCORS;
+    let activeAudio     = audioCORS;
 
-    const muteBtn = document.getElementById('muteBtn');
+    const muteBtn  = document.getElementById('muteBtn');
     const volSlider = document.getElementById('volSlider');
-    
-    const vizCanvas = document.getElementById('visualizerCanvas');
-    const vizCtx = vizCanvas.getContext('2d');
-    const numBars = 24;
 
-    window.onload = async () => {
-        loadFavorites(); await loadCountries(); startSearch(true); setupAudioListeners(); drawVisualizer();
+    // ─── Visualiser ───────────────────────────────────────────────────────────
+    const vizCanvas = document.getElementById('visualizerCanvas');
+    const vizCtx    = vizCanvas.getContext('2d');
+    const numBars   = 24;
+    let rafId       = null;
+    let vizRunning  = false;
+
+    let audioCtx         = null;
+    let analyser         = null;
+    let dataArray        = null;
+    let isAudioCtxSetup  = false;
+    let useRealVisualizer = true;
+    let time             = 0;
+
+    function esc(str) {
+        return String(str ?? '').replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+    }
+
+    const storage = {
+        _mem: {},
+        get(key) {
+            try { return localStorage.getItem(key); }
+            catch { return this._mem[key] ?? null; }
+        },
+        set(key, value) {
+            try { localStorage.setItem(key, value); }
+            catch { this._mem[key] = value; }
+        }
     };
 
-    function loadFavorites() {
-        const saved = localStorage.getItem('radio_favs_v2'); if(saved) favorites = JSON.parse(saved);
-    }
-    function saveFavorites() { localStorage.setItem('radio_favs_v2', JSON.stringify(favorites)); }
 
-    async function loadCountries() {
-        try {
-            const resp = await fetch(`${MIRRORS[mirrorIdx]}/countries?order=stationcount&reverse=true&limit=100`);
-            if (!resp.ok) throw new Error();
-            const data = await resp.json();
-            const select = document.getElementById('countrySelect');
-            data.forEach(c => {
-                const opt = document.createElement('option'); opt.value = c.iso_3166_1; opt.innerText = c.name; select.appendChild(opt);
-            });
-        } catch(e) {}
-    }
+    window.addEventListener('load', async () => {
+        loadFavourites();
+        restoreVolume();
+        await loadCountries();
+        startSearch();
+        setupAudioListeners();
+        startVisualizer();
+        setupKeyboardNav();
+    });
 
-    function toggleFavorite(event, stationUUID) {
-        event.stopPropagation();
-        let station = currentStations.find(s => s.stationuuid === stationUUID);
-        const index = favorites.findIndex(s => s.stationuuid === stationUUID);
-        if (index === -1) { if(station) favorites.push(station); } 
-        else {
-            favorites.splice(index, 1);
-            if(isViewingFavs) { currentStations = favorites; renderGrid(currentStations); saveFavorites(); return; }
-        }
-        saveFavorites(); event.target.classList.toggle('is-saved');
-    }
-
-    function toggleViewFavorites() {
-        isViewingFavs = !isViewingFavs; const btn = document.getElementById('btnFav');
-        if(isViewingFavs) {
-            btn.classList.add('active'); btn.innerText = "Back to Search"; currentStations = favorites; renderGrid(favorites);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopVisualizer();
         } else {
-            btn.classList.remove('active'); btn.innerText = "❤️ My Favorites"; startSearch();
+            startVisualizer();
+        }
+    });
+
+    window.addEventListener('pagehide', () => {
+        if (audioCtx) audioCtx.close();
+    });
+
+     function loadFavourites() {
+        const saved = storage.get('radio_favs_v2');
+        if (saved) {
+            try {
+                favouriteList = JSON.parse(saved);
+                favouriteSet  = new Set(favouriteList.map(s => s.stationuuid));
+            } catch { favouriteList = []; favouriteSet = new Set(); }
         }
     }
 
-    async function startSearch(isInit = false) {
-        if(isViewingFavs) toggleViewFavorites();
-        const grid = document.getElementById('stationGrid');
-        grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies...</div>';
-        
-        const term = document.getElementById('searchInput').value;
-        const country = document.getElementById('countrySelect').value;
-        const genre = document.getElementById('genreSelect').value;
-
-        let url = `${MIRRORS[mirrorIdx]}/stations/search?limit=60&hidebroken=true&order=clickcount&reverse=true`;
-        if(term) url += `&name=${encodeURIComponent(term)}`;
-        if(country) url += `&countrycode=${country}`;
-        if(genre) url += `&tag=${genre}`;
-        
-        try {
-            const resp = await fetch(url); if(!resp.ok) throw new Error();
-            currentStations = await resp.json(); renderGrid(currentStations);
-        } catch(e) {
-            mirrorIdx++; if(mirrorIdx < MIRRORS.length) startSearch(isInit);
-            else grid.innerHTML = '<div class="message-box">All servers busy. Please refresh.</div>';
-        }
+    function saveFavourites() {
+        storage.set('radio_favs_v2', JSON.stringify(favouriteList));
     }
 
-    function renderGrid(data) {
-        const grid = document.getElementById('stationGrid'); grid.innerHTML = '';
-        if(!data || data.length === 0) { grid.innerHTML = '<div class="message-box">No stations found.<br>Try adjusting filters.</div>'; return; }
+    document.getElementById('stationGrid').addEventListener('click', e => {
+        const favBtn = e.target.closest('.fav-icon');
+        const card   = e.target.closest('.station-card');
 
-        data.forEach((s, index) => {
-            const heartClass = favorites.some(f => f.stationuuid === s.stationuuid) ? 'is-saved' : '';
-            const div = document.createElement('div'); div.className = 'station-card'; div.style.animationDelay = `${(index % 20) * 0.04}s`; 
-            div.onclick = () => playStation(s);
-            div.innerHTML = `
-                <div class="fav-icon ${heartClass}" onclick="toggleFavorite(event, '${s.stationuuid}')">❤</div>
-                <img src="${s.favicon}" class="station-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565296.png'">
-                <div class="station-name">${s.name}</div><div class="station-tags">${s.tags || 'Radio'}</div>`;
-            grid.appendChild(div);
+        if (favBtn) {
+            e.stopPropagation();
+            const uuid    = favBtn.dataset.uuid;
+            const station = stationMap.get(uuid);
+            if (!station) return;
+
+            if (favouriteSet.has(uuid)) {
+                favouriteSet.delete(uuid);
+                favouriteList = favouriteList.filter(s => s.stationuuid !== uuid);
+                favBtn.classList.remove('is-saved');
+                if (isViewingFavs) {
+                    currentStations = [...favouriteList];
+                    renderGrid(currentStations);
+                }
+            } else {
+                favouriteSet.add(uuid);
+                favouriteList.push(station);
+                favBtn.classList.add('is-saved');
+            }
+            saveFavourites();
+            return;
+        }
+
+        if (card) {
+            const uuid    = card.dataset.uuid;
+            const station = stationMap.get(uuid);
+            if (station) playStation(station);
+        }
+    });
+
+    function setupKeyboardNav() {
+        document.getElementById('stationGrid').addEventListener('keydown', e => {
+            const cards = [...document.querySelectorAll('.station-card')];
+            const idx   = cards.indexOf(document.activeElement);
+            if (idx === -1) return;
+
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                cards[Math.min(idx + 1, cards.length - 1)]?.focus();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                cards[Math.max(idx - 1, 0)]?.focus();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const uuid = document.activeElement.dataset.uuid;
+                const station = stationMap.get(uuid);
+                if (station) playStation(station);
+            }
         });
     }
 
-    function toggleMute() { 
-        audioCORS.muted = !audioCORS.muted; 
-        audioFallback.muted = audioCORS.muted;
-        updateVolumeUI(); 
+
+    async function loadCountries() {
+        try {
+            const resp = await fetch(
+                `${MIRRORS[mirrorIdx]}/countries?order=stationcount&reverse=true&limit=100`
+            );
+            if (!resp.ok) throw new Error('Countries fetch failed');
+            const data   = await resp.json();
+            const select = document.getElementById('countrySelect');
+            data.forEach(c => {
+                const opt    = document.createElement('option');
+                opt.value    = esc(c.iso_3166_1);
+                opt.textContent = c.name;
+                select.appendChild(opt);
+            });
+        } catch { /* non-fatal */ }
     }
 
-    function changeVolume(val) { 
-        audioCORS.volume = val; 
-        audioFallback.volume = val;
-        if(val > 0) { audioCORS.muted = false; audioFallback.muted = false; }
-        updateVolumeUI(); 
-    }
-
-    function updateVolumeUI() {
-        if (activeAudio.muted || activeAudio.volume == 0) { 
-            muteBtn.innerText = "🔇"; if(activeAudio.volume == 0) volSlider.value = 0; 
-        } 
-        else { 
-            muteBtn.innerText = activeAudio.volume < 0.5 ? "🔈" : "🔊"; volSlider.value = activeAudio.volume; 
+    function toggleViewFavorites() {
+        isViewingFavs = !isViewingFavs;
+        const btn     = document.getElementById('btnFav');
+        if (isViewingFavs) {
+            btn.classList.add('active');
+            btn.textContent = 'Back to Search';
+            currentStations = [...favouriteList];
+            renderGrid(currentStations);
+        } else {
+            btn.classList.remove('active');
+            btn.textContent = '❤️ My Favorites';
+            startSearch();
         }
     }
 
-    let audioCtx; let analyser; let dataArray; let isAudioCtxSetup = false;
-    let useRealVisualizer = true; let time = 0; let currentHls = null;
+    function startSearch() {
+        if (isViewingFavs) toggleViewFavorites();
+
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(_executeSearch, 300);
+    }
+
+    async function _executeSearch() {
+        if (searchController) searchController.abort();
+        searchController = new AbortController();
+
+        const grid = document.getElementById('stationGrid');
+        grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies...</div>';
+
+        const term    = document.getElementById('searchInput').value.trim();
+        const country = document.getElementById('countrySelect').value;
+        const genre   = document.getElementById('genreSelect').value;
+
+        let url = `${MIRRORS[mirrorIdx]}/stations/search?limit=60&hidebroken=true&order=clickcount&reverse=true`;
+        if (term)    url += `&name=${encodeURIComponent(term)}`;
+        if (country) url += `&countrycode=${encodeURIComponent(country)}`;
+        if (genre)   url += `&tag=${encodeURIComponent(genre)}`;
+
+        try {
+            const resp = await fetch(url, { signal: searchController.signal });
+            if (!resp.ok) throw new Error('API error');
+            const data = await resp.json();
+
+            if (!Array.isArray(data)) throw new Error('Unexpected response shape');
+
+            currentStations = data;
+            stationMap.clear();
+            data.forEach(s => stationMap.set(s.stationuuid, s));
+            renderGrid(currentStations);
+        } catch (err) {
+            if (err.name === 'AbortError') return; 
+            mirrorIdx++;
+            if (mirrorIdx < MIRRORS.length) {
+                _executeSearch();
+            } else {
+                grid.innerHTML = '<div class="message-box">All servers busy. Please refresh.</div>';
+            }
+        }
+    }
+
+      function renderGrid(data) {
+        const grid = document.getElementById('stationGrid');
+        grid.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            grid.innerHTML = '<div class="message-box">No stations found.<br>Try adjusting filters.</div>';
+            return;
+        }
+
+        const frag = document.createDocumentFragment();
+
+        data.forEach((s, index) => {
+            const isFav    = favouriteSet.has(s.stationuuid);
+            const heartCls = isFav ? 'is-saved' : '';
+
+            let faviconSrc = '';
+            try {
+                const u = new URL(s.favicon || '');
+                if (u.protocol === 'http:' || u.protocol === 'https:') {
+                    faviconSrc = u.href;
+                }
+            } catch { /* invalid URL, leave empty — onerror fallback handles it */ }
+
+            const div = document.createElement('div');
+            div.className   = 'station-card';
+            div.style.animationDelay = `${(index % 20) * 0.04}s`;
+            div.dataset.uuid = s.stationuuid;
+            div.setAttribute('role', 'listitem');
+            div.setAttribute('tabindex', '0');
+            div.setAttribute('aria-label', s.name);
+
+            const favBtn = document.createElement('div');
+            favBtn.className     = `fav-icon ${heartCls}`;
+            favBtn.dataset.uuid  = s.stationuuid;
+            favBtn.textContent   = '❤';
+            favBtn.setAttribute('role', 'button');
+            favBtn.setAttribute('aria-label', isFav ? 'Remove from favourites' : 'Add to favourites');
+            favBtn.setAttribute('aria-pressed', String(isFav));
+            favBtn.setAttribute('tabindex', '-1');
+
+            const img = document.createElement('img');
+            img.src     = faviconSrc || 'https://cdn-icons-png.flaticon.com/512/565/565296.png';
+            img.className = 'station-img';
+            img.alt       = '';
+            img.loading   = 'lazy';
+            img.onerror   = () => { img.src = 'https://cdn-icons-png.flaticon.com/512/565/565296.png'; };
+
+            const name = document.createElement('div');
+            name.className   = 'station-name';
+            name.textContent = s.name;
+
+            const tags = document.createElement('div');
+            tags.className   = 'station-tags';
+            tags.textContent = s.tags || 'Radio';
+
+            div.append(favBtn, img, name, tags);
+            frag.appendChild(div);
+        });
+
+        grid.appendChild(frag);
+    }
+
+    function restoreVolume() {
+        const saved = parseFloat(storage.get('radio_volume') ?? '1');
+        const vol   = isNaN(saved) ? 1 : Math.min(1, Math.max(0, saved));
+        audioCORS.volume     = vol;
+        audioFallback.volume = vol;
+        volSlider.value      = vol;
+    }
+
+    function toggleMute() {
+        const muted          = !audioCORS.muted;
+        audioCORS.muted      = muted;
+        audioFallback.muted  = muted;
+        updateVolumeUI();
+    }
+
+    function changeVolume(val) {
+        const v              = parseFloat(val);
+        audioCORS.volume     = v;
+        audioFallback.volume = v;
+        if (v > 0) {
+            audioCORS.muted      = false;
+            audioFallback.muted  = false;
+        }
+        storage.set('radio_volume', String(v));
+        updateVolumeUI();
+    }
+
+    function updateVolumeUI() {
+        if (activeAudio.muted || activeAudio.volume === 0) {
+            muteBtn.textContent = '🔇';
+            if (activeAudio.volume === 0) volSlider.value = 0;
+        } else {
+            muteBtn.textContent = activeAudio.volume < 0.5 ? '🔈' : '🔊';
+            volSlider.value     = activeAudio.volume;
+        }
+    }
 
     function initTrueVisualizer() {
         if (isAudioCtxSetup) return;
         const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-        analyser = audioCtx.createAnalyser();
-        
+        audioCtx  = new AudioContext();
+        analyser  = audioCtx.createAnalyser();
+
         const source = audioCtx.createMediaElementSource(audioCORS);
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
-        
-        analyser.fftSize = 64; 
-        const bufferLength = analyser.frequencyBinCount;
-        dataArray = new Uint8Array(bufferLength);
-        isAudioCtxSetup = true;
+
+        analyser.fftSize = 64;
+        dataArray        = new Uint8Array(analyser.frequencyBinCount);
+        isAudioCtxSetup  = true;
+    }
+
+    function startVisualizer() {
+        if (vizRunning) return;
+        vizRunning = true;
+        _vizLoop();
+    }
+
+    function stopVisualizer() {
+        vizRunning = false;
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+    }
+
+    function _vizLoop() {
+        if (!vizRunning) return;
+        drawVisualizer();
+        rafId = requestAnimationFrame(_vizLoop);
     }
 
     function drawVisualizer() {
         vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
-        
+
         if (!activeAudio.paused && !activeAudio.muted && activeAudio.volume > 0) {
             const barWidth = vizCanvas.width / numBars;
-            const gap = 1;
+            const gap      = 1;
 
             if (useRealVisualizer && isAudioCtxSetup) {
                 analyser.getByteFrequencyData(dataArray);
                 for (let i = 0; i < numBars; i++) {
                     const percent = dataArray[i] / 255;
-                    const h = Math.max(1, percent * vizCanvas.height);
+                    const h       = Math.max(1, percent * vizCanvas.height);
                     vizCtx.fillStyle = '#2ecc71';
                     vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
                 }
             } else {
                 time += 0.15;
                 for (let i = 0; i < numBars; i++) {
-                    let wave1 = Math.sin(time + i * 0.5);
-                    let wave2 = Math.cos(time * 0.8 - i * 0.2);
-                    let heightMod = Math.abs(wave1 * wave2);
-                    let bassBias = 1 - (i / numBars) * 0.5;
-                    let h = Math.max(1, heightMod * vizCanvas.height * bassBias * activeAudio.volume);
-                    
-                    vizCtx.fillStyle = '#2ecc71'; 
+                    const wave1     = Math.sin(time + i * 0.5);
+                    const wave2     = Math.cos(time * 0.8 - i * 0.2);
+                    const heightMod = Math.abs(wave1 * wave2);
+                    const bassBias  = 1 - (i / numBars) * 0.5;
+                    const h         = Math.max(1, heightMod * vizCanvas.height * bassBias * activeAudio.volume);
+                    vizCtx.fillStyle = '#2ecc71';
                     vizCtx.fillRect(i * barWidth, vizCanvas.height - h, barWidth - gap, h);
                 }
             }
         }
-        requestAnimationFrame(drawVisualizer);
     }
 
     function setupAudioListeners() {
         const statusEl = document.getElementById('pStatus');
-        
+
         function bindEvents(audioEl) {
-            audioEl.onplaying = () => {
-                if (audioEl === audioCORS && !isAudioCtxSetup) initTrueVisualizer();
-                if (audioEl === audioCORS && audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); 
-                
-                statusEl.innerHTML = '<span class="live-dot"></span>Live'; 
-                statusEl.style.color = "var(--accent-green)";
+            audioEl.addEventListener('playing', () => {
+                if (audioEl === audioCORS) {
+                    if (!isAudioCtxSetup) initTrueVisualizer();
+                    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                }
+                statusEl.innerHTML     = '<span class="live-dot"></span>Live';
+                statusEl.style.color   = 'var(--accent-green)';
                 vizCanvas.classList.add('active');
-            };
-            audioEl.onpause = () => {
-                statusEl.innerHTML = "Paused"; statusEl.style.color = "var(--text-sub)";
-            };
-            audioEl.onvolumechange = updateVolumeUI;
+            });
+
+            audioEl.addEventListener('pause', () => {
+                statusEl.textContent  = 'Paused';
+                statusEl.style.color  = 'var(--text-sub)';
+            });
+
+            audioEl.addEventListener('volumechange', updateVolumeUI);
         }
 
         bindEvents(audioCORS);
         bindEvents(audioFallback);
     }
 
-    function playStation(s) {
-        const statusEl = document.getElementById('pStatus');
-        document.getElementById('pName').innerText = s.name;
-        statusEl.innerHTML = '<span class="connecting-spinner"></span>Connecting...';
-        statusEl.style.color = "var(--text-sub)";
-        vizCanvas.classList.remove('active');
-
-        let streamUrl = s.url_resolved;
-        if(window.location.protocol === 'https:' && streamUrl.startsWith('http:')) {
-            streamUrl = streamUrl.replace('http:', 'https:'); 
-        }
-
+    function destroyHls() {
         if (currentHls) {
-            currentHls.destroy();
+            try { currentHls.destroy(); } catch { /* ignore */ }
             currentHls = null;
         }
+    }
 
+    function playStation(s) {
+        const statusEl = document.getElementById('pStatus');
+
+        document.getElementById('pName').textContent = s.name;
+        statusEl.innerHTML   = '<span class="connecting-spinner"></span>Connecting...';
+        statusEl.style.color = 'var(--text-sub)';
+        vizCanvas.classList.remove('active');
+
+        let streamUrl = s.url_resolved || s.url || '';
+        if (window.location.protocol === 'https:' && streamUrl.startsWith('http:')) {
+            try {
+                const u  = new URL(streamUrl);
+                u.protocol = 'https:';
+                streamUrl  = u.href;
+            } catch { /* malformed URL, leave as-is and let the stream attempt fail gracefully */ }
+        }
+
+        destroyHls();
         audioCORS.pause();
         audioCORS.src = '';
         audioFallback.pause();
         audioFallback.src = '';
 
+        _reportClick(s.stationuuid);
+
         attemptStream(streamUrl, true);
     }
 
-    function attemptStream(url, attemptCors) {
+    function _reportClick(uuid) {
+        if (!uuid) return;
+        fetch(`${MIRRORS[mirrorIdx]}/url/${encodeURIComponent(uuid)}`).catch(() => {});
+    }
+
+    function attemptStream(url, corsAttempted) {
         const statusEl = document.getElementById('pStatus');
-        
-        if (attemptCors) {
-            activeAudio = audioCORS;
+
+        if (corsAttempted) {
+            activeAudio       = audioCORS;
             useRealVisualizer = true;
         } else {
-            activeAudio = audioFallback;
+            activeAudio       = audioFallback;
             useRealVisualizer = false;
         }
 
-        activeAudio.onerror = () => {
-            if (attemptCors) {
+        function onStreamError() {
+            if (corsAttempted) {
                 attemptStream(url, false);
             } else {
+                destroyHls();
                 vizCanvas.classList.remove('active');
-                statusEl.innerHTML = "Stream Checking / Offline?";
-                statusEl.style.color = "var(--accent-red)";
+                statusEl.textContent = 'Stream Checking / Offline?';
+                statusEl.style.color = 'var(--accent-red)';
             }
-        };
+        }
 
-        if(Hls.isSupported() && url.includes('.m3u8')) {
+        if (Hls.isSupported() && url.includes('.m3u8')) {
+            destroyHls();
             currentHls = new Hls();
-            currentHls.on(Hls.Events.ERROR, function(e, data) {
-                if (data.fatal) {
-                    if (attemptCors) { attemptStream(url, false); } 
-                    else {
-                        vizCanvas.classList.remove('active'); 
-                        statusEl.innerHTML = "Stream Offline"; statusEl.style.color = "var(--accent-red)";
-                    }
-                }
+
+            currentHls.on(Hls.Events.ERROR, (_e, data) => {
+                if (data.fatal) onStreamError();
             });
-            currentHls.loadSource(url); 
-            currentHls.attachMedia(activeAudio); 
-            currentHls.on(Hls.Events.MANIFEST_PARSED, () => activeAudio.play());
+
+            currentHls.loadSource(url);
+            currentHls.attachMedia(activeAudio);
+            currentHls.on(Hls.Events.MANIFEST_PARSED, () => activeAudio.play().catch(() => {}));
         } else {
-            activeAudio.src = url; 
-            activeAudio.load(); 
-            activeAudio.play().catch(err => {
-                if (attemptCors) { attemptStream(url, false); } 
-                else {
-                    vizCanvas.classList.remove('active'); 
-                    statusEl.innerHTML = "Playback Failed"; statusEl.style.color = "var(--accent-red)";
-                }
-            });
+            activeAudio.src = url;
+            activeAudio.load();
+
+            const errHandler = () => {
+                activeAudio.removeEventListener('error', errHandler);
+                onStreamError();
+            };
+            activeAudio.addEventListener('error', errHandler, { once: true });
+
+            activeAudio.play().catch(() => onStreamError());
         }
     }
 
     function openWheel() {
-        if(currentStations.length < 2) return alert("Need at least 2 stations to spin!");
-        document.getElementById('wheelModal').style.display = 'flex'; drawWheel();
+        if (currentStations.length < 2) {
+            alert('Need at least 2 stations to spin!');
+            return;
+        }
+        if (document.getElementById('wheelModal').style.display === 'flex') return;
+
+        document.getElementById('wheelModal').style.display = 'flex';
+        drawWheel();
+    }
+
+    function closeWheel() {
+        document.getElementById('wheelModal').style.display = 'none';
     }
 
     function drawWheel() {
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx    = canvas.getContext('2d');
         const colors = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c'];
-        const slice = currentStations.slice(0, 16); const arc = 2 * Math.PI / slice.length;
-        wheelCtx.clearRect(0, 0, 600, 600); wheelCtx.translate(300, 300);
-        wheelCtx.font = 'bold 24px Arial'; wheelCtx.textBaseline = 'middle'; wheelCtx.textAlign = 'center';
+        const slice  = currentStations.slice(0, 16);
+        const arc    = (2 * Math.PI) / slice.length;
+
+        ctx.clearRect(0, 0, 600, 600);
+
+        ctx.save();
+        ctx.translate(300, 300);
+        ctx.font          = 'bold 24px Arial';
+        ctx.textBaseline  = 'middle';
+        ctx.textAlign     = 'center';
 
         for (let i = 0; i < slice.length; i++) {
-            const angle = i * arc; wheelCtx.beginPath(); wheelCtx.fillStyle = colors[i % colors.length];
-            wheelCtx.moveTo(0, 0); wheelCtx.arc(0, 0, 300, angle, angle + arc); wheelCtx.lineTo(0, 0); wheelCtx.fill(); wheelCtx.stroke();
-            wheelCtx.save(); wheelCtx.rotate(angle + arc / 2); wheelCtx.fillStyle = "white"; wheelCtx.shadowColor = "black"; wheelCtx.shadowBlur = 4;
-            let text = slice[i].name; if(text.length > 15) text = text.substring(0, 14) + "...";
-            wheelCtx.fillText(text, 170, 0); wheelCtx.restore();
+            const angle = i * arc;
+            ctx.beginPath();
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, 300, angle, angle + arc);
+            ctx.lineTo(0, 0);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.save();
+            ctx.rotate(angle + arc / 2);
+            ctx.fillStyle    = 'white';
+            ctx.shadowColor  = 'black';
+            ctx.shadowBlur   = 4;
+            let text = slice[i].name;
+            if (text.length > 15) text = text.substring(0, 14) + '…';
+            ctx.fillText(text, 170, 0);
+            ctx.restore();
         }
-        wheelCtx.translate(-300, -300);
+
+        ctx.restore();
     }
 
     function spinWheel() {
-        if(isSpinning) return; isSpinning = true;
-        const canvas = document.getElementById('wheelCanvas'); const randomDeg = Math.floor(2000 + Math.random() * 2000);
-        canvas.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; canvas.style.transform = `rotate(${randomDeg}deg)`;
+        if (isSpinning) return;
+        isSpinning = true;
+
+        const spinBtn = document.getElementById('spinBtn');
+        spinBtn.disabled = true;
+
+        const canvas     = document.getElementById('wheelCanvas');
+        const randomDeg  = Math.floor(2000 + Math.random() * 2000);
+        canvas.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+        canvas.style.transform  = `rotate(${randomDeg}deg)`;
+
         setTimeout(() => {
-            isSpinning = false; canvas.style.transition = 'none'; canvas.style.transform = `rotate(${randomDeg % 360}deg)`;
-            const slice = currentStations.slice(0, 16); const pointerAngle = (270 - (randomDeg % 360) + 360) % 360;
-            playStation(slice[Math.floor(pointerAngle / (360 / slice.length))]);
-            setTimeout(() => document.getElementById('wheelModal').style.display = 'none', 1000);
+            isSpinning       = false;
+            spinBtn.disabled = false;
+
+            canvas.style.transition = 'none';
+            canvas.style.transform  = `rotate(${randomDeg % 360}deg)`;
+
+            const slice        = currentStations.slice(0, 16);
+            const pointerAngle = (270 - (randomDeg % 360) + 360) % 360;
+            const picked       = slice[Math.floor(pointerAngle / (360 / slice.length))];
+
+            if (picked) playStation(picked);
+            setTimeout(closeWheel, 1000);
         }, 4000);
     }
 </script>
