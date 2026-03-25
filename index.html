@@ -201,7 +201,7 @@
 
         .player-bar {
             background: #111; border-top: 1px solid #333;
-            padding: 15px; padding-bottom: env(safe-area-inset-bottom, 20px);
+            padding: 15px 15px max(20px, env(safe-area-inset-bottom)) 15px;
             display: flex; align-items: center; justify-content: space-between;
             transition: background-color 0.3s; flex-wrap: wrap; gap: 10px;
         }
@@ -226,7 +226,7 @@
 
         .player-status {
             font-size: 0.85rem; color: var(--accent-green);
-            display: flex; align-items: center; margin-top: 4px;
+            display: flex; align-items: center; margin-top: 2px;
         }
 
         .custom-controls { display: flex; align-items: center; gap: 8px; margin-right: auto; }
@@ -290,7 +290,7 @@
             width: 100%;
             overflow: hidden;
             white-space: nowrap;
-            margin-top: 5px;
+            margin-top: 2px;
             height: 16px;
             position: relative;
         }
