@@ -16,6 +16,9 @@
             --accent-purple: #9b59b6;
             --accent-blue: #3498db;
         }
+        
+        .btn-export { background-color: #e67e22; }
+        .btn-import { background-color: #16a085; }
 
         @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
@@ -125,6 +128,9 @@
         <button class="btn-find" onclick="startSearch()">Find</button>
         <button id="btnFav" class="btn-fav" onclick="toggleViewFavorites()">❤️ Favorites</button>
         <button id="btnHist" class="btn-hist" onclick="toggleViewHistory()">🕒 History</button>
+        <button class="btn-export" onclick="exportFavorites()" title="Download your favorites">💾 Export</button>
+        <button class="btn-import" onclick="document.getElementById('importFile').click()" title="Load favorites from file">📂 Import</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importFavorites(event)">
         <button class="btn-wheel" onclick="openWheel()">🎡 Surprise Me</button>
     </div>
 </header>
@@ -266,7 +272,71 @@
         storage.set('radio_favs_v2', JSON.stringify(favouriteList));
         storage.set('radio_history', JSON.stringify(historyList));
     }
+    function exportFavorites() {
+        if (favouriteList.length === 0) {
+            alert("You don't have any favorites to export yet!");
+            return;
+        }
 
+        const dataStr = JSON.stringify(favouriteList, null, 2);
+
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "radio_favorites.json";
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importFavorites(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                if (!Array.isArray(importedData)) {
+                    throw new Error("Invalid file format. Expected an array.");
+                }
+
+                let addedCount = 0;
+
+                importedData.forEach(station => {
+                    if (station && station.stationuuid && !favouriteSet.has(station.stationuuid)) {
+                        favouriteSet.add(station.stationuuid);
+                        favouriteList.push(station);
+                        addedCount++;
+                    }
+                });
+
+                if (addedCount > 0) {
+                    saveData(); // Save the newly merged list to localStorage
+                    
+                    // If the user is currently looking at the favorites view, refresh the grid
+                    if (currentView === VIEW_FAV) {
+                        renderGrid(favouriteList);
+                    }
+                    alert(`Successfully imported ${addedCount} new favorite stations!`);
+                } else {
+                    alert("No new stations found to import. You might already have them saved.");
+                }
+            } catch (err) {
+                alert("Error importing file. Please make sure it is a valid JSON favorites file.");
+                console.error(err);
+            }
+
+            event.target.value = '';
+        };
+        
+        reader.readAsText(file);
+    }
     function addToHistory(station) {
         historyList = [station, ...historyList.filter(s => s.stationuuid !== station.stationuuid)].slice(0, 10);
         saveData();
