@@ -276,6 +276,44 @@
         }
         .close-wheel:hover { background: white; color: black; }
         .message-box { text-align: center; color: #888; margin-top: 50px; grid-column: 1 / -1; animation: fadeIn 0.5s ease; }
+
+        @keyframes marquee {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        @keyframes npFadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .now-playing-bar {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-top: 5px;
+            height: 16px;
+            position: relative;
+        }
+
+        .now-playing-inner {
+            display: inline-block;
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            animation: npFadeIn 0.4s ease;
+        }
+
+        .now-playing-inner.scrolling {
+            animation: marquee 18s linear infinite;
+            padding-right: 60px; /* gap between loop repetitions */
+        }
+
+        .np-label {
+            font-size: 0.7rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -311,6 +349,9 @@
             <canvas id="visualizerCanvas" width="120" height="24" aria-hidden="true"></canvas>
         </div>
         <div class="player-status" id="pStatus">Ready</div>
+        <div class="now-playing-bar" id="nowPlayingBar" style="display:none" aria-live="polite" aria-label="Now playing">
+            <span class="now-playing-inner" id="nowPlayingInner"></span>
+        </div>
     </div>
 
     <div class="custom-controls">
@@ -336,14 +377,13 @@
 </div>
 
 <script>
-    // ─── Constants ────────────────────────────────────────────────────────────
+ 
     const MIRRORS = [
         "https://de1.api.radio-browser.info/json",
         "https://nl1.api.radio-browser.info/json",
         "https://at1.api.radio-browser.info/json"
     ];
 
-    // ─── State ────────────────────────────────────────────────────────────────
     let mirrorIdx = 0;
     let currentStations = [];
     let isViewingFavs = false;
@@ -352,13 +392,19 @@
     let searchController = null; 
     let searchDebounceTimer = null;
 
- 
-    const stationMap = new Map();
-   
-    let favouriteSet = new Set();
-    let favouriteList = [];  
 
-    // ─── Audio elements ───────────────────────────────────────────────────────
+    let metaPollInterval    = null;
+    let metaFetchController = null;
+    let currentStreamUrl    = '';
+    let currentStation      = null;
+    let lastTrackTitle      = '';
+
+    const stationMap = new Map();
+
+    let favouriteSet = new Set();
+    let favouriteList = [];
+
+
     const audioCORS     = document.getElementById('audioPlayerCORS');
     const audioFallback = document.getElementById('audioFallback');
     let activeAudio     = audioCORS;
@@ -366,7 +412,6 @@
     const muteBtn  = document.getElementById('muteBtn');
     const volSlider = document.getElementById('volSlider');
 
-    // ─── Visualiser ───────────────────────────────────────────────────────────
     const vizCanvas = document.getElementById('visualizerCanvas');
     const vizCtx    = vizCanvas.getContext('2d');
     const numBars   = 24;
@@ -398,7 +443,6 @@
         }
     };
 
-
     window.addEventListener('load', async () => {
         loadFavourites();
         restoreVolume();
@@ -418,10 +462,11 @@
     });
 
     window.addEventListener('pagehide', () => {
+        stopMetadataPolling();
         if (audioCtx) audioCtx.close();
     });
 
-     function loadFavourites() {
+    function loadFavourites() {
         const saved = storage.get('radio_favs_v2');
         if (saved) {
             try {
@@ -490,7 +535,6 @@
         });
     }
 
-
     async function loadCountries() {
         try {
             const resp = await fetch(
@@ -554,11 +598,12 @@
             if (!Array.isArray(data)) throw new Error('Unexpected response shape');
 
             currentStations = data;
+
             stationMap.clear();
             data.forEach(s => stationMap.set(s.stationuuid, s));
             renderGrid(currentStations);
         } catch (err) {
-            if (err.name === 'AbortError') return; 
+            if (err.name === 'AbortError') return;
             mirrorIdx++;
             if (mirrorIdx < MIRRORS.length) {
                 _executeSearch();
@@ -568,7 +613,7 @@
         }
     }
 
-      function renderGrid(data) {
+    function renderGrid(data) {
         const grid = document.getElementById('stationGrid');
         grid.innerHTML = '';
 
@@ -578,7 +623,9 @@
         }
 
         const frag = document.createDocumentFragment();
+
         data.forEach(s => stationMap.set(s.stationuuid, s));
+
         data.forEach((s, index) => {
             const isFav    = favouriteSet.has(s.stationuuid);
             const heartCls = isFav ? 'is-saved' : '';
@@ -598,7 +645,6 @@
             div.setAttribute('role', 'listitem');
             div.setAttribute('tabindex', '0');
             div.setAttribute('aria-label', s.name);
-
             const favBtn = document.createElement('div');
             favBtn.className     = `fav-icon ${heartCls}`;
             favBtn.dataset.uuid  = s.stationuuid;
@@ -749,6 +795,7 @@
             audioEl.addEventListener('pause', () => {
                 statusEl.textContent  = 'Paused';
                 statusEl.style.color  = 'var(--text-sub)';
+                stopMetadataPolling();
             });
 
             audioEl.addEventListener('volumechange', updateVolumeUI);
@@ -756,6 +803,149 @@
 
         bindEvents(audioCORS);
         bindEvents(audioFallback);
+    }
+
+    function startMetadataPolling(url) {
+        stopMetadataPolling();
+        clearNowPlaying();
+        currentStreamUrl = url;
+
+        _pollOnce(url);
+        metaPollInterval = setInterval(() => _pollOnce(url), 20000);
+    }
+
+    function stopMetadataPolling() {
+        if (metaPollInterval)    { clearInterval(metaPollInterval); metaPollInterval = null; }
+        if (metaFetchController) { metaFetchController.abort(); metaFetchController = null; }
+    }
+
+    async function _pollOnce(url) {
+        if (metaFetchController) metaFetchController.abort();
+        metaFetchController = new AbortController();
+        const signal = metaFetchController.signal;
+
+        try {
+            const resp = await fetch(url, {
+                headers: { 'Icy-MetaData': '1' },
+                signal
+            });
+
+            const metaint = parseInt(resp.headers.get('icy-metaint') || '0', 10);
+            if (!metaint || !resp.body) {
+                _tryStationDescription();
+                return;
+            }
+
+            const reader = resp.body.getReader();
+            const needed = metaint + 1 + 16 * 255;
+            let chunks   = [];
+            let total    = 0;
+
+            while (total < needed) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                total += value.length;
+            }
+            reader.cancel();
+
+            const buf     = new Uint8Array(total);
+            let offset    = 0;
+            for (const c of chunks) { buf.set(c, offset); offset += c.length; }
+
+            if (buf.length <= metaint) return;
+
+            const metaLen = buf[metaint] * 16;
+            if (metaLen === 0) return;
+
+            const end     = metaint + 1 + metaLen;
+            if (buf.length < end) return;
+
+            const metaStr = new TextDecoder('utf-8', { fatal: false })
+                .decode(buf.slice(metaint + 1, end));
+
+            const title = _parseStreamTitle(metaStr);
+            if (title) updateNowPlaying(title);
+
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            _tryStationDescription();
+        }
+    }
+
+    function _parseStreamTitle(metaStr) {
+        const m = metaStr.match(/StreamTitle\s*=\s*'([^']*)'/i);
+        if (!m) return null;
+        const raw = m[1].trim();
+        if (!raw || raw === '-' || raw.length < 2) return null;
+
+        const sep = raw.indexOf(' - ');
+        if (sep > 0) {
+            const artist = raw.slice(0, sep).trim();
+            const track  = raw.slice(sep + 3).trim();
+            if (artist && track) {
+                return `<span class="np-label">Now playing</span>${_htmlEsc(track)}`
+                     + `<span class="np-label" style="margin-left:8px">by</span>${_htmlEsc(artist)}`;
+            }
+        }
+        return `<span class="np-label">Now playing</span>${_htmlEsc(raw)}`;
+    }
+
+    function _htmlEsc(str) {
+        return String(str).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+        );
+    }
+
+    function _tryStationDescription() {
+        if (!currentStation) return;
+        const desc = currentStation.tags || currentStation.country || '';
+        if (desc) updateNowPlaying(
+            `<span class="np-label">Station</span>${_htmlEsc(desc)}`,
+            /* isStatic */ true
+        );
+    }
+
+    function updateNowPlaying(html, isStatic = false) {
+        if (html === lastTrackTitle) return;
+        lastTrackTitle = html;
+
+        const bar   = document.getElementById('nowPlayingBar');
+        const inner = document.getElementById('nowPlayingInner');
+
+        inner.innerHTML = html;
+        bar.style.display = 'block';
+
+        inner.classList.remove('scrolling');
+        requestAnimationFrame(() => {
+            const barW   = bar.offsetWidth;
+            const textW  = inner.scrollWidth;
+            if (!isStatic && textW > barW) {
+                inner.innerHTML = html + '<span style="padding:0 40px"></span>' + html;
+                inner.classList.add('scrolling');
+            }
+        });
+        _updateMediaSession(html);
+    }
+
+    function clearNowPlaying() {
+        lastTrackTitle = '';
+        document.getElementById('nowPlayingBar').style.display  = 'none';
+        document.getElementById('nowPlayingInner').innerHTML     = '';
+        document.getElementById('nowPlayingInner').classList.remove('scrolling');
+    }
+
+    function _updateMediaSession(htmlTitle) {
+        if (!('mediaSession' in navigator) || !currentStation) return;
+        const plain = htmlTitle.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title:  plain || currentStation.name,
+            artist: currentStation.name,
+            album:  currentStation.country || '',
+            artwork: currentStation.favicon
+                ? [{ src: currentStation.favicon, sizes: '96x96' }]
+                : []
+        });
     }
 
     function destroyHls() {
@@ -767,6 +957,10 @@
 
     function playStation(s) {
         const statusEl = document.getElementById('pStatus');
+
+        currentStation = s;
+        clearNowPlaying();
+        stopMetadataPolling();
 
         document.getElementById('pName').textContent = s.name;
         statusEl.innerHTML   = '<span class="connecting-spinner"></span>Connecting...';
@@ -791,6 +985,14 @@
         _reportClick(s.stationuuid);
 
         attemptStream(streamUrl, true);
+
+        const onPlaying = () => {
+            audioCORS.removeEventListener('playing', onPlaying);
+            audioFallback.removeEventListener('playing', onPlaying);
+            startMetadataPolling(streamUrl);
+        };
+        audioCORS.addEventListener('playing', onPlaying, { once: true });
+        audioFallback.addEventListener('playing', onPlaying, { once: true });
     }
 
     function _reportClick(uuid) {
@@ -868,7 +1070,6 @@
         const arc    = (2 * Math.PI) / slice.length;
 
         ctx.clearRect(0, 0, 600, 600);
-
         ctx.save();
         ctx.translate(300, 300);
         ctx.font          = 'bold 24px Arial';
