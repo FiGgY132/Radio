@@ -1652,15 +1652,18 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
 
-function searchPodcasts() {
+function searchPodcasts(retryCount = 0) {
   const term = document.getElementById('podcastSearch').value;
   if (!term) return;
   
   const grid = document.getElementById('podcastGrid');
-  grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Connecting to Apple…</div>';
-
-  const callbackName = 'itunes_cb_' + Date.now();
-
+  
+  if (retryCount === 0) {
+    grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Connecting to Apple…</div>';
+  }
+  
+  const callbackName = 'itunes_cb_' + Date.now() + '_' + retryCount;
+  
   window[callbackName] = function(data) {
     grid.innerHTML = '';
     
@@ -1699,16 +1702,20 @@ function searchPodcasts() {
 
   const script = document.createElement('script');
   script.id = callbackName;
-  script.src = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${callbackName}&_t=${Date.now()}`;
+  script.src = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${callbackName}`;
   
   script.onerror = () => {
-    grid.innerHTML = '<div class="message-box" style="color: var(--danger)">Connection blocked. Please check your ad-blocker.</div>';
     cleanup();
+    if (retryCount < 4) {
+      console.warn(`Apple blocked request. Auto-retrying (${retryCount + 1}/3)...`);
+      setTimeout(() => searchPodcasts(retryCount + 1), 600); // Wait 600ms then retry
+    } else {
+      grid.innerHTML = '<div class="message-box" style="color: var(--danger)">Apple servers are busy. Please click Find to try again.</div>';
+    }
   };
   
   document.body.appendChild(script);
 }
-
 async function playLatestPodcast(rssUrl, name, img) {
   showToast("Fetching latest episode...");
   const grid = document.getElementById('podcastGrid');
