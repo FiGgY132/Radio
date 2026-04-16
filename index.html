@@ -1660,13 +1660,9 @@ async function searchPodcasts() {
 
   try {
     const itunesUrl = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20`;
+    const res = await fetch(itunesUrl);
     
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(itunesUrl)}`;
-
-    const res = await fetch(proxyUrl);
-    
-    if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
-    
+    if (!res.ok) throw new Error(`Apple Server Error: ${res.status}`);
     const data = await res.json();
 
     grid.innerHTML = '';
@@ -1698,18 +1694,18 @@ async function searchPodcasts() {
     grid.innerHTML = `<div class="message-box" style="color: var(--danger)">Search Failed: ${err.message}</div>`;
   }
 }
+
 async function playLatestPodcast(rssUrl, name, img) {
   showToast("Fetching latest episode...");
   try {
-    // We use the same raw proxy for the RSS feed to guarantee it loads
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
     const res = await fetch(proxyUrl);
 
-    if (!res.ok) throw new Error("Proxy blocked the feed.");
+    if (!res.ok) throw new Error("Proxy error");
+    const proxyData = await res.json();
 
-    const textData = await res.text();
     const parser = new DOMParser();
-    const xml = parser.parseFromString(textData, "text/xml");
+    const xml = parser.parseFromString(proxyData.contents, "text/xml");
 
     const enclosure = xml.querySelector('enclosure');
     if (enclosure && enclosure.getAttribute('url')) {
