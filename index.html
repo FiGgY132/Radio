@@ -1661,11 +1661,12 @@ async function searchPodcasts() {
   try {
     const itunesUrl = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20`;
     
-    // Using '/raw' returns the actual data directly, skipping browser security blocks
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(itunesUrl)}`;
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(itunesUrl)}`;
 
     const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error("Proxy error");
+    
+    if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
+    
     const data = await res.json();
 
     grid.innerHTML = '';
@@ -1694,10 +1695,9 @@ async function searchPodcasts() {
     });
   } catch (err) {
     console.error("Podcast Search Error:", err);
-    grid.innerHTML = '<div class="message-box">Error fetching podcasts. Try again.</div>';
+    grid.innerHTML = `<div class="message-box" style="color: var(--danger)">Search Failed: ${err.message}</div>`;
   }
 }
-
 async function playLatestPodcast(rssUrl, name, img) {
   showToast("Fetching latest episode...");
   try {
