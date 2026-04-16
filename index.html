@@ -1660,10 +1660,28 @@ async function searchPodcasts() {
 
   try {
     const itunesUrl = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20`;
-    const res = await fetch(itunesUrl);
-    
-    if (!res.ok) throw new Error(`Apple Server Error: ${res.status}`);
-    const data = await res.json();
+    let data = null;
+
+    try {
+      const res1 = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(itunesUrl)}`);
+      if (res1.ok) data = await res1.json();
+    } catch (e) { 
+      console.warn("Proxy 1 failed, trying fallback..."); 
+    }
+
+    if (!data) {
+      const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(itunesUrl)}`);
+      if (res2.ok) {
+        const proxyData = await res2.json();
+        try { 
+          data = JSON.parse(proxyData.contents); 
+        } catch (e) { 
+          console.warn("Proxy 2 returned HTML/Rate-limit instead of JSON."); 
+        }
+      }
+    }
+
+    if (!data) throw new Error("All proxies blocked. Please disable shields/adblockers for this site.");
 
     grid.innerHTML = '';
     if (!data.results || data.results.length === 0) {
@@ -1698,14 +1716,27 @@ async function searchPodcasts() {
 async function playLatestPodcast(rssUrl, name, img) {
   showToast("Fetching latest episode...");
   try {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-    const res = await fetch(proxyUrl);
+    let textData = null;
 
-    if (!res.ok) throw new Error("Proxy error");
-    const proxyData = await res.json();
+    try {
+      const res1 = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`);
+      if (res1.ok) textData = await res1.text();
+    } catch (e) { 
+      console.warn("Proxy 1 failed for RSS"); 
+    }
+
+    if (!textData) {
+      const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+      if (res2.ok) {
+        const proxyData = await res2.json();
+        if (proxyData.contents) textData = proxyData.contents;
+      }
+    }
+
+    if (!textData) throw new Error("Feed blocked by proxies.");
 
     const parser = new DOMParser();
-    const xml = parser.parseFromString(proxyData.contents, "text/xml");
+    const xml = parser.parseFromString(textData, "text/xml");
 
     const enclosure = xml.querySelector('enclosure');
     if (enclosure && enclosure.getAttribute('url')) {
