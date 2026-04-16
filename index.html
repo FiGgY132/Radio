@@ -1652,81 +1652,70 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
 
-function searchPodcasts() {
+async function searchPodcasts() {
   const term = document.getElementById('podcastSearch').value;
   if (!term) return;
-  
   const grid = document.getElementById('podcastGrid');
   grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Searching iTunes…</div>';
 
-  const callbackName = 'itunes_cb_' + Date.now();
+  try {
+    const itunesUrl = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20`;
+    
+    // Using '/raw' returns the actual data directly, skipping browser security blocks
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(itunesUrl)}`;
 
-  window[callbackName] = function(data) {
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error("Proxy error");
+    const data = await res.json();
+
     grid.innerHTML = '';
-    
-    if (!data.results || data.results.length === 0) { 
-      grid.innerHTML = '<div class="message-box">No podcasts found.</div>'; 
-      cleanup(); return; 
+    if (!data.results || data.results.length === 0) {
+      grid.innerHTML = '<div class="message-box">No podcasts found.</div>';
+      return;
     }
-    
+
     data.results.forEach(pod => {
       const div = document.createElement('div');
       div.className = 'station-card';
       const img = pod.artworkUrl600 || pod.artworkUrl100 || 'https://cdn-icons-png.flaticon.com/512/3043/3043564.png';
-      
+
       div.innerHTML = `
         <img src="${img}" class="station-img">
         <div class="station-name">${esc(pod.collectionName)}</div>
         <div class="station-tags">${esc(pod.artistName)}</div>
       `;
-      
+
       div.onclick = () => {
         if (pod.feedUrl) playLatestPodcast(pod.feedUrl, pod.collectionName, img);
         else showToast("RSS feed unavailable for this podcast.");
       };
-      
+
       grid.appendChild(div);
     });
-    
-    cleanup();
-  };
-
-  function cleanup() {
-    delete window[callbackName];
-    const scriptTag = document.getElementById(callbackName);
-    if (scriptTag) scriptTag.remove();
+  } catch (err) {
+    console.error("Podcast Search Error:", err);
+    grid.innerHTML = '<div class="message-box">Error fetching podcasts. Try again.</div>';
   }
-
-  const script = document.createElement('script');
-  script.id = callbackName;
-  script.src = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${callbackName}`;
-  
-  script.onerror = () => {
-    grid.innerHTML = '<div class="message-box">Network error. Check your connection.</div>';
-    cleanup();
-  };
-  
-  document.body.appendChild(script);
 }
 
 async function playLatestPodcast(rssUrl, name, img) {
   showToast("Fetching latest episode...");
   try {
-    // Using corsproxy.io - heavily reliable for fetching RSS feeds
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
+    // We use the same raw proxy for the RSS feed to guarantee it loads
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
     const res = await fetch(proxyUrl);
-    
+
     if (!res.ok) throw new Error("Proxy blocked the feed.");
-    
+
     const textData = await res.text();
     const parser = new DOMParser();
     const xml = parser.parseFromString(textData, "text/xml");
-    
+
     const enclosure = xml.querySelector('enclosure');
     if (enclosure && enclosure.getAttribute('url')) {
       const titleNode = xml.querySelector('item title');
       const title = titleNode ? titleNode.textContent : 'Latest Episode';
-      
+
       playStation({
         stationuuid: 'pod_' + Date.now(),
         name: name + ': ' + title,
@@ -1737,9 +1726,9 @@ async function playLatestPodcast(rssUrl, name, img) {
     } else {
       showToast("No playable audio found in feed.");
     }
-  } catch (err) { 
+  } catch (err) {
     console.error("RSS Feed Error:", err);
-    showToast("Failed to parse podcast feed."); 
+    showToast("Failed to parse podcast feed.");
   }
 }
 async function searchArchiveMusic() {
