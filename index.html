@@ -1652,24 +1652,21 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
 
-async function searchPodcasts() {
+function searchPodcasts() {
   const term = document.getElementById('podcastSearch').value;
   if (!term) return;
+  
   const grid = document.getElementById('podcastGrid');
   grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Searching iTunes…</div>';
-  
-  try {
-    const itunesUrl = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20`;
-    
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(itunesUrl)}`);
-    const proxyData = await res.json();
 
-    const data = JSON.parse(proxyData.contents);
-    
+  const callbackName = 'itunes_cb_' + Date.now();
+
+  window[callbackName] = function(data) {
     grid.innerHTML = '';
+    
     if (!data.results || data.results.length === 0) { 
       grid.innerHTML = '<div class="message-box">No podcasts found.</div>'; 
-      return; 
+      cleanup(); return; 
     }
     
     data.results.forEach(pod => {
@@ -1682,34 +1679,54 @@ async function searchPodcasts() {
         <div class="station-name">${esc(pod.collectionName)}</div>
         <div class="station-tags">${esc(pod.artistName)}</div>
       `;
-
+      
       div.onclick = () => {
-        if (pod.feedUrl) {
-          playLatestPodcast(pod.feedUrl, pod.collectionName, img);
-        } else {
-          showToast("RSS feed unavailable for this podcast.");
-        }
+        if (pod.feedUrl) playLatestPodcast(pod.feedUrl, pod.collectionName, img);
+        else showToast("RSS feed unavailable for this podcast.");
       };
       
       grid.appendChild(div);
     });
-  } catch (err) { 
-    console.error("Podcast Search Error:", err);
-    grid.innerHTML = '<div class="message-box">Error fetching podcasts.</div>'; 
+    
+    cleanup();
+  };
+
+  function cleanup() {
+    delete window[callbackName];
+    const scriptTag = document.getElementById(callbackName);
+    if (scriptTag) scriptTag.remove();
   }
+
+  const script = document.createElement('script');
+  script.id = callbackName;
+  script.src = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${callbackName}`;
+  
+  script.onerror = () => {
+    grid.innerHTML = '<div class="message-box">Network error. Check your connection.</div>';
+    cleanup();
+  };
+  
+  document.body.appendChild(script);
 }
 
 async function playLatestPodcast(rssUrl, name, img) {
   showToast("Fetching latest episode...");
   try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-    const data = await res.json();
+    // Using corsproxy.io - heavily reliable for fetching RSS feeds
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
+    const res = await fetch(proxyUrl);
+    
+    if (!res.ok) throw new Error("Proxy blocked the feed.");
+    
+    const textData = await res.text();
     const parser = new DOMParser();
-    const xml = parser.parseFromString(data.contents, "text/xml");
+    const xml = parser.parseFromString(textData, "text/xml");
     
     const enclosure = xml.querySelector('enclosure');
     if (enclosure && enclosure.getAttribute('url')) {
-      const title = xml.querySelector('item title').textContent;
+      const titleNode = xml.querySelector('item title');
+      const title = titleNode ? titleNode.textContent : 'Latest Episode';
+      
       playStation({
         stationuuid: 'pod_' + Date.now(),
         name: name + ': ' + title,
@@ -1720,9 +1737,11 @@ async function playLatestPodcast(rssUrl, name, img) {
     } else {
       showToast("No playable audio found in feed.");
     }
-  } catch (err) { showToast("Failed to parse podcast feed."); }
+  } catch (err) { 
+    console.error("RSS Feed Error:", err);
+    showToast("Failed to parse podcast feed."); 
+  }
 }
-
 async function searchArchiveMusic() {
   const term = document.getElementById('musicSearch').value;
   if (!term) return;
