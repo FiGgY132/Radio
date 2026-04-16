@@ -133,16 +133,15 @@ body::after {
 @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
 @keyframes pulse { 0%,100%{transform:scale(0.95);box-shadow:0 0 0 0 var(--glow);} 70%{transform:scale(1);box-shadow:0 0 0 8px transparent;} }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyndef fadeIn { from{opacity:0;} to{opacity:1;} }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 @keyframes glitch {
-  0%{text-shadow:2px 0 var(--accent),−2px 0 var(--accent2);}
+  0%{text-shadow:2px 0 var(--accent),-2px 0 var(--accent2);}
   25%{text-shadow:-2px 0 var(--accent),2px 0 var(--accent2);}
   75%{text-shadow:2px -1px var(--danger),-2px 1px var(--accent);}
   100%{text-shadow:none;}
 }
 @keyframes npScroll { from{transform:translateX(0);} to{transform:translateX(-50%);} }
 @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
-@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
 header {
   position: relative; z-index: 50;
@@ -237,14 +236,12 @@ main {
   padding: 16px; position: relative; z-index: 1;
 }
 
-#stationGrid, #tvGrid {
+#stationGrid, #tvGrid, #podcastGrid, #musicGrid, #lofiGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
   align-content: start;
 }
-
-#tvGrid { display: none; }
 
 .station-card {
   background: var(--card);
@@ -446,7 +443,6 @@ input[type="range"] { accent-color: var(--accent); cursor: pointer; }
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
 
-/* Sleep timer */
 .sleep-select { font-size: 0.75rem; padding: 5px 10px; min-width: auto; }
 
 #tvModal {
@@ -542,18 +538,16 @@ input[type="range"] { accent-color: var(--accent); cursor: pointer; }
 }
 #toast.show { opacity: 1; }
 
-
 main::-webkit-scrollbar { width: 4px; }
 main::-webkit-scrollbar-track { background: transparent; }
 main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
 
 @media (max-width: 600px) {
   header { padding: 10px 14px; gap: 8px; }
   h1 { font-size: 1.1rem; }
   .controls-row { gap: 6px; }
   main { padding: 10px; }
-  #stationGrid, #tvGrid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  #stationGrid, #tvGrid, #podcastGrid, #musicGrid, #lofiGrid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
   .player-bar { padding: 10px 12px; }
   #pName { max-width: 130px; }
   .eq-panel { display: none !important; }
@@ -567,11 +561,14 @@ main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 <header>
   <div class="header-top">
     <h1>📻 Global Radio<span class="logo-dot">.</span></h1>
-
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <div class="tab-bar">
         <button class="tab active" id="tabRadio" onclick="switchTab('radio')">📻 Radio</button>
-        <button class="tab" id="tabTV" onclick="switchTab('tv')">📺 TV</button>
+        <button class="tab" id="tabTv" onclick="switchTab('tv')">📺 TV</button>
+        <button class="tab" id="tabPodcast" onclick="switchTab('podcast')">🎙️ Podcasts</button>
+        <button class="tab" id="tabMusic" onclick="switchTab('music')">🎵 Free Music</button>
+        <button class="tab" id="tabLofi" onclick="switchTab('lofi')">☕ Lo-Fi</button>
+        <button class="tab" id="tabLocal" onclick="switchTab('local')">📁 Local MP3</button>
       </div>
 
       <div class="theme-btns" title="Switch Theme">
@@ -614,17 +611,48 @@ main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
     </select>
     <button onclick="document.getElementById('m3uFile').click()">📂 Load M3U</button>
     <input type="file" id="m3uFile" accept=".m3u,.m3u8" style="display:none" onchange="loadM3U(event)">
-	<button onclick="fetchRemotePlaylist('https://iptv-org.github.io/iptv/languages/eng.m3u')">
-  🌐 Load English Web TV</button>
+    <button onclick="fetchRemotePlaylist('https://iptv-org.github.io/iptv/languages/eng.m3u')">🌐 Load English Web TV</button>
+  </div>
+
+  <div class="controls-row" id="podcastControls" style="display:none;">
+    <input type="text" id="podcastSearch" placeholder="Search podcasts (via iTunes)…" onkeyup="if(event.key==='Enter')searchPodcasts()">
+    <button class="btn-primary" onclick="searchPodcasts()">Find</button>
+  </div>
+
+  <div class="controls-row" id="musicControls" style="display:none;">
+    <input type="text" id="musicSearch" placeholder="Search Internet Archive…" onkeyup="if(event.key==='Enter')searchArchiveMusic()">
+    <button class="btn-primary" onclick="searchArchiveMusic()">Find</button>
+  </div>
+
+  <div class="controls-row" id="lofiControls" style="display:none;">
+    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--txt2);">Curated 24/7 Lo-Fi Streams</span>
+  </div>
+
+  <div class="controls-row" id="localControls" style="display:none;">
+    <button class="btn-primary" onclick="document.getElementById('localFileInput').click()">📂 Browse Files</button>
+    <input type="file" id="localFileInput" accept="audio/*" multiple style="display:none" onchange="handleLocalFiles(event)">
   </div>
 </header>
 
 <main id="mainArea">
-	<div id="azFilter" class="controls-row" style="display:none; justify-content:center; padding-bottom: 12px; gap: 4px;"></div>
-	<div id="stationGrid" role="list" aria-label="Station list">
+  <div id="azFilter" class="controls-row" style="display:none; justify-content:center; padding-bottom: 12px; gap: 4px;"></div>
+  
+  <div id="stationGrid" role="list">
     <div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies…</div>
   </div>
-  <div id="tvGrid" role="list" aria-label="TV channel list"></div>
+  
+  <div id="tvGrid" role="list" style="display:none;"></div>
+  <div id="podcastGrid" role="list" style="display:none;"></div>
+  <div id="musicGrid" role="list" style="display:none;"></div>
+  <div id="lofiGrid" role="list" style="display:none;"></div>
+  
+  <div id="localGrid" role="list" style="display:none;">
+    <div id="dropZone" class="message-box" style="border: 2px dashed var(--border); padding: 40px; border-radius: var(--card-radius); cursor: pointer;" onclick="document.getElementById('localFileInput').click()">
+      <h3>📁 Drag & Drop MP3s Here</h3>
+      <p style="margin-top:10px;">Or click to browse your device</p>
+    </div>
+    <div id="localFileList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top:20px;"></div>
+  </div>
 </main>
 
 <div class="player-bar">
@@ -726,11 +754,9 @@ main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   </div>
 </div>
 
-
 <div id="toast"></div>
 
 <script>
-
 const MIRRORS = [
   "https://de1.api.radio-browser.info/json",
   "https://nl1.api.radio-browser.info/json",
@@ -740,7 +766,7 @@ let mirrorIdx = 0;
 
 const VIEW_SEARCH=0, VIEW_FAV=1, VIEW_HIST=2;
 let currentView = VIEW_SEARCH;
-let currentTab = 'radio'; // 'radio' | 'tv'
+let currentTab = 'radio';
 
 let currentStations = [];
 let stationMap = new Map();
@@ -776,14 +802,19 @@ const vizCanvas = document.getElementById('visualizerCanvas');
 const vizCtx = vizCanvas.getContext('2d');
 
 const TV_CHANNELS = [
-  { id:'nasa', name:'NASA TV', category:'science', emoji:'🚀', url:'https://nasa-i.akamaihd.net/hls/live/253565/NASA-NTV1-HLS/master.m3u8', desc:'Space & Science' },
+  { id:'cbs_news', name:'CBS News', category:'news', emoji:'📰', url:'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8', desc:'US & World News' },
+  { id:'abc_news', name:'ABC News Live', category:'news', emoji:'🗞️', url:'https://content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be.m3u8', desc:'US News' },
+  { id:'france24', name:'France 24 EN', category:'news', emoji:'🗺️', url:'https://static.france24.com/live/F24_EN_HI_HLS/live_web.m3u8', desc:'World News' },
+  { id:'aje', name:'Al Jazeera', category:'news', emoji:'📡', url:'https://live-hls-web-aje.getaj.net/AJE/index.m3u8', desc:'Global News' },
+  { id:'nhk', name:'NHK World Japan', category:'news', emoji:'🗼', url:'https://nhkwlive-ojp.akamaized.net/hls/live/2003459/nhkwlive-ojp-en/index.m3u8', desc:'News & Culture' },
   { id:'dw_en', name:'DW English', category:'news', emoji:'🌍', url:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8', desc:'International News' },
-  { id:'france24', name:'France 24 EN', category:'news', emoji:'🗺️', url:'https://f24hls-i.akamaihd.net/hls/live/221192/F24_EN_LO_HLS/master.m3u8', desc:'World News' },
-  { id:'aje', name:'Al Jazeera', category:'news', emoji:'📡', url:'https://live-hls-web-aje.getaj.net/AJE/01.m3u8', desc:'Global News' },
-  { id:'cgtn', name:'CGTN News', category:'news', emoji:'🌏', url:'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8', desc:'International News' },
   { id:'rt', name:'RT International', category:'news', emoji:'📺', url:'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8', desc:'News & Analysis' },
-  { id:'bloomberg', name:'Bloomberg TV', category:'news', emoji:'💹', url:'https://event.on24.com/eventRegistration/EventLobbyServlet', desc:'Financial News' },
-  { id:'lofi', name:'Lofi Beats TV', category:'music', emoji:'🎵', url:'https://www.youtube.com/embed/live_stream?channel=UCrFvOBtJgwj1jXfbS4EeKtw', desc:'24/7 Lofi Hip-Hop' },
+  { id:'cgtn', name:'CGTN News', category:'news', emoji:'🌏', url:'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8', desc:'International News' },
+  { id:'nasa', name:'NASA TV', category:'science', emoji:'🚀', url:'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8', desc:'Space & Science' },
+  { id:'nature_scape', name:'Naturescape', category:'science', emoji:'🌿', url:'https://stingray-naturescape-1-us.plex.wurl.tv/playlist.m3u8', desc:'Scenic Nature' },
+  { id:'redbull', name:'Red Bull TV', category:'entertainment', emoji:'🛹', url:'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8', desc:'Action Sports & Lifestyle' },
+  { id:'tastemade', name:'Tastemade', category:'entertainment', emoji:'🍳', url:'https://tastemadestream.amagi.tv/playlist.m3u8', desc:'Food & Travel' },
+  { id:'monstercat', name:'Monstercat TV', category:'music', emoji:'🎧', url:'https://monstercat-monstercattv-1-us.plex.wurl.tv/playlist.m3u8', desc:'Electronic Music 24/7' }
 ];
 let tvChannels = [...TV_CHANNELS];
 let customTVChannels = [];
@@ -801,6 +832,7 @@ function loadData() {
   try { const t=storage.get('radio_theme'); if(t) setTheme(t, true); } catch{}
   try { customTVChannels=JSON.parse(storage.get('tv_custom'))||[]; tvChannels=[...TV_CHANNELS,...customTVChannels]; } catch{}
 }
+
 function saveData() {
   storage.set('radio_favs_v2', JSON.stringify(favouriteList));
   storage.set('radio_history', JSON.stringify(historyList));
@@ -831,16 +863,23 @@ function setTheme(t, silent=false) {
 
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById('tabRadio').classList.toggle('active', tab === 'radio');
-  document.getElementById('tabTV').classList.toggle('active', tab === 'tv');
-  document.getElementById('stationGrid').style.display = tab === 'radio' ? '' : 'none';
-  document.getElementById('tvGrid').style.display = tab === 'tv' ? 'grid' : 'none';
-  document.getElementById('radioControls').style.display = tab === 'radio' ? '' : 'none';
-  document.getElementById('tvControls').style.display = tab === 'tv' ? '' : 'none';
+  const tabs = ['radio', 'tv', 'podcast', 'music', 'lofi', 'local'];
+  
+  tabs.forEach(t => {
+    document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('active', t === tab);
+    document.getElementById(`${t}Controls`).style.display = t === tab ? 'flex' : 'none';
+    const grid = document.getElementById(t === 'radio' ? 'stationGrid' : `${t}Grid`);
+    if (grid) {
+      grid.style.display = (t === tab) ? (t === 'local' ? 'block' : 'grid') : 'none';
+      if (t !== 'local') {
+         grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(160px, 1fr))';
+         grid.style.gap = '12px';
+      }
+    }
+  });
 
   document.getElementById('azFilter').style.display = tab === 'tv' ? 'flex' : 'none';
-
-  if (tab === 'tv') renderTV(currentLetterFilter);
+  if (tab === 'lofi' && document.getElementById('lofiGrid').innerHTML === '') renderLofi();
 }
 
 function startSearch() {
@@ -960,6 +999,7 @@ function toggleViewFavorites() {
     renderGrid(favouriteList);
   }
 }
+
 function toggleViewHistory() {
   if (currentView===VIEW_HIST) {
     currentView=VIEW_SEARCH;
@@ -983,7 +1023,7 @@ async function playFromHash(uuid) {
 
 function playStation(s) {
   currentStation = s;
-  if (alarmStation===null && currentView!==VIEW_SEARCH) alarmStation=s; // update alarm station
+  if (alarmStation===null && currentView!==VIEW_SEARCH) alarmStation=s;
 
   document.getElementById('pName').textContent = s.name;
   document.getElementById('pStatus').innerHTML = '<span class="connecting-spinner"></span>Connecting…';
@@ -994,13 +1034,11 @@ function playStation(s) {
   art.onerror = ()=>{ art.src='https://cdn-icons-png.flaticon.com/512/565/565296.png'; };
   art.classList.remove('playing');
 
-  // Ambient glow from favicon
   setAmbientGlow(s.favicon);
 
   addToHistory(s);
   window.history.replaceState(null, null, `#${s.stationuuid}`);
 
-  // Update now-playing card highlight
   document.querySelectorAll('.station-card').forEach(c=>{
     c.classList.toggle('now-playing', c.dataset.uuid===s.stationuuid);
   });
@@ -1095,7 +1133,6 @@ function startMetaPoll() {
       const d = await r.json();
       if (d&&d[0]&&d[0].lastcheckok) {
         const track = d[0]?.tags||'';
-        // Use the station check URL to grab ICY metadata if possible
       }
     } catch{}
   };
@@ -1118,11 +1155,13 @@ function restoreVolume() {
   const vol = isNaN(v)?1:v;
   audioCORS.volume = audioFallback.volume = document.getElementById('volSlider').value = vol;
 }
+
 function toggleMute() {
   const muted = !audioCORS.muted;
   audioCORS.muted = audioFallback.muted = muted;
   document.getElementById('muteBtn').textContent = muted?'🔇':'🔊';
 }
+
 function changeVolume(v) {
   audioCORS.volume = audioFallback.volume = v;
   if (v>0) { audioCORS.muted = audioFallback.muted=false; document.getElementById('muteBtn').textContent='🔊'; }
@@ -1134,12 +1173,14 @@ function toggleEQ() {
   panel.classList.toggle('active');
   document.getElementById('eqBtn').classList.toggle('active-btn');
 }
+
 function updateEQ() {
   if (!isAudioCtxSetup) return;
   bassNode.gain.value = document.getElementById('eqBass').value;
   midNode.gain.value = document.getElementById('eqMid').value;
   trebleNode.gain.value = document.getElementById('eqTreble').value;
 }
+
 function resetEQ() {
   ['eqBass','eqMid','eqTreble'].forEach(id=>{document.getElementById(id).value=0;});
   updateEQ();
@@ -1232,8 +1273,36 @@ function _vizLoop() {
   rafId=requestAnimationFrame(_vizLoop);
 }
 
+let currentLetterFilter = 'A';
+
+function buildAZFilter() {
+  const azContainer = document.getElementById('azFilter');
+  if (!azContainer) return;
+  azContainer.innerHTML = '';
+  
+  const allBtn = document.createElement('button');
+  allBtn.className = 'tab' + (currentLetterFilter === '' ? ' active' : '');
+  allBtn.textContent = 'All';
+  allBtn.onclick = () => renderTV('');
+  azContainer.appendChild(allBtn);
+
+  const numBtn = document.createElement('button');
+  numBtn.className = 'tab' + (currentLetterFilter === '#' ? ' active' : '');
+  numBtn.textContent = '#';
+  numBtn.onclick = () => renderTV('#');
+  azContainer.appendChild(numBtn);
+
+  for (let i = 65; i <= 90; i++) {
+    const letter = String.fromCharCode(i);
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (currentLetterFilter === letter ? ' active' : '');
+    btn.textContent = letter;
+    btn.onclick = () => renderTV(letter);
+    azContainer.appendChild(btn);
+  }
+}
+
 function renderTV(letter = null) {
-  // Update active letter if a new one was clicked
   if (letter !== null) currentLetterFilter = letter; 
 
   const grid = document.getElementById('tvGrid');
@@ -1241,16 +1310,13 @@ function renderTV(letter = null) {
   const cat = document.getElementById('tvCatFilter')?.value || '';
   
   let filtered = tvChannels.filter(c => {
-    // Check Search and Category
     const matchesSearch = (!search || c.name.toLowerCase().includes(search) || c.desc.toLowerCase().includes(search));
     const matchesCat = (!cat || c.category === cat);
-    
-    // Check Alphabetical Letter
     let matchesLetter = true;
     if (currentLetterFilter) {
       const firstChar = c.name.charAt(0).toUpperCase();
       if (currentLetterFilter === '#') {
-        matchesLetter = !/[A-Z]/.test(firstChar); // True if it's a number/symbol
+        matchesLetter = !/[A-Z]/.test(firstChar);
       } else {
         matchesLetter = (firstChar === currentLetterFilter);
       }
@@ -1264,12 +1330,11 @@ function renderTV(letter = null) {
   if (filtered.length === 0) { 
     grid.innerHTML = '<div class="message-box">No channels found for this letter/search.</div>'; 
   } else {
-    // Generate the cards
     filtered.forEach((ch, i) => {
       const isPlaying = currentTVChannel && currentTVChannel.id === ch.id;
       const div = document.createElement('div');
       div.className = 'tv-card' + (isPlaying ? ' now-playing' : '');
-      div.style.animationDelay = `${(i % 20) * 0.04}s`; // Staggered animation
+      div.style.animationDelay = `${(i % 20) * 0.04}s`;
       div.innerHTML = `
         <div class="live-badge">LIVE</div>
         <div class="tv-thumb">${ch.emoji}</div>
@@ -1281,7 +1346,6 @@ function renderTV(letter = null) {
     });
   }
 
-  // Refresh the UI to highlight the active letter button
   buildAZFilter(); 
 }
 
@@ -1343,6 +1407,49 @@ function loadM3U(event) {
   event.target.value='';
 }
 
+async function fetchRemotePlaylist(url) {
+  showToast("Fetching channels...");
+  
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch playlist");
+    
+    const text = await response.text();
+    const lines = text.split('\n');
+    let name = 'Unknown Channel';
+    let added = 0;
+    
+    lines.forEach(line => {
+      line = line.trim();
+      
+      if (line.startsWith('#EXTINF')) {
+        const match = line.match(/,(.+)$/);
+        name = match ? match[1].trim() : 'Unknown Channel';
+      } 
+      else if (line && !line.startsWith('#')) {
+        customTVChannels.push({
+          id: 'imported_' + Date.now() + '_' + added,
+          name: name,
+          category: 'entertainment',
+          emoji: '📡',
+          url: line,
+          desc: 'Imported Web Channel'
+        });
+        added++;
+      }
+    });
+
+    tvChannels = [...TV_CHANNELS, ...customTVChannels];
+    saveData(); 
+    renderTV();
+    
+    showToast(`Successfully loaded ${added} channels!`);
+    
+  } catch (error) {
+    showToast("Failed to load playlist (CORS error or bad link).");
+  }
+}
+
 function moreLikeThis() {
   if (!currentStation) { showToast('Play a station first!'); return; }
   const tags = (currentStation.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
@@ -1353,7 +1460,7 @@ function moreLikeThis() {
   currentView=VIEW_SEARCH;
   document.getElementById('btnFav').classList.remove('btn-active');
   document.getElementById('btnHist').classList.remove('btn-active');
-  // Custom tag search
+  
   const grid=document.getElementById('stationGrid');
   grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Finding similar stations…</div>';
   const url=`${MIRRORS[mirrorIdx]}/stations/search?limit=40&hidebroken=true&order=clickcount&reverse=true&tag=${encodeURIComponent(tag)}`;
@@ -1427,12 +1534,15 @@ function openAlarmModal() {
   document.getElementById('alarmStatus').textContent='';
   document.getElementById('alarmModal').classList.add('open');
 }
+
 function closeAlarmModal() { document.getElementById('alarmModal').classList.remove('open'); }
+
 function cancelAlarm() {
   clearTimeout(alarmTimeout); alarmTimeout=null;
   document.getElementById('alarmStatus').textContent='Alarm cleared.';
   showToast('Alarm cleared');
 }
+
 function setAlarm() {
   if (!alarmStation) { document.getElementById('alarmStatus').textContent='⚠ Select a station first!'; return; }
   const t=document.getElementById('alarmTime').value;
@@ -1460,6 +1570,7 @@ function openWheel() {
   drawWheel(pool.slice(0,12));
   document.getElementById('wheelModal').classList.add('open');
 }
+
 function closeWheel() { document.getElementById('wheelModal').classList.remove('open'); }
 
 function drawWheel(stations) {
@@ -1541,79 +1652,191 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
 
-async function fetchRemotePlaylist(url) {
-  showToast("Fetching channels...");
+async function searchPodcasts() {
+  const term = document.getElementById('podcastSearch').value;
+  if (!term) return;
+  const grid = document.getElementById('podcastGrid');
+  grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Searching iTunes…</div>';
   
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch playlist");
+    const itunesUrl = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20`;
     
-    const text = await response.text();
-    const lines = text.split('\n');
-    let name = 'Unknown Channel';
-    let added = 0;
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(itunesUrl)}`);
+    const proxyData = await res.json();
+
+    const data = JSON.parse(proxyData.contents);
     
-    lines.forEach(line => {
-      line = line.trim();
+    grid.innerHTML = '';
+    if (!data.results || data.results.length === 0) { 
+      grid.innerHTML = '<div class="message-box">No podcasts found.</div>'; 
+      return; 
+    }
+    
+    data.results.forEach(pod => {
+      const div = document.createElement('div');
+      div.className = 'station-card';
+      const img = pod.artworkUrl600 || pod.artworkUrl100 || 'https://cdn-icons-png.flaticon.com/512/3043/3043564.png';
       
-      if (line.startsWith('#EXTINF')) {
-        const match = line.match(/,(.+)$/);
-        name = match ? match[1].trim() : 'Unknown Channel';
-      } 
-      else if (line && !line.startsWith('#')) {
-        customTVChannels.push({
-          id: 'imported_' + Date.now() + '_' + added,
-          name: name,
-          category: 'entertainment', // Defaulting them to entertainment
-          emoji: '📡',
-          url: line,
-          desc: 'Imported Web Channel'
-        });
-        added++;
-      }
+      div.innerHTML = `
+        <img src="${img}" class="station-img">
+        <div class="station-name">${esc(pod.collectionName)}</div>
+        <div class="station-tags">${esc(pod.artistName)}</div>
+      `;
+
+      div.onclick = () => {
+        if (pod.feedUrl) {
+          playLatestPodcast(pod.feedUrl, pod.collectionName, img);
+        } else {
+          showToast("RSS feed unavailable for this podcast.");
+        }
+      };
+      
+      grid.appendChild(div);
     });
-
-    tvChannels = [...TV_CHANNELS, ...customTVChannels];
-    saveData(); 
-    renderTV();
-    
-    showToast(`Successfully loaded ${added} channels!`);
-    
-  } catch (error) {
-    console.error("M3U Fetch Error:", error);
-    showToast("Failed to load playlist (CORS error or bad link).");
+  } catch (err) { 
+    console.error("Podcast Search Error:", err);
+    grid.innerHTML = '<div class="message-box">Error fetching podcasts.</div>'; 
   }
 }
 
-let currentLetterFilter = 'A';
+async function playLatestPodcast(rssUrl, name, img) {
+  showToast("Fetching latest episode...");
+  try {
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+    const data = await res.json();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data.contents, "text/xml");
+    
+    const enclosure = xml.querySelector('enclosure');
+    if (enclosure && enclosure.getAttribute('url')) {
+      const title = xml.querySelector('item title').textContent;
+      playStation({
+        stationuuid: 'pod_' + Date.now(),
+        name: name + ': ' + title,
+        url: enclosure.getAttribute('url'),
+        favicon: img,
+        tags: 'Podcast'
+      });
+    } else {
+      showToast("No playable audio found in feed.");
+    }
+  } catch (err) { showToast("Failed to parse podcast feed."); }
+}
 
-function buildAZFilter() {
-  const azContainer = document.getElementById('azFilter');
-  if (!azContainer) return;
-  azContainer.innerHTML = ''; // Clear it out
+async function searchArchiveMusic() {
+  const term = document.getElementById('musicSearch').value;
+  if (!term) return;
+  const grid = document.getElementById('musicGrid');
+  grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Searching Archive.org…</div>';
   
-  const allBtn = document.createElement('button');
-  allBtn.className = 'tab' + (currentLetterFilter === '' ? ' active' : '');
-  allBtn.textContent = 'All';
-  allBtn.onclick = () => renderTV('');
-  azContainer.appendChild(allBtn);
-
-  const numBtn = document.createElement('button');
-  numBtn.className = 'tab' + (currentLetterFilter === '#' ? ' active' : '');
-  numBtn.textContent = '#';
-  numBtn.onclick = () => renderTV('#');
-  azContainer.appendChild(numBtn);
-
-  for (let i = 65; i <= 90; i++) {
-    const letter = String.fromCharCode(i);
-    const btn = document.createElement('button');
-    btn.className = 'tab' + (currentLetterFilter === letter ? ' active' : '');
-    btn.textContent = letter;
-    btn.onclick = () => renderTV(letter);
-    azContainer.appendChild(btn);
-  }
+  try {
+    const url = `https://archive.org/advancedsearch.php?q=mediatype:audio AND title:${encodeURIComponent(term)}&fl[]=identifier,title,creator&output=json&rows=20`;
+    const res = await fetch(url);
+    const data = await res.json();
+    
+    grid.innerHTML = '';
+    const docs = data.response.docs;
+    if (docs.length === 0) { grid.innerHTML = '<div class="message-box">No music found.</div>'; return; }
+    
+    docs.forEach(track => {
+      const div = document.createElement('div');
+      div.className = 'station-card';
+      div.innerHTML = `
+        <div style="font-size: 2.5rem; margin-bottom: 12px;">🎵</div>
+        <div class="station-name">${esc(track.title)}</div>
+        <div class="station-tags">${esc(track.creator || 'Unknown Artist')}</div>
+      `;
+      div.onclick = () => playArchiveTrack(track);
+      grid.appendChild(div);
+    });
+  } catch { grid.innerHTML = '<div class="message-box">Error fetching music.</div>'; }
 }
 
+async function playArchiveTrack(track) {
+  showToast("Locating MP3 file...");
+  try {
+    const res = await fetch(`https://archive.org/metadata/${track.identifier}`);
+    const meta = await res.json();
+    const mp3File = meta.files.find(f => f.name.endsWith('.mp3'));
+    
+    if (mp3File) {
+      playStation({
+        stationuuid: track.identifier,
+        name: track.title,
+        url: `https://archive.org/download/${track.identifier}/${mp3File.name}`,
+        favicon: 'https://cdn-icons-png.flaticon.com/512/26/26805.png',
+        tags: track.creator
+      });
+    } else {
+      showToast("No MP3 available for this track.");
+    }
+  } catch { showToast("Failed to load track."); }
+}
+
+const LOFI_STREAMS = [
+  { id: 'lofi_girl', name: 'LoFi Girl', tags: 'Beats to relax/study to', favicon: '🎧', url: 'https://play.streamafrica.net/lofi/stream' },
+  { id: 'chill_sky', name: 'Chill Sky', tags: 'Ambient & Chillout', favicon: '🌌', url: 'https://lfwa.streamguys1.com/lfwa.aac' },
+  { id: 'nightwave', name: 'Nightwave Plaza', tags: 'Vaporwave', favicon: '🌴', url: 'https://radio.plaza.one/mp3' },
+  { id: 'somafm_drone', name: 'Drone Zone', tags: 'Atmospheric Space', favicon: '🛰️', url: 'https://ice1.somafm.com/dronezone-128-mp3' }
+];
+
+function renderLofi() {
+  const grid = document.getElementById('lofiGrid');
+  grid.innerHTML = '';
+  LOFI_STREAMS.forEach(stream => {
+    const div = document.createElement('div');
+    div.className = 'station-card';
+    div.innerHTML = `
+      <div style="font-size: 2.5rem; margin-bottom: 12px;">${stream.favicon}</div>
+      <div class="station-name">${esc(stream.name)}</div>
+      <div class="station-tags">${esc(stream.tags)}</div>
+    `;
+    div.onclick = () => playStation(stream);
+    grid.appendChild(div);
+  });
+}
+
+const dropZone = document.getElementById('dropZone');
+if(dropZone) {
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent)'; });
+  dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'var(--border)');
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = 'var(--border)';
+    handleLocalFiles({ target: { files: e.dataTransfer.files } });
+  });
+}
+
+function handleLocalFiles(event) {
+  const files = Array.from(event.target.files).filter(f => f.type.startsWith('audio/') || f.name.endsWith('.mp3'));
+  if (files.length === 0) return;
+  
+  const grid = document.getElementById('localFileList');
+  
+  files.forEach(file => {
+    const localUrl = URL.createObjectURL(file);
+    const div = document.createElement('div');
+    div.className = 'station-card';
+    div.innerHTML = `
+      <div style="font-size: 2.5rem; margin-bottom: 12px;">📀</div>
+      <div class="station-name">${esc(file.name.replace('.mp3', ''))}</div>
+      <div class="station-tags">Local File</div>
+    `;
+    
+    div.onclick = () => {
+      playStation({
+        stationuuid: 'local_' + Date.now(),
+        name: file.name.replace('.mp3', ''),
+        url: localUrl,
+        favicon: '',
+        tags: 'Local MP3'
+      });
+    };
+    grid.appendChild(div);
+  });
+  
+  showToast(`Added ${files.length} local files.`);
+}
 </script>
 </body>
 </html>
