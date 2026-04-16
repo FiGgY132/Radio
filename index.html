@@ -1652,91 +1652,92 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
 
-async function searchPodcasts() {
+function searchPodcasts() {
   const term = document.getElementById('podcastSearch').value;
   if (!term) return;
+  
   const grid = document.getElementById('podcastGrid');
-  grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Searching iTunes…</div>';
+  grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Connecting to Apple…</div>';
 
-  try {
-    const itunesUrl = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20`;
-    let data = null;
+  const callbackName = 'itunes_cb_' + Date.now();
 
-    try {
-      const res1 = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(itunesUrl)}`);
-      if (res1.ok) data = await res1.json();
-    } catch (e) { 
-      console.warn("Proxy 1 failed, trying fallback..."); 
-    }
-
-    if (!data) {
-      const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(itunesUrl)}`);
-      if (res2.ok) {
-        const proxyData = await res2.json();
-        try { 
-          data = JSON.parse(proxyData.contents); 
-        } catch (e) { 
-          console.warn("Proxy 2 returned HTML/Rate-limit instead of JSON."); 
-        }
-      }
-    }
-
-    if (!data) throw new Error("All proxies blocked. Please disable shields/adblockers for this site.");
-
+  window[callbackName] = function(data) {
     grid.innerHTML = '';
-    if (!data.results || data.results.length === 0) {
-      grid.innerHTML = '<div class="message-box">No podcasts found.</div>';
-      return;
+    
+    if (!data.results || data.results.length === 0) { 
+      grid.innerHTML = '<div class="message-box">No podcasts found.</div>'; 
+      cleanup(); return; 
     }
-
+    
     data.results.forEach(pod => {
       const div = document.createElement('div');
       div.className = 'station-card';
       const img = pod.artworkUrl600 || pod.artworkUrl100 || 'https://cdn-icons-png.flaticon.com/512/3043/3043564.png';
-
+      
       div.innerHTML = `
         <img src="${img}" class="station-img">
         <div class="station-name">${esc(pod.collectionName)}</div>
         <div class="station-tags">${esc(pod.artistName)}</div>
       `;
-
+      
       div.onclick = () => {
         if (pod.feedUrl) playLatestPodcast(pod.feedUrl, pod.collectionName, img);
         else showToast("RSS feed unavailable for this podcast.");
       };
-
+      
       grid.appendChild(div);
     });
-  } catch (err) {
-    console.error("Podcast Search Error:", err);
-    grid.innerHTML = `<div class="message-box" style="color: var(--danger)">Search Failed: ${err.message}</div>`;
+    
+    cleanup();
+  };
+
+  function cleanup() {
+    delete window[callbackName];
+    const scriptTag = document.getElementById(callbackName);
+    if (scriptTag) scriptTag.remove();
   }
+
+  const script = document.createElement('script');
+  script.id = callbackName;
+  script.src = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${callbackName}&_t=${Date.now()}`;
+  
+  script.onerror = () => {
+    grid.innerHTML = '<div class="message-box" style="color: var(--danger)">Connection blocked. Please check your ad-blocker.</div>';
+    cleanup();
+  };
+  
+  document.body.appendChild(script);
 }
 
 async function playLatestPodcast(rssUrl, name, img) {
   showToast("Fetching latest episode...");
+  const grid = document.getElementById('podcastGrid');
+  
   try {
-    let textData = null;
+    const proxies = [
+      `https://api.allorigins.win/raw?url=`,
+      `https://corsproxy.io/?`,
+      `https://api.codetabs.com/v1/proxy?quest=`
+    ];
 
-    try {
-      const res1 = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`);
-      if (res1.ok) textData = await res1.text();
-    } catch (e) { 
-      console.warn("Proxy 1 failed for RSS"); 
-    }
-
-    if (!textData) {
-      const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-      if (res2.ok) {
-        const proxyData = await res2.json();
-        if (proxyData.contents) textData = proxyData.contents;
+    let xmlText = null;
+    
+    for (let proxy of proxies) {
+      try {
+        const res = await fetch(proxy + encodeURIComponent(rssUrl));
+        if (res.ok) {
+          xmlText = await res.text();
+          break; // Success! Exit the loop.
+        }
+      } catch (e) {
+        console.warn(`Proxy failed: ${proxy}, trying next...`);
       }
     }
 
-    if (!textData) throw new Error("Feed blocked by proxies.");
+    if (!xmlText) throw new Error("All proxy servers are currently unreachable.");
 
     const parser = new DOMParser();
-    const xml = parser.parseFromString(textData, "text/xml");
+    const xml = parser.parseFromString(xmlText, "text/xml");
 
     const enclosure = xml.querySelector('enclosure');
     if (enclosure && enclosure.getAttribute('url')) {
@@ -1755,7 +1756,7 @@ async function playLatestPodcast(rssUrl, name, img) {
     }
   } catch (err) {
     console.error("RSS Feed Error:", err);
-    showToast("Failed to parse podcast feed.");
+    showToast("Failed to connect to podcast feed.");
   }
 }
 async function searchArchiveMusic() {
