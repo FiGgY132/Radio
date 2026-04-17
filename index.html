@@ -1777,16 +1777,15 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
       cleanup();
       return;
     }
-
-    // Build the list
-    data.items.forEach(item => {
+	
+	const episodes = data.items.slice(0, 50);
+    episodes.forEach(item => {
       if (!item.enclosure || !item.enclosure.link) return;
 
       const title = item.title || 'Untitled Episode';
       
       let dateStr = '';
       if (item.pubDate) {
-        // Safe cross-browser date parsing
         const d = new Date(item.pubDate.replace(/-/g, '/')); 
         if (!isNaN(d)) dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
       }
