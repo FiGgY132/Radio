@@ -1852,6 +1852,11 @@ function loadPodcastEpisodes(collectionId, podcastName, img) {
   document.body.appendChild(script);
 }
 
+function closeEpisodeModal() {
+  document.getElementById('episodeModal').classList.remove('open');
+  document.getElementById('episodeList').innerHTML = '';
+}
+
 async function searchArchiveMusic() {
   const term = document.getElementById('musicSearch').value;
   if (!term) return;
