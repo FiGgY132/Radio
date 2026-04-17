@@ -704,6 +704,7 @@ main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     <div class="player-controls">
       <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
+	  <button class="icon-btn" onclick="stopPlayback()" title="Stop">⏹️</button>
       <div class="vol-group">
         <input type="range" id="volSlider" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
       </div>
@@ -1970,6 +1971,35 @@ function handleLocalFiles(event) {
   });
   
   showToast(`Added ${files.length} local files.`);
+}
+
+function stopPlayback() {
+  if (currentHls) { 
+    currentHls.destroy(); 
+    currentHls = null; 
+  }
+
+  audioCORS.pause();
+  audioCORS.removeAttribute('src'); // Completely detaches the stream
+  audioCORS.load();
+  
+  audioFallback.pause();
+  audioFallback.removeAttribute('src');
+  audioFallback.load();
+
+  document.getElementById('visualizerCanvas').classList.remove('active');
+  if (metaPollInterval) { 
+    clearInterval(metaPollInterval); 
+    metaPollInterval = null; 
+  }
+
+  document.getElementById('pStatus').textContent = 'Stopped';
+  document.getElementById('playerArt').classList.remove('playing');
+  document.getElementById('nowPlayingBar').style.display = 'none';
+
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.playbackState = 'none';
+  }
 }
 </script>
 </body>
