@@ -1725,9 +1725,12 @@ function searchPodcasts(retryCount = 0) {
       `;
       
 	div.onclick = () => {
-        if (pod.feedUrl) loadPodcastEpisodes(pod.feedUrl, pod.collectionName, img);
-        else showToast("RSS feed unavailable for this podcast.");
-      };
+        if (pod.collectionId) {
+          loadPodcastEpisodes(pod.collectionId, pod.collectionName, img);
+        } else {
+          showToast("Episodes unavailable for this podcast.");
+        }
+    };
       
       grid.appendChild(div);
     });
@@ -1757,69 +1760,42 @@ function searchPodcasts(retryCount = 0) {
   
   document.body.appendChild(script);
 }
-async function loadPodcastEpisodes(rssUrl, podcastName, img) {
+function loadPodcastEpisodes(collectionId, podcastName, img) {
   const modal = document.getElementById('episodeModal');
   const list = document.getElementById('episodeList');
 
   document.getElementById('epModalTitle').textContent = podcastName;
   document.getElementById('epModalImg').src = img;
-  
-  list.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Fetching full episode list...</div>';
+
+  list.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Loading from Apple...</div>';
   modal.classList.add('open');
 
-  try {
-    const bustedRssUrl = rssUrl + (rssUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-    const encodedUrl = encodeURIComponent(bustedRssUrl);
-    const proxies = [
-      `https://api.allorigins.win/get?url=${encodedUrl}`,
-      `https://corsproxy.io/?${encodedUrl}`,
-      `https://api.codetabs.com/v1/proxy?quest=${encodedUrl}`
-    ];
+  const callbackName = 'episodes_cb_' + Date.now();
 
-    let xmlText = null;
-
-    for (let proxy of proxies) {
-      try {
-        const res = await fetch(proxy);
-        if (res.ok) {
-          if (proxy.includes('allorigins')) {
-            const json = await res.json();
-            xmlText = json.contents;
-          } else {
-            // Otherwise, it's raw XML text
-            xmlText = await res.text();
-          }
-
-          if (xmlText && xmlText.includes('<rss')) break; 
-        }
-      } catch (e) { 
-        console.warn(`Proxy ${proxy} failed, trying next...`); 
-      }
-    }
-
-    if (!xmlText || !xmlText.includes('<rss')) throw new Error("Could not fetch a valid RSS feed.");
-
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(xmlText, "text/xml");
-    
-    const items = Array.from(xml.querySelectorAll('item')).slice(0, 100);
-
+  window[callbackName] = function(data) {
     list.innerHTML = '';
-    if (items.length === 0) {
+
+    if (!data.results || data.results.length <= 1) {
       list.innerHTML = '<div class="message-box">No episodes found.</div>';
+      cleanup();
       return;
     }
-    items.forEach(item => {
-      const enclosure = item.querySelector('enclosure');
-      if (!enclosure || !enclosure.getAttribute('url')) return;
 
-      const titleNode = item.querySelector('title');
-      const title = titleNode ? titleNode.textContent : 'Untitled Episode';
+    const episodes = data.results.filter(item => item.wrapperType === 'podcastEpisode');
+
+    if (episodes.length === 0) {
+      list.innerHTML = '<div class="message-box">No playable episodes available.</div>';
+      cleanup(); return;
+    }
+
+    episodes.forEach(ep => {
+      if (!ep.episodeUrl) return;
+
+      const title = ep.trackName || 'Untitled Episode';
       
-      const pubDateNode = item.querySelector('pubDate');
       let dateStr = '';
-      if (pubDateNode) {
-        const d = new Date(pubDateNode.textContent);
+      if (ep.releaseDate) {
+        const d = new Date(ep.releaseDate);
         if (!isNaN(d)) dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
       }
 
@@ -1829,12 +1805,12 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
         <div class="ep-title">${esc(title)}</div>
         <div class="ep-date">${esc(dateStr)}</div>
       `;
-      
+
       row.onclick = () => {
         playStation({
-          stationuuid: 'pod_' + Date.now(),
+          stationuuid: 'pod_ep_' + ep.trackId,
           name: podcastName + ': ' + title,
-          url: enclosure.getAttribute('url'),
+          url: ep.episodeUrl,
           favicon: img,
           tags: 'Podcast'
         });
@@ -1844,23 +1820,38 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
       list.appendChild(row);
     });
 
-  } catch (err) {
-    console.error("RSS Error:", err);
-    
+    cleanup();
+  };
+
+  function cleanup() {
+    delete window[callbackName];
+    const scriptTag = document.getElementById(callbackName);
+    if (scriptTag) scriptTag.remove();
+  }
+
+  const script = document.createElement('script');
+  script.id = callbackName;
+  script.src = `https://itunes.apple.com/lookup?id=${collectionId}&entity=podcastEpisode&limit=100&callback=${callbackName}`;
+  
+  script.onerror = () => {
+    cleanup();
     list.innerHTML = `
       <div class="message-box" id="epErrorBox" style="color:var(--danger)">
-        <p>Failed to load episodes. Proxies might be busy.</p>
+        <p>Apple servers blocked the request.</p>
       </div>
     `;
-    
+
     const retryBtn = document.createElement('button');
     retryBtn.style.cssText = "margin-top: 15px; padding: 8px 24px; font-size: 0.9rem;";
     retryBtn.innerHTML = "🔄 Try Again";
-    retryBtn.onclick = () => loadPodcastEpisodes(rssUrl, podcastName, img);
+    retryBtn.onclick = () => loadPodcastEpisodes(collectionId, podcastName, img);
     
     document.getElementById('epErrorBox').appendChild(retryBtn);
-  }
+  };
+  
+  document.body.appendChild(script);
 }
+
 async function searchArchiveMusic() {
   const term = document.getElementById('musicSearch').value;
   if (!term) return;
