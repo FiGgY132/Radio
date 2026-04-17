@@ -1760,6 +1760,7 @@ function searchPodcasts(retryCount = 0) {
 async function loadPodcastEpisodes(rssUrl, podcastName, img) {
   const modal = document.getElementById('episodeModal');
   const list = document.getElementById('episodeList');
+
   document.getElementById('epModalTitle').textContent = podcastName;
   document.getElementById('epModalImg').src = img;
 
@@ -1767,6 +1768,8 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
   modal.classList.add('open');
 
   try {
+    const bustedRssUrl = rssUrl + (rssUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+
     const proxies = [
       `https://api.allorigins.win/raw?url=`,
       `https://corsproxy.io/?`,
@@ -1776,7 +1779,7 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
     let xmlText = null;
     for (let proxy of proxies) {
       try {
-        const res = await fetch(proxy + encodeURIComponent(rssUrl));
+        const res = await fetch(proxy + encodeURIComponent(bustedRssUrl));
         if (res.ok) { xmlText = await res.text(); break; }
       } catch (e) { console.warn("Proxy failed, trying next..."); }
     }
@@ -1796,7 +1799,6 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
 
     items.forEach(item => {
       const enclosure = item.querySelector('enclosure');
-      // Skip if there's no playable audio file
       if (!enclosure || !enclosure.getAttribute('url')) return;
 
       const titleNode = item.querySelector('title');
@@ -1815,7 +1817,7 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
         <div class="ep-title">${esc(title)}</div>
         <div class="ep-date">${esc(dateStr)}</div>
       `;
-      
+
       row.onclick = () => {
         playStation({
           stationuuid: 'pod_' + Date.now(),
@@ -1832,13 +1834,25 @@ async function loadPodcastEpisodes(rssUrl, podcastName, img) {
 
   } catch (err) {
     console.error("RSS Error:", err);
-    list.innerHTML = '<div class="message-box" style="color:var(--danger)">Failed to load episodes. The server might be blocking proxies.</div>';
+
+    list.innerHTML = `
+      <div class="message-box" id="epErrorBox" style="color:var(--danger)">
+        <p>Failed to load episodes. Proxies might be busy.</p>
+      </div>
+    `;
+
+    const retryBtn = document.createElement('button');
+    retryBtn.style.cssText = "margin-top: 15px; padding: 8px 24px; font-size: 0.9rem;";
+    retryBtn.innerHTML = "🔄 Try Again";
+    retryBtn.onclick = () => loadPodcastEpisodes(rssUrl, podcastName, img);
+    
+    document.getElementById('epErrorBox').appendChild(retryBtn);
   }
 }
 
 function closeEpisodeModal() {
   document.getElementById('episodeModal').classList.remove('open');
-  document.getElementById('episodeList').innerHTML = ''; // clear memory
+  document.getElementById('episodeList').innerHTML = '';
 }
 async function searchArchiveMusic() {
   const term = document.getElementById('musicSearch').value;
