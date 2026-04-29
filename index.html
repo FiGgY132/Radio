@@ -172,90 +172,90 @@ input[type="range"]{accent-color:var(--accent);cursor:pointer;}
 #globeCanvas:active{cursor:grabbing;}
 
 #globeHint{
-  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,0.1);
-  color:rgba(255,255,255,0.6);font-family:var(--font-mono);font-size:0.68rem;
-  padding:6px 16px;border-radius:20px;white-space:nowrap;
-  pointer-events:none;letter-spacing:0.04em;
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.6);font-family:var(--font-mono);font-size:0.68rem;
+  padding:6px 16px;border-radius:20px;white-space:nowrap;
+  pointer-events:none;letter-spacing:0.04em;
 }
 
 #globeCrosshair{
-  position:absolute;top:0;left:0;pointer-events:none;
-  width:20px;height:20px;transform:translate(-50%,-50%);
-  display:none;
+  position:absolute;top:0;left:0;pointer-events:none;
+  width:20px;height:20px;transform:translate(-50%,-50%);
+  display:none;
 }
 #globeCrosshair::before,#globeCrosshair::after{
-  content:'';position:absolute;background:var(--accent);border-radius:2px;
+  content:'';position:absolute;background:var(--accent);border-radius:2px;
 }
 #globeCrosshair::before{width:2px;height:100%;left:50%;transform:translateX(-50%);}
 #globeCrosshair::after{width:100%;height:2px;top:50%;transform:translateY(-50%);}
 
 #globeCountryLabel{
-  position:absolute;top:16px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
-  border:1px solid var(--accent);border-radius:12px;
-  padding:8px 20px;font-family:var(--font-display);font-weight:800;
-  font-size:1rem;color:var(--txt);
-  opacity:0;transition:opacity 0.3s;pointer-events:none;
-  white-space:nowrap;display:flex;align-items:center;gap:8px;
-  box-shadow:0 4px 20px rgba(0,229,160,0.15);
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  border:1px solid var(--accent);border-radius:12px;
+  padding:8px 20px;font-family:var(--font-display);font-weight:800;
+  font-size:1rem;color:var(--txt);
+  opacity:0;transition:opacity 0.3s;pointer-events:none;
+  white-space:nowrap;display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 20px rgba(0,229,160,0.15);
 }
 #globeCountryLabel.visible{opacity:1;}
 
 #globePanel{
-  width:300px;flex-shrink:0;
-  background:var(--player-bg);
-  border-left:1px solid var(--border);
-  display:flex;flex-direction:column;
-  overflow:hidden;
-  transition:width 0.3s;
+  width:300px;flex-shrink:0;
+  background:var(--player-bg);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:width 0.3s;
 }
 .globe-panel-header{
-  padding:16px 16px 10px;
-  border-bottom:1px solid var(--border);
-  font-weight:800;font-size:0.9rem;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;
+  padding:16px 16px 10px;
+  border-bottom:1px solid var(--border);
+  font-weight:800;font-size:0.9rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
 }
 #globeStationList{
-  flex:1;overflow-y:auto;padding:8px;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+  flex:1;overflow-y:auto;padding:8px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
 }
 #globeStationList::-webkit-scrollbar{width:4px;}
 #globeStationList::-webkit-scrollbar-track{background:transparent;}
 #globeStationList::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
 .globe-station-row{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 8px;border-radius:8px;cursor:pointer;
-  border:1px solid transparent;
-  transition:background 0.15s,border-color 0.15s;
-  animation:globeStationIn 0.3s ease-out backwards;
+  display:flex;align-items:center;gap:10px;
+  padding:9px 8px;border-radius:8px;cursor:pointer;
+  border:1px solid transparent;
+  transition:background 0.15s,border-color 0.15s;
+  animation:globeStationIn 0.3s ease-out backwards;
 }
 .globe-station-row:hover{background:var(--card-hover);border-color:var(--border);}
 .globe-station-row.now-playing{background:color-mix(in srgb,var(--accent) 10%,transparent);border-color:var(--accent);}
 .globe-station-avatar{
-  width:38px;height:38px;border-radius:50%;flex-shrink:0;
-  object-fit:cover;background:var(--bg2);
-  border:1px solid var(--border);
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  object-fit:cover;background:var(--bg2);
+  border:1px solid var(--border);
 }
 .globe-station-info{flex:1;overflow:hidden;}
 .globe-station-name{font-weight:700;font-size:0.83rem;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .globe-station-tags{font-size:0.65rem;color:var(--txt2);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .globe-play-btn{
-  flex-shrink:0;width:28px;height:28px;border-radius:50%;
-  border:1px solid var(--border);background:none;
-  color:var(--txt2);font-size:0.7rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.15s;
+  flex-shrink:0;width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--border);background:none;
+  color:var(--txt2);font-size:0.7rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
 }
 .globe-play-btn:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);}
 
 .globe-panel-state{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;padding:24px;text-align:center;gap:12px;
-  color:var(--txt2);font-family:var(--font-mono);font-size:0.82rem;line-height:1.6;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;padding:24px;text-align:center;gap:12px;
+  color:var(--txt2);font-family:var(--font-mono);font-size:0.82rem;line-height:1.6;
 }
 .globe-panel-state .big-emoji{font-size:3rem;margin-bottom:4px;}
 .globe-panel-state strong{color:var(--txt);font-family:var(--font-display);font-size:1rem;}
@@ -265,17 +265,17 @@ main::-webkit-scrollbar-track{background:transparent;}
 main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
 @media(max-width:660px){
-  header{padding:10px 14px;gap:8px;}
-  h1{font-size:1.1rem;}
-  .controls-row{gap:6px;}
-  main{padding:10px;}
-  #stationGrid,#tvGrid,#podcastGrid,#musicGrid,#lofiGrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
-  .player-bar{padding:10px 12px;}
-  #pName{max-width:130px;}
-  .eq-panel{display:none!important;}
-  #globeArea{flex-direction:column;}
-  #globeCanvasWrap{flex:none;height:50vw;min-height:220px;}
-  #globePanel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:40vh;}
+  header{padding:10px 14px;gap:8px;}
+  h1{font-size:1.1rem;}
+  .controls-row{gap:6px;}
+  main{padding:10px;}
+  #stationGrid,#tvGrid,#podcastGrid,#musicGrid,#lofiGrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+  .player-bar{padding:10px 12px;}
+  #pName{max-width:130px;}
+  .eq-panel{display:none!important;}
+  #globeArea{flex-direction:column;}
+  #globeCanvasWrap{flex:none;height:50vw;min-height:220px;}
+  #globePanel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:40vh;}
 }
 </style>
 </head>
@@ -283,241 +283,241 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 <div id="ambientBg"></div>
 
 <header>
-  <div class="header-top">
-    <h1>📻 Global Radio<span class="logo-dot">.</span></h1>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <div class="tab-bar">
-        <button class="tab active" id="tabRadio" onclick="switchTab('radio')">📻 Radio</button>
-        <button class="tab" id="tabTv" onclick="switchTab('tv')">📺 TV</button>
-        <button class="tab" id="tabPodcast" onclick="switchTab('podcast')">🎙️ Podcasts</button>
-        <button class="tab" id="tabMusic" onclick="switchTab('music')">🎵 Free Music</button>
-        <button class="tab" id="tabLofi" onclick="switchTab('lofi')">☕ Lo-Fi</button>
-        <button class="tab" id="tabLocal" onclick="switchTab('local')">📁 Local MP3</button>
-        <button class="tab" id="tabGlobe" onclick="switchTab('globe')">🌍 Globe</button>
-      </div>
-      <div class="theme-btns" title="Switch Theme">
-        <div class="theme-dot active" data-t="cosmos" onclick="setTheme('cosmos')"></div>
-        <div class="theme-dot" data-t="synthwave" onclick="setTheme('synthwave')"></div>
-        <div class="theme-dot" data-t="crt" onclick="setTheme('crt')"></div>
-        <div class="theme-dot" data-t="arctic" onclick="setTheme('arctic')"></div>
-      </div>
-    </div>
-  </div>
+  <div class="header-top">
+    <h1>📻 Global Radio<span class="logo-dot">.</span></h1>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div class="tab-bar">
+        <button class="tab active" id="tabRadio" onclick="switchTab('radio')">📻 Radio</button>
+        <button class="tab" id="tabTv" onclick="switchTab('tv')">📺 TV</button>
+        <button class="tab" id="tabPodcast" onclick="switchTab('podcast')">🎙️ Podcasts</button>
+        <button class="tab" id="tabMusic" onclick="switchTab('music')">🎵 Free Music</button>
+        <button class="tab" id="tabLofi" onclick="switchTab('lofi')">☕ Lo-Fi</button>
+        <button class="tab" id="tabLocal" onclick="switchTab('local')">📁 Local MP3</button>
+        <button class="tab" id="tabGlobe" onclick="switchTab('globe')">🌍 Globe</button>
+      </div>
+      <div class="theme-btns" title="Switch Theme">
+        <div class="theme-dot active" data-t="cosmos" onclick="setTheme('cosmos')"></div>
+        <div class="theme-dot" data-t="synthwave" onclick="setTheme('synthwave')"></div>
+        <div class="theme-dot" data-t="crt" onclick="setTheme('crt')"></div>
+        <div class="theme-dot" data-t="arctic" onclick="setTheme('arctic')"></div>
+      </div>
+    </div>
+  </div>
 
-  <div class="controls-row" id="radioControls">
-    <input type="text" id="searchInput" placeholder="Search stations…" onkeyup="if(event.key==='Enter')startSearch()">
-    <select id="countrySelect"><option value="">Any Country</option></select>
-    <select id="genreSelect">
-      <option value="">Any Genre</option>
-      <option value="pop">Pop</option><option value="rock">Rock</option><option value="jazz">Jazz</option>
-      <option value="classical">Classical</option><option value="electronic">Electronic</option>
-      <option value="house">House</option><option value="hiphop">Hip-Hop</option>
-      <option value="news">News</option><option value="talk">Talk</option><option value="ambient">Ambient</option>
-    </select>
-    <button class="btn-primary" onclick="startSearch()">Find</button>
-    <button id="btnFav" onclick="toggleViewFavorites()">❤️ Saved</button>
-    <button id="btnHist" onclick="toggleViewHistory()">🕒 History</button>
-    <button onclick="openWheel()">🎡 Surprise</button>
-    <button onclick="exportFavorites()" title="Export">💾</button>
-    <button onclick="document.getElementById('importFile').click()" title="Import">📂</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importFavorites(event)">
-    <button onclick="openAlarmModal()" title="Alarm">⏰</button>
-  </div>
+  <div class="controls-row" id="radioControls">
+    <input type="text" id="searchInput" placeholder="Search stations…" onkeyup="if(event.key==='Enter')startSearch()">
+    <select id="countrySelect"><option value="">Any Country</option></select>
+    <select id="genreSelect">
+      <option value="">Any Genre</option>
+      <option value="pop">Pop</option><option value="rock">Rock</option><option value="jazz">Jazz</option>
+      <option value="classical">Classical</option><option value="electronic">Electronic</option>
+      <option value="house">House</option><option value="hiphop">Hip-Hop</option>
+      <option value="news">News</option><option value="talk">Talk</option><option value="ambient">Ambient</option>
+    </select>
+    <button class="btn-primary" onclick="startSearch()">Find</button>
+    <button id="btnFav" onclick="toggleViewFavorites()">❤️ Saved</button>
+    <button id="btnHist" onclick="toggleViewHistory()">🕒 History</button>
+    <button onclick="openWheel()">🎡 Surprise</button>
+    <button onclick="exportFavorites()" title="Export">💾</button>
+    <button onclick="document.getElementById('importFile').click()" title="Import">📂</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importFavorites(event)">
+    <button onclick="openAlarmModal()" title="Alarm">⏰</button>
+  </div>
 
-  <div class="controls-row" id="tvControls" style="display:none;">
-    <input type="text" id="tvSearch" placeholder="Search channels…" oninput="renderTV()">
-    <select id="tvCatFilter" onchange="renderTV()">
-      <option value="">All Categories</option>
-      <option value="news">News</option>
-      <option value="entertainment">Entertainment</option>
-      <option value="science">Science & Space</option>
-      <option value="music">Music</option>
-    </select>
-    <button onclick="document.getElementById('m3uFile').click()">📂 Load M3U</button>
-    <input type="file" id="m3uFile" accept=".m3u,.m3u8" style="display:none" onchange="loadM3U(event)">
-    <button onclick="fetchRemotePlaylist('https://iptv-org.github.io/iptv/languages/eng.m3u')">🌐 Load English Web TV</button>
-  </div>
+  <div class="controls-row" id="tvControls" style="display:none;">
+    <input type="text" id="tvSearch" placeholder="Search channels…" oninput="renderTV()">
+    <select id="tvCatFilter" onchange="renderTV()">
+      <option value="">All Categories</option>
+      <option value="news">News</option>
+      <option value="entertainment">Entertainment</option>
+      <option value="science">Science & Space</option>
+      <option value="music">Music</option>
+    </select>
+    <button onclick="document.getElementById('m3uFile').click()">📂 Load M3U</button>
+    <input type="file" id="m3uFile" accept=".m3u,.m3u8" style="display:none" onchange="loadM3U(event)">
+    <button onclick="fetchRemotePlaylist('https://iptv-org.github.io/iptv/languages/eng.m3u')">🌐 Load English Web TV</button>
+  </div>
 
-  <div class="controls-row" id="podcastControls" style="display:none;">
-    <input type="text" id="podcastSearch" placeholder="Search podcasts (via iTunes)…" onkeyup="if(event.key==='Enter')searchPodcasts()">
-    <button class="btn-primary" onclick="searchPodcasts()">Find</button>
-  </div>
+  <div class="controls-row" id="podcastControls" style="display:none;">
+    <input type="text" id="podcastSearch" placeholder="Search podcasts (via iTunes)…" onkeyup="if(event.key==='Enter')searchPodcasts()">
+    <button class="btn-primary" onclick="searchPodcasts()">Find</button>
+  </div>
 
-  <div class="controls-row" id="musicControls" style="display:none;">
-    <input type="text" id="musicSearch" placeholder="Search Internet Archive…" onkeyup="if(event.key==='Enter')searchArchiveMusic()">
-    <button class="btn-primary" onclick="searchArchiveMusic()">Find</button>
-  </div>
+  <div class="controls-row" id="musicControls" style="display:none;">
+    <input type="text" id="musicSearch" placeholder="Search Internet Archive…" onkeyup="if(event.key==='Enter')searchArchiveMusic()">
+    <button class="btn-primary" onclick="searchArchiveMusic()">Find</button>
+  </div>
 
-  <div class="controls-row" id="lofiControls" style="display:none;">
-    <span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--txt2);">Curated 24/7 Lo-Fi Streams</span>
-  </div>
+  <div class="controls-row" id="lofiControls" style="display:none;">
+    <span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--txt2);">Curated 24/7 Lo-Fi Streams</span>
+  </div>
 
-  <div class="controls-row" id="localControls" style="display:none;">
-    <button class="btn-primary" onclick="document.getElementById('localFileInput').click()">📂 Browse Files</button>
-    <input type="file" id="localFileInput" accept="audio/*" multiple style="display:none" onchange="handleLocalFiles(event)">
-  </div>
+  <div class="controls-row" id="localControls" style="display:none;">
+    <button class="btn-primary" onclick="document.getElementById('localFileInput').click()">📂 Browse Files</button>
+    <input type="file" id="localFileInput" accept="audio/*" multiple style="display:none" onchange="handleLocalFiles(event)">
+  </div>
 
-  <div class="controls-row" id="globeControls" style="display:none;">
-    <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--txt2);">
-      🖱 Drag to rotate &nbsp;·&nbsp; 🖱 Scroll to zoom &nbsp;·&nbsp; 👆 Tap country &nbsp;·&nbsp; ⌨ Arrow keys
-    </span>
-    <button onclick="globeResetView()" style="padding:6px 14px;font-size:0.75rem;">Reset View</button>
-    <button id="btnGlobeAutoRotate" onclick="toggleGlobeAutoRotate()" style="padding:6px 14px;font-size:0.75rem;" class="btn-active">⟳ Auto-rotate</button>
-  </div>
+  <div class="controls-row" id="globeControls" style="display:none;">
+    <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--txt2);">
+      🖱 Drag to rotate &nbsp;·&nbsp; 🖱 Scroll to zoom &nbsp;·&nbsp; 👆 Tap country &nbsp;·&nbsp; ⌨ Arrow keys
+    </span>
+    <button onclick="globeResetView()" style="padding:6px 14px;font-size:0.75rem;">Reset View</button>
+    <button id="btnGlobeAutoRotate" onclick="toggleGlobeAutoRotate()" style="padding:6px 14px;font-size:0.75rem;" class="btn-active">⟳ Auto-rotate</button>
+  </div>
 </header>
 
 <main id="mainArea">
-  <div id="azFilter" class="controls-row" style="display:none;justify-content:center;padding-bottom:12px;gap:4px;"></div>
+  <div id="azFilter" class="controls-row" style="display:none;justify-content:center;padding-bottom:12px;gap:4px;"></div>
 
-  <div id="stationGrid" role="list">
-    <div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies…</div>
-  </div>
+  <div id="stationGrid" role="list">
+    <div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies…</div>
+  </div>
 
-  <div id="tvGrid" role="list" style="display:none;"></div>
+  <div id="tvGrid" role="list" style="display:none;"></div>
 
-  <div id="podcastGrid" role="list" style="display:none;"></div>
+  <div id="podcastGrid" role="list" style="display:none;"></div>
 
-  <div id="musicGrid" role="list" style="display:none;"></div>
+  <div id="musicGrid" role="list" style="display:none;"></div>
 
-  <div id="lofiGrid" role="list" style="display:none;"></div>
+  <div id="lofiGrid" role="list" style="display:none;"></div>
 
-  <div id="localGrid" role="list" style="display:none;">
-    <div id="dropZone" class="message-box" style="border:2px dashed var(--border);padding:40px;border-radius:var(--card-radius);cursor:pointer;" onclick="document.getElementById('localFileInput').click()">
-      <h3>📁 Drag &amp; Drop MP3s Here</h3>
-      <p style="margin-top:10px;">Or click to browse your device</p>
-    </div>
-    <div id="localFileList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:20px;"></div>
-  </div>
+  <div id="localGrid" role="list" style="display:none;">
+    <div id="dropZone" class="message-box" style="border:2px dashed var(--border);padding:40px;border-radius:var(--card-radius);cursor:pointer;" onclick="document.getElementById('localFileInput').click()">
+      <h3>📁 Drag &amp; Drop MP3s Here</h3>
+      <p style="margin-top:10px;">Or click to browse your device</p>
+    </div>
+    <div id="localFileList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:20px;"></div>
+  </div>
 
-  <div id="globeArea">
-    <div id="globeCanvasWrap">
-      <canvas id="globeCanvas"></canvas>
-      <div id="globeHint">🖱 Drag · Scroll to zoom · Click any country</div>
-      <div id="globeCountryLabel">
-        <span id="globeCountryFlag"></span>
-        <span id="globeCountryName">Click a country</span>
-      </div>
-    </div>
+  <div id="globeArea">
+    <div id="globeCanvasWrap">
+      <canvas id="globeCanvas"></canvas>
+      <div id="globeHint">🖱 Drag · Scroll to zoom · Click any country</div>
+      <div id="globeCountryLabel">
+        <span id="globeCountryFlag"></span>
+        <span id="globeCountryName">Click a country</span>
+      </div>
+    </div>
 
-    <div id="globePanel">
-      <div class="globe-panel-header">
-        <span id="globePanelTitle">Stations</span>
-        <span id="globePanelCount" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--txt2);"></span>
-      </div>
-      <div id="globeStationList">
-        <div class="globe-panel-state">
-          <div class="big-emoji">🌍</div>
-          <strong>Explore by country</strong>
-          Click anywhere on the globe to browse radio stations from that country
-        </div>
-      </div>
-    </div>
-  </div>
+    <div id="globePanel">
+      <div class="globe-panel-header">
+        <span id="globePanelTitle">Stations</span>
+        <span id="globePanelCount" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--txt2);"></span>
+      </div>
+      <div id="globeStationList">
+        <div class="globe-panel-state">
+          <div class="big-emoji">🌍</div>
+          <strong>Explore by country</strong>
+          Click anywhere on the globe to browse radio stations from that country
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <div class="player-bar">
-  <div class="player-main-row">
-    <div class="player-info">
-      <div class="player-artwork-wrap">
-        <img id="playerArt" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" alt="Station art">
-        <div>
-          <div id="pName">Select a station</div>
-          <div class="player-status" id="pStatus">Ready</div>
-        </div>
-        </div>
-      <div class="now-playing-bar" id="nowPlayingBar" style="display:none">
-        <span class="now-playing-inner" id="nowPlayingInner"></span>
-      </div>
-    </div>
-    <canvas id="visualizerCanvas" width="180" height="22" aria-hidden="true"></canvas>
-    <div class="player-controls">
-      <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
-      <button class="icon-btn" onclick="stopPlayback()" title="Stop">⏹️</button>
-      <div class="vol-group">
-        <input type="range" id="volSlider" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
-      </div>
-      <button class="icon-btn" id="eqBtn" onclick="toggleEQ()" title="Equalizer">🎛️</button>
-      <div class="viz-modes">
-        <div class="viz-mode-btn active" data-viz="bars" onclick="setVizMode('bars')">▮▮▮</div>
-        <div class="viz-mode-btn" data-viz="wave" onclick="setVizMode('wave')">∿</div>
-        <div class="viz-mode-btn" data-viz="radial" onclick="setVizMode('radial')">◎</div>
-      </div>
-      <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
-      <button class="icon-btn" onclick="moreLikeThis()" title="More like this">🔍</button>
-      <select class="sleep-select" id="sleepSelect" onchange="setSleepTimer(this.value)">
-        <option value="0">💤 Off</option>
-        <option value="15">15 min</option><option value="30">30 min</option>
-        <option value="60">60 min</option><option value="90">90 min</option>
-      </select>
-    </div>
-  </div>
-  <div class="eq-panel" id="eqPanel">
-    <div class="eq-group">Bass <input type="range" id="eqBass" min="-15" max="15" value="0" oninput="updateEQ()"></div>
-    <div class="eq-group">Mid <input type="range" id="eqMid" min="-15" max="15" value="0" oninput="updateEQ()"></div>
-    <div class="eq-group">Treble <input type="range" id="eqTreble" min="-15" max="15" value="0" oninput="updateEQ()"></div>
-    <button class="eq-reset" onclick="resetEQ()">Reset</button>
-  </div>
-  <div style="display:none">
-    <audio id="audioPlayerCORS" crossorigin="anonymous" playsinline></audio>
-    <audio id="audioFallback" playsinline></audio>
-  </div>
+  <div class="player-main-row">
+    <div class="player-info">
+      <div class="player-artwork-wrap">
+        <img id="playerArt" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" alt="Station art">
+        <div>
+          <div id="pName">Select a station</div>
+          <div class="player-status" id="pStatus">Ready</div>
+        </div>
+        </div>
+      <div class="now-playing-bar" id="nowPlayingBar" style="display:none">
+        <span class="now-playing-inner" id="nowPlayingInner"></span>
+      </div>
+    </div>
+    <canvas id="visualizerCanvas" width="180" height="22" aria-hidden="true"></canvas>
+    <div class="player-controls">
+      <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
+      <button class="icon-btn" onclick="stopPlayback()" title="Stop">⏹️</button>
+      <div class="vol-group">
+        <input type="range" id="volSlider" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
+      </div>
+      <button class="icon-btn" id="eqBtn" onclick="toggleEQ()" title="Equalizer">🎛️</button>
+      <div class="viz-modes">
+        <div class="viz-mode-btn active" data-viz="bars" onclick="setVizMode('bars')">▮▮▮</div>
+        <div class="viz-mode-btn" data-viz="wave" onclick="setVizMode('wave')">∿</div>
+        <div class="viz-mode-btn" data-viz="radial" onclick="setVizMode('radial')">◎</div>
+      </div>
+      <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
+      <button class="icon-btn" onclick="moreLikeThis()" title="More like this">🔍</button>
+      <select class="sleep-select" id="sleepSelect" onchange="setSleepTimer(this.value)">
+        <option value="0">💤 Off</option>
+        <option value="15">15 min</option><option value="30">30 min</option>
+        <option value="60">60 min</option><option value="90">90 min</option>
+      </select>
+    </div>
+  </div>
+  <div class="eq-panel" id="eqPanel">
+    <div class="eq-group">Bass <input type="range" id="eqBass" min="-15" max="15" value="0" oninput="updateEQ()"></div>
+    <div class="eq-group">Mid <input type="range" id="eqMid" min="-15" max="15" value="0" oninput="updateEQ()"></div>
+    <div class="eq-group">Treble <input type="range" id="eqTreble" min="-15" max="15" value="0" oninput="updateEQ()"></div>
+    <button class="eq-reset" onclick="resetEQ()">Reset</button>
+  </div>
+  <div style="display:none">
+    <audio id="audioPlayerCORS" crossorigin="anonymous" playsinline></audio>
+    <audio id="audioFallback" playsinline></audio>
+  </div>
 </div>
 
 <div id="tvModal">
-  <div class="tv-modal-inner">
-    <div class="tv-modal-header">
-      <h3 id="tvModalName">—</h3>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span id="tvModalCat" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--txt2);"></span>
-        <button onclick="closeTVModal()" style="padding:6px 14px;">✕ Close</button>
-      </div>
-    </div>
-    <video id="tvVideo" controls autoplay playsinline></video>
-    <div class="tv-vol-row">🔊 <input type="range" id="tvVolSlider" min="0" max="1" step="0.01" value="1" oninput="document.getElementById('tvVideo').volume=this.value"> Volume</div>
-  </div>
+  <div class="tv-modal-inner">
+    <div class="tv-modal-header">
+      <h3 id="tvModalName">—</h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="tvModalCat" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--txt2);"></span>
+        <button onclick="closeTVModal()" style="padding:6px 14px;">✕ Close</button>
+      </div>
+    </div>
+    <video id="tvVideo" controls autoplay playsinline></video>
+    <div class="tv-vol-row">🔊 <input type="range" id="tvVolSlider" min="0" max="1" step="0.01" value="1" oninput="document.getElementById('tvVideo').volume=this.value"> Volume</div>
+  </div>
 </div>
 
 <div id="wheelModal">
-  <h2>🎡 Spin the Wheel!</h2>
-  <div class="wheel-wrapper">
-    <div class="wheel-pointer"></div>
-    <canvas id="wheelCanvas" width="600" height="600"></canvas>
-    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN</button>
-  </div>
-  <button class="close-wheel" onclick="closeWheel()">Close</button>
+  <h2>🎡 Spin the Wheel!</h2>
+  <div class="wheel-wrapper">
+    <div class="wheel-pointer"></div>
+    <canvas id="wheelCanvas" width="600" height="600"></canvas>
+    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN</button>
+  </div>
+  <button class="close-wheel" onclick="closeWheel()">Close</button>
 </div>
 
 <div id="alarmModal">
-  <div class="alarm-box">
-    <h3>⏰ Alarm Clock</h3>
-    <div class="alarm-row">
-      <span>Wake-up time:</span>
-      <input type="time" class="alarm-time-input" id="alarmTime">
-    </div>
-    <div class="alarm-row">
-      <span>Station:</span>
-      <span style="font-size:0.8rem;color:var(--txt);text-align:right;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="alarmStationName">— No station selected —</span>
-    </div>
-    <div id="alarmStatus"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button onclick="closeAlarmModal()">Cancel</button>
-      <button class="btn-primary" onclick="setAlarm()">Set Alarm</button>
-      <button onclick="cancelAlarm()" class="btn-danger">Clear</button>
-    </div>
-  </div>
+  <div class="alarm-box">
+    <h3>⏰ Alarm Clock</h3>
+    <div class="alarm-row">
+      <span>Wake-up time:</span>
+      <input type="time" class="alarm-time-input" id="alarmTime">
+    </div>
+    <div class="alarm-row">
+      <span>Station:</span>
+      <span style="font-size:0.8rem;color:var(--txt);text-align:right;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="alarmStationName">— No station selected —</span>
+    </div>
+    <div id="alarmStatus"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeAlarmModal()">Cancel</button>
+      <button class="btn-primary" onclick="setAlarm()">Set Alarm</button>
+      <button onclick="cancelAlarm()" class="btn-danger">Clear</button>
+    </div>
+  </div>
 </div>
 
 <div id="episodeModal">
-  <div class="episode-box">
-    <div class="tv-modal-header">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <img id="epModalImg" src="" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
-        <h3 id="epModalTitle" style="font-size:1.1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">Episodes</h3>
-      </div>
-      <button onclick="closeEpisodeModal()">✕ Close</button>
-    </div>
-    <div id="episodeList" class="episode-list"></div>
-  </div>
+  <div class="episode-box">
+    <div class="tv-modal-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img id="epModalImg" src="" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+        <h3 id="epModalTitle" style="font-size:1.1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">Episodes</h3>
+      </div>
+      <button onclick="closeEpisodeModal()">✕ Close</button>
+    </div>
+    <div id="episodeList" class="episode-list"></div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -543,274 +543,274 @@ const vizCanvas=document.getElementById('visualizerCanvas');
 const vizCtx=vizCanvas.getContext('2d');
 
 const TV_CHANNELS=[
-  {id:'cbs_news',name:'CBS News',category:'news',emoji:'📰',url:'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8',desc:'US & World News'},
-  {id:'abc_news',name:'ABC News Live',category:'news',emoji:'🗞️',url:'https://content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be.m3u8',desc:'US News'},
-  {id:'france24',name:'France 24 EN',category:'news',emoji:'🗺️',url:'https://static.france24.com/live/F24_EN_HI_HLS/live_web.m3u8',desc:'World News'},
-  {id:'aje',name:'Al Jazeera',category:'news',emoji:'📡',url:'https://live-hls-web-aje.getaj.net/AJE/index.m3u8',desc:'Global News'},
-  {id:'nhk',name:'NHK World Japan',category:'news',emoji:'🗼',url:'https://nhkwlive-ojp.akamaized.net/hls/live/2003459/nhkwlive-ojp-en/index.m3u8',desc:'News & Culture'},
-  {id:'dw_en',name:'DW English',category:'news',emoji:'🌍',url:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',desc:'International News'},
-  {id:'rt',name:'RT International',category:'news',emoji:'📺',url:'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8',desc:'News & Analysis'},
-  {id:'cgtn',name:'CGTN News',category:'news',emoji:'🌏',url:'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8',desc:'International News'},
-  {id:'nasa',name:'NASA TV',category:'science',emoji:'🚀',url:'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8',desc:'Space & Science'},
-  {id:'redbull',name:'Red Bull TV',category:'entertainment',emoji:'🛹',url:'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',desc:'Action Sports'},
-  {id:'monstercat',name:'Monstercat TV',category:'music',emoji:'🎧',url:'https://monstercat-monstercattv-1-us.plex.wurl.tv/playlist.m3u8',desc:'Electronic Music 24/7'}
+  {id:'cbs_news',name:'CBS News',category:'news',emoji:'📰',url:'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8',desc:'US & World News'},
+  {id:'abc_news',name:'ABC News Live',category:'news',emoji:'🗞️',url:'https://content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be.m3u8',desc:'US News'},
+  {id:'france24',name:'France 24 EN',category:'news',emoji:'🗺️',url:'https://static.france24.com/live/F24_EN_HI_HLS/live_web.m3u8',desc:'World News'},
+  {id:'aje',name:'Al Jazeera',category:'news',emoji:'📡',url:'https://live-hls-web-aje.getaj.net/AJE/index.m3u8',desc:'Global News'},
+  {id:'nhk',name:'NHK World Japan',category:'news',emoji:'🗼',url:'https://nhkwlive-ojp.akamaized.net/hls/live/2003459/nhkwlive-ojp-en/index.m3u8',desc:'News & Culture'},
+  {id:'dw_en',name:'DW English',category:'news',emoji:'🌍',url:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',desc:'International News'},
+  {id:'rt',name:'RT International',category:'news',emoji:'📺',url:'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8',desc:'News & Analysis'},
+  {id:'cgtn',name:'CGTN News',category:'news',emoji:'🌏',url:'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8',desc:'International News'},
+  {id:'nasa',name:'NASA TV',category:'science',emoji:'🚀',url:'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8',desc:'Space & Science'},
+  {id:'redbull',name:'Red Bull TV',category:'entertainment',emoji:'🛹',url:'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',desc:'Action Sports'},
+  {id:'monstercat',name:'Monstercat TV',category:'music',emoji:'🎧',url:'https://monstercat-monstercattv-1-us.plex.wurl.tv/playlist.m3u8',desc:'Electronic Music 24/7'}
 ];
 let tvChannels=[...TV_CHANNELS],customTVChannels=[];
 
 const LOFI_STREAMS=[
-  {id:'lofi_girl',name:'LoFi Girl',tags:'Beats to relax/study to',favicon:'🎧',url:'https://play.streamafrica.net/lofi/stream'},
-  {id:'chillsky',name:'Chill Sky',tags:'Lofi Hip Hop',favicon:'🌌',url:'https://lfhh.radioca.st/stream'},
-  {id:'box_lofi',name:'BOX Lofi',tags:'Chillhop & Sleep',favicon:'📦',url:'https://stream.zeno.fm/box-lofi-radio'},
-  {id:'lofi_instrumentals',name:'Boom Bap Lofi',tags:'Raw Hip Hop Instrumentals',favicon:'🎹',url:'https://stream.zeno.fm/hqbrk7skwxhvv'},
-  {id:'lofi_radio',name:'Lofi Radio',tags:'Focus & Study',favicon:'📚',url:'https://stream.zeno.fm/f3wvbbqmdg8uv'},
-  {id:'nightwave',name:'Nightwave Plaza',tags:'Vaporwave & Future Funk',favicon:'🌴',url:'https://radio.plaza.one/mp3'},
-  {id:'sovietwave',name:'Sovietwave Radio',tags:'Nostalgic Synthwave',favicon:'📻',url:'https://station.waveradio.org/soviet.mp3'},
-  {id:'synthwave',name:'Synthwave FM',tags:'80s Retro & Cyberpunk',favicon:'🚗',url:'https://uk7.internet-radio.com/proxy/darksynths?mp=/stream'},
-  {id:'somafm_groove',name:'Groove Salad',tags:'Ambient Downtempo',favicon:'🥗',url:'https://ice1.somafm.com/groovesalad-128-mp3'},
-  {id:'somafm_beat',name:'Beat Blender',tags:'Deep House & Chill',favicon:'🌀',url:'https://ice1.somafm.com/beatblender-128-mp3'},
-  {id:'somafm_drone',name:'Drone Zone',tags:'Atmospheric Space',favicon:'🛰️',url:'https://ice1.somafm.com/dronezone-128-mp3'},
-  {id:'somafm_mission',name:'Mission Control',tags:'Ambient with NASA Audio',favicon:'👨‍🚀',url:'https://ice1.somafm.com/missioncontrol-128-mp3'}
+  {id:'lofi_girl',name:'LoFi Girl',tags:'Beats to relax/study to',favicon:'🎧',url:'https://play.streamafrica.net/lofi/stream'},
+  {id:'chillsky',name:'Chill Sky',tags:'Lofi Hip Hop',favicon:'🌌',url:'https://lfhh.radioca.st/stream'},
+  {id:'box_lofi',name:'BOX Lofi',tags:'Chillhop & Sleep',favicon:'📦',url:'https://stream.zeno.fm/box-lofi-radio'},
+  {id:'lofi_instrumentals',name:'Boom Bap Lofi',tags:'Raw Hip Hop Instrumentals',favicon:'🎹',url:'https://stream.zeno.fm/hqbrk7skwxhvv'},
+  {id:'lofi_radio',name:'Lofi Radio',tags:'Focus & Study',favicon:'📚',url:'https://stream.zeno.fm/f3wvbbqmdg8uv'},
+  {id:'nightwave',name:'Nightwave Plaza',tags:'Vaporwave & Future Funk',favicon:'🌴',url:'https://radio.plaza.one/mp3'},
+  {id:'sovietwave',name:'Sovietwave Radio',tags:'Nostalgic Synthwave',favicon:'📻',url:'https://station.waveradio.org/soviet.mp3'},
+  {id:'synthwave',name:'Synthwave FM',tags:'80s Retro & Cyberpunk',favicon:'🚗',url:'https://uk7.internet-radio.com/proxy/darksynths?mp=/stream'},
+  {id:'somafm_groove',name:'Groove Salad',tags:'Ambient Downtempo',favicon:'🥗',url:'https://ice1.somafm.com/groovesalad-128-mp3'},
+  {id:'somafm_beat',name:'Beat Blender',tags:'Deep House & Chill',favicon:'🌀',url:'https://ice1.somafm.com/beatblender-128-mp3'},
+  {id:'somafm_drone',name:'Drone Zone',tags:'Atmospheric Space',favicon:'🛰️',url:'https://ice1.somafm.com/dronezone-128-mp3'},
+  {id:'somafm_mission',name:'Mission Control',tags:'Ambient with NASA Audio',favicon:'👨‍🚀',url:'https://ice1.somafm.com/missioncontrol-128-mp3'}
 ];
 
 const storage={
-  _m:{},
-  get(k){try{return localStorage.getItem(k);}catch{return this._m[k]??null;}},
-  set(k,v){try{localStorage.setItem(k,v);}catch{this._m[k]=v;}}
+  _m:{},
+  get(k){try{return localStorage.getItem(k);}catch{return this._m[k]??null;}},
+  set(k,v){try{localStorage.setItem(k,v);}catch{this._m[k]=v;}}
 };
 
 function loadData(){
-  try{favouriteList=JSON.parse(storage.get('radio_favs_v2'))||[];favouriteSet=new Set(favouriteList.map(s=>s.stationuuid));}catch{favouriteList=[];}
-  try{historyList=JSON.parse(storage.get('radio_history'))||[];}catch{historyList=[];}
-  try{ratingsMap=JSON.parse(storage.get('radio_ratings'))||{};}catch{ratingsMap={};}
-  try{const t=storage.get('radio_theme');if(t)setTheme(t,true);}catch{}
-  try{customTVChannels=JSON.parse(storage.get('tv_custom'))||[];tvChannels=[...TV_CHANNELS,...customTVChannels];}catch{}
+  try{favouriteList=JSON.parse(storage.get('radio_favs_v2'))||[];favouriteSet=new Set(favouriteList.map(s=>s.stationuuid));}catch{favouriteList=[];}
+  try{historyList=JSON.parse(storage.get('radio_history'))||[];}catch{historyList=[];}
+  try{ratingsMap=JSON.parse(storage.get('radio_ratings'))||{};}catch{ratingsMap={};}
+  try{const t=storage.get('radio_theme');if(t)setTheme(t,true);}catch{}
+  try{customTVChannels=JSON.parse(storage.get('tv_custom'))||[];tvChannels=[...TV_CHANNELS,...customTVChannels];}catch{}
 }
 function saveData(){
-  storage.set('radio_favs_v2',JSON.stringify(favouriteList));
-  storage.set('radio_history',JSON.stringify(historyList));
-  storage.set('radio_ratings',JSON.stringify(ratingsMap));
-  storage.set('tv_custom',JSON.stringify(customTVChannels));
+  storage.set('radio_favs_v2',JSON.stringify(favouriteList));
+  storage.set('radio_history',JSON.stringify(historyList));
+  storage.set('radio_ratings',JSON.stringify(ratingsMap));
+  storage.set('tv_custom',JSON.stringify(customTVChannels));
 }
 
 window.addEventListener('load',async()=>{
-  loadData();restoreVolume();
-  await loadCountries();
-  const hash=window.location.hash.substring(1);
-  if(hash){playFromHash(hash);}else{startSearch();}
-  setupAudioListeners();startVisualizer();renderTV();
-  setupLocalDrop();
+  loadData();restoreVolume();
+  await loadCountries();
+  const hash=window.location.hash.substring(1);
+  if(hash){playFromHash(hash);}else{startSearch();}
+  setupAudioListeners();startVisualizer();renderTV();
+  setupLocalDrop();
 });
 document.addEventListener('visibilitychange',()=>{document.hidden?stopVisualizer():startVisualizer();});
 
 function setTheme(t,silent=false){
-  document.documentElement.setAttribute('data-theme',t);
-  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.t===t));
-  if(!silent){storage.set('radio_theme',t);showToast('Theme: '+t.charAt(0).toUpperCase()+t.slice(1));}
+  document.documentElement.setAttribute('data-theme',t);
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.t===t));
+  if(!silent){storage.set('radio_theme',t);showToast('Theme: '+t.charAt(0).toUpperCase()+t.slice(1));}
 }
 
 function switchTab(tab){
-  currentTab=tab;
-  const allTabs=['radio','tv','podcast','music','lofi','local','globe'];
-  allTabs.forEach(t=>{
-    const btn=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
-    if(btn) btn.classList.toggle('active',t===tab);
-    const ctrl=document.getElementById(t+'Controls');
-    if(ctrl) ctrl.style.display=t===tab?'flex':'none';
-  });
+  currentTab=tab;
+  const allTabs=['radio','tv','podcast','music','lofi','local','globe'];
+  allTabs.forEach(t=>{
+    const btn=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(btn) btn.classList.toggle('active',t===tab);
+    const ctrl=document.getElementById(t+'Controls');
+    if(ctrl) ctrl.style.display=t===tab?'flex':'none';
+  });
 
-  const main=document.getElementById('mainArea');
-  main.classList.toggle('globe-active',tab==='globe');
+  const main=document.getElementById('mainArea');
+  main.classList.toggle('globe-active',tab==='globe');
 
-  document.getElementById('stationGrid').style.display=tab==='radio'?'grid':'none';
-  document.getElementById('tvGrid').style.display=tab==='tv'?'grid':'none';
-  document.getElementById('podcastGrid').style.display=tab==='podcast'?'grid':'none';
-  document.getElementById('musicGrid').style.display=tab==='music'?'grid':'none';
-  document.getElementById('lofiGrid').style.display=tab==='lofi'?'grid':'none';
-  document.getElementById('localGrid').style.display=tab==='local'?'block':'none';
-  document.getElementById('azFilter').style.display=tab==='tv'?'flex':'none';
+  document.getElementById('stationGrid').style.display=tab==='radio'?'grid':'none';
+  document.getElementById('tvGrid').style.display=tab==='tv'?'grid':'none';
+  document.getElementById('podcastGrid').style.display=tab==='podcast'?'grid':'none';
+  document.getElementById('musicGrid').style.display=tab==='music'?'grid':'none';
+  document.getElementById('lofiGrid').style.display=tab==='lofi'?'grid':'none';
+  document.getElementById('localGrid').style.display=tab==='local'?'block':'none';
+  document.getElementById('azFilter').style.display=tab==='tv'?'flex':'none';
 
-  const globeArea=document.getElementById('globeArea');
-  if(tab==='globe'){
-    globeArea.classList.add('visible');
-    if(!gState.initialized) initGlobe();
-    else if(gState.renderer) gState.renderer.setSize(
-      document.getElementById('globeCanvasWrap').clientWidth,
-      document.getElementById('globeCanvasWrap').clientHeight
-    );
-  } else {
-    globeArea.classList.remove('visible');
-  }
+  const globeArea=document.getElementById('globeArea');
+  if(tab==='globe'){
+    globeArea.classList.add('visible');
+    if(!gState.initialized) initGlobe();
+    else if(gState.renderer) gState.renderer.setSize(
+      document.getElementById('globeCanvasWrap').clientWidth,
+      document.getElementById('globeCanvasWrap').clientHeight
+    );
+  } else {
+    globeArea.classList.remove('visible');
+  }
 
-  if(tab==='lofi'&&document.getElementById('lofiGrid').innerHTML==='') renderLofi();
+  if(tab==='lofi'&&document.getElementById('lofiGrid').innerHTML==='') renderLofi();
 }
 
 function startSearch(){
-  if(currentView!==VIEW_SEARCH){
-    currentView=VIEW_SEARCH;
-    document.getElementById('btnFav').classList.remove('btn-active');
-    document.getElementById('btnHist').classList.remove('btn-active');
-  }
-  clearTimeout(searchDebounceTimer);
-  searchDebounceTimer=setTimeout(_executeSearch,280);
+  if(currentView!==VIEW_SEARCH){
+    currentView=VIEW_SEARCH;
+    document.getElementById('btnFav').classList.remove('btn-active');
+    document.getElementById('btnHist').classList.remove('btn-active');
+  }
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer=setTimeout(_executeSearch,280);
 }
 async function _executeSearch(){
-  if(searchController)searchController.abort();
-  searchController=new AbortController();
-  const grid=document.getElementById('stationGrid');
-  grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies…</div>';
-  const term=document.getElementById('searchInput').value.trim();
-  const country=document.getElementById('countrySelect').value;
-  const genre=document.getElementById('genreSelect').value;
-  let url=`${MIRRORS[mirrorIdx]}/stations/search?limit=60&hidebroken=true&order=clickcount&reverse=true`;
-  if(term)url+=`&name=${encodeURIComponent(term)}`;
-  if(country)url+=`&countrycode=${encodeURIComponent(country)}`;
-  if(genre)url+=`&tag=${encodeURIComponent(genre)}`;
-  try{
-    const resp=await fetch(url,{signal:searchController.signal});
-    const data=await resp.json();
-    currentStations=data;
-    data.forEach(s=>stationMap.set(s.stationuuid,s));
-    renderGrid(currentStations);
-  }catch(err){if(err.name!=='AbortError'){mirrorIdx=(mirrorIdx+1)%MIRRORS.length;_executeSearch();}}
+  if(searchController)searchController.abort();
+  searchController=new AbortController();
+  const grid=document.getElementById('stationGrid');
+  grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Scanning frequencies…</div>';
+  const term=document.getElementById('searchInput').value.trim();
+  const country=document.getElementById('countrySelect').value;
+  const genre=document.getElementById('genreSelect').value;
+  let url=`${MIRRORS[mirrorIdx]}/stations/search?limit=60&hidebroken=true&order=clickcount&reverse=true`;
+  if(term)url+=`&name=${encodeURIComponent(term)}`;
+  if(country)url+=`&countrycode=${encodeURIComponent(country)}`;
+  if(genre)url+=`&tag=${encodeURIComponent(genre)}`;
+  try{
+    const resp=await fetch(url,{signal:searchController.signal});
+    const data=await resp.json();
+    currentStations=data;
+    data.forEach(s=>stationMap.set(s.stationuuid,s));
+    renderGrid(currentStations);
+  }catch(err){if(err.name!=='AbortError'){mirrorIdx=(mirrorIdx+1)%MIRRORS.length;_executeSearch();}}
 }
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 function renderGrid(data){
-  const grid=document.getElementById('stationGrid');grid.innerHTML='';
-  if(!data||data.length===0){grid.innerHTML='<div class="message-box">No stations found. Try a different search.</div>';return;}
-  const frag=document.createDocumentFragment();
-  data.forEach((s,i)=>{
-    stationMap.set(s.stationuuid,s);
-    const isFav=favouriteSet.has(s.stationuuid),rating=ratingsMap[s.stationuuid]||0;
-    const isPlaying=currentStation&&currentStation.stationuuid===s.stationuuid;
-    const div=document.createElement('div');
-    div.className='station-card'+(isPlaying?' now-playing':'');
-    div.style.animationDelay=`${(i%20)*0.04}s`;div.dataset.uuid=s.stationuuid;
-    div.innerHTML=`
-      <div class="star-rating" data-uuid="${s.stationuuid}">${[1,2,3,4,5].map(n=>`<span class="star${rating>=n?' lit':''}" data-star="${n}">★</span>`).join('')}</div>
-      <div class="fav-icon${isFav?' is-saved':''}" data-uuid="${s.stationuuid}">❤</div>
-      <img src="${esc(s.favicon)||'https://cdn-icons-png.flaticon.com/512/565/565296.png'}" class="station-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565296.png'" loading="lazy" alt="${esc(s.name)}">
-      <div class="station-name">${esc(s.name)}</div>
-      <div class="station-tags">${esc(s.tags||'radio')}</div>
-      ${s.bitrate?`<div class="badge-kbps">${s.bitrate} kbps</div>`:''}
-    `;
-    frag.appendChild(div);
-  });
-  grid.appendChild(frag);
+  const grid=document.getElementById('stationGrid');grid.innerHTML='';
+  if(!data||data.length===0){grid.innerHTML='<div class="message-box">No stations found. Try a different search.</div>';return;}
+  const frag=document.createDocumentFragment();
+  data.forEach((s,i)=>{
+    stationMap.set(s.stationuuid,s);
+    const isFav=favouriteSet.has(s.stationuuid),rating=ratingsMap[s.stationuuid]||0;
+    const isPlaying=currentStation&&currentStation.stationuuid===s.stationuuid;
+    const div=document.createElement('div');
+    div.className='station-card'+(isPlaying?' now-playing':'');
+    div.style.animationDelay=`${(i%20)*0.04}s`;div.dataset.uuid=s.stationuuid;
+    div.innerHTML=`
+      <div class="star-rating" data-uuid="${s.stationuuid}">${[1,2,3,4,5].map(n=>`<span class="star${rating>=n?' lit':''}" data-star="${n}">★</span>`).join('')}</div>
+      <div class="fav-icon${isFav?' is-saved':''}" data-uuid="${s.stationuuid}">❤</div>
+      <img src="${esc(s.favicon)||'https://cdn-icons-png.flaticon.com/512/565/565296.png'}" class="station-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565296.png'" loading="lazy" alt="${esc(s.name)}">
+      <div class="station-name">${esc(s.name)}</div>
+      <div class="station-tags">${esc(s.tags||'radio')}</div>
+      ${s.bitrate?`<div class="badge-kbps">${s.bitrate} kbps</div>`:''}
+    `;
+    frag.appendChild(div);
+  });
+  grid.appendChild(frag);
 }
 
 document.getElementById('stationGrid').addEventListener('click',e=>{
-  const favBtn=e.target.closest('.fav-icon'),starBtn=e.target.closest('.star'),card=e.target.closest('.station-card');
-  if(favBtn){
-    e.stopPropagation();const uuid=favBtn.dataset.uuid;const station=stationMap.get(uuid);if(!station)return;
-    if(favouriteSet.has(uuid)){favouriteSet.delete(uuid);favouriteList=favouriteList.filter(s=>s.stationuuid!==uuid);favBtn.classList.remove('is-saved');if(currentView===VIEW_FAV)renderGrid(favouriteList);showToast('Removed');}
-    else{favouriteSet.add(uuid);favouriteList.push(station);favBtn.classList.add('is-saved');showToast('Saved ❤️');}
-    saveData();return;
-  }
-  if(starBtn){
-    e.stopPropagation();const rating=parseInt(starBtn.dataset.star);const uuid=starBtn.closest('.star-rating').dataset.uuid;
-    ratingsMap[uuid]=rating;saveData();
-    starBtn.closest('.star-rating').querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<rating));
-    showToast(`Rated ${rating}★`);return;
-  }
-  if(card){const uuid=card.dataset.uuid;const station=stationMap.get(uuid);if(station)playStation(station);}
+  const favBtn=e.target.closest('.fav-icon'),starBtn=e.target.closest('.star'),card=e.target.closest('.station-card');
+  if(favBtn){
+    e.stopPropagation();const uuid=favBtn.dataset.uuid;const station=stationMap.get(uuid);if(!station)return;
+    if(favouriteSet.has(uuid)){favouriteSet.delete(uuid);favouriteList=favouriteList.filter(s=>s.stationuuid!==uuid);favBtn.classList.remove('is-saved');if(currentView===VIEW_FAV)renderGrid(favouriteList);showToast('Removed');}
+    else{favouriteSet.add(uuid);favouriteList.push(station);favBtn.classList.add('is-saved');showToast('Saved ❤️');}
+    saveData();return;
+  }
+  if(starBtn){
+    e.stopPropagation();const rating=parseInt(starBtn.dataset.star);const uuid=starBtn.closest('.star-rating').dataset.uuid;
+    ratingsMap[uuid]=rating;saveData();
+    starBtn.closest('.star-rating').querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<rating));
+    showToast(`Rated ${rating}★`);return;
+  }
+  if(card){const uuid=card.dataset.uuid;const station=stationMap.get(uuid);if(station)playStation(station);}
 });
 
 function toggleViewFavorites(){
-  if(currentView===VIEW_FAV){currentView=VIEW_SEARCH;document.getElementById('btnFav').classList.remove('btn-active');startSearch();}
-  else{currentView=VIEW_FAV;document.getElementById('btnFav').classList.add('btn-active');document.getElementById('btnHist').classList.remove('btn-active');renderGrid(favouriteList);}
+  if(currentView===VIEW_FAV){currentView=VIEW_SEARCH;document.getElementById('btnFav').classList.remove('btn-active');startSearch();}
+  else{currentView=VIEW_FAV;document.getElementById('btnFav').classList.add('btn-active');document.getElementById('btnHist').classList.remove('btn-active');renderGrid(favouriteList);}
 }
 function toggleViewHistory(){
-  if(currentView===VIEW_HIST){currentView=VIEW_SEARCH;document.getElementById('btnHist').classList.remove('btn-active');startSearch();}
-  else{currentView=VIEW_HIST;document.getElementById('btnHist').classList.add('btn-active');document.getElementById('btnFav').classList.remove('btn-active');renderGrid(historyList);}
+  if(currentView===VIEW_HIST){currentView=VIEW_SEARCH;document.getElementById('btnHist').classList.remove('btn-active');startSearch();}
+  else{currentView=VIEW_HIST;document.getElementById('btnHist').classList.add('btn-active');document.getElementById('btnFav').classList.remove('btn-active');renderGrid(historyList);}
 }
 async function playFromHash(uuid){
-  try{const r=await fetch(`${MIRRORS[mirrorIdx]}/stations/byuuid/${uuid}`);const d=await r.json();if(d&&d.length>0)playStation(d[0]);}
-  catch{startSearch();}
+  try{const r=await fetch(`${MIRRORS[mirrorIdx]}/stations/byuuid/${uuid}`);const d=await r.json();if(d&&d.length>0)playStation(d[0]);}
+  catch{startSearch();}
 }
 
 function playStation(s){
-  currentStation=s;
-  document.getElementById('pName').textContent=s.name;
-  document.getElementById('pStatus').innerHTML='<span class="connecting-spinner"></span>Connecting…';
-  document.getElementById('nowPlayingBar').style.display='none';
-  const art=document.getElementById('playerArt');
-  art.src=s.favicon||'https://cdn-icons-png.flaticon.com/512/565/565296.png';
-  art.onerror=()=>{art.src='https://cdn-icons-png.flaticon.com/512/565/565296.png';};
-  art.classList.remove('playing');
-  setAmbientGlow(s.favicon);
-  addToHistory(s);
-  window.history.replaceState(null,null,`#${s.stationuuid}`);
-  document.querySelectorAll('.station-card').forEach(c=>c.classList.toggle('now-playing',c.dataset.uuid===s.stationuuid));
-  document.querySelectorAll('.globe-station-row').forEach(c=>c.classList.toggle('now-playing',c.dataset.uuid===s.stationuuid));
-  if('mediaSession' in navigator){
-    navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:s.tags||'Radio',album:s.country||'',artwork:s.favicon?[{src:s.favicon,sizes:'512x512'}]:[]});
-    navigator.mediaSession.setActionHandler('play',()=>activeAudio.play());
-    navigator.mediaSession.setActionHandler('pause',()=>activeAudio.pause());
-  }
-  if(currentHls){currentHls.destroy();currentHls=null;}
-  audioCORS.pause();audioCORS.src='';audioFallback.pause();audioFallback.src='';
-  vizCanvas.classList.remove('active');
-  if(metaPollInterval){clearInterval(metaPollInterval);metaPollInterval=null;}
-  let url=s.url_resolved||s.url||'';
-  if(window.location.protocol==='https:'&&url.startsWith('http:'))url=url.replace('http:','https:');
-  currentStreamUrl=url;
-  attemptStream(url,true);
+  currentStation=s;
+  document.getElementById('pName').textContent=s.name;
+  document.getElementById('pStatus').innerHTML='<span class="connecting-spinner"></span>Connecting…';
+  document.getElementById('nowPlayingBar').style.display='none';
+  const art=document.getElementById('playerArt');
+  art.src=s.favicon||'https://cdn-icons-png.flaticon.com/512/565/565296.png';
+  art.onerror=()=>{art.src='https://cdn-icons-png.flaticon.com/512/565/565296.png';};
+  art.classList.remove('playing');
+  setAmbientGlow(s.favicon);
+  addToHistory(s);
+  window.history.replaceState(null,null,`#${s.stationuuid}`);
+  document.querySelectorAll('.station-card').forEach(c=>c.classList.toggle('now-playing',c.dataset.uuid===s.stationuuid));
+  document.querySelectorAll('.globe-station-row').forEach(c=>c.classList.toggle('now-playing',c.dataset.uuid===s.stationuuid));
+  if('mediaSession' in navigator){
+    navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:s.tags||'Radio',album:s.country||'',artwork:s.favicon?[{src:s.favicon,sizes:'512x512'}]:[]});
+    navigator.mediaSession.setActionHandler('play',()=>activeAudio.play());
+    navigator.mediaSession.setActionHandler('pause',()=>activeAudio.pause());
+  }
+  if(currentHls){currentHls.destroy();currentHls=null;}
+  audioCORS.pause();audioCORS.src='';audioFallback.pause();audioFallback.src='';
+  vizCanvas.classList.remove('active');
+  if(metaPollInterval){clearInterval(metaPollInterval);metaPollInterval=null;}
+  let url=s.url_resolved||s.url||'';
+  if(window.location.protocol==='https:'&&url.startsWith('http:'))url=url.replace('http:','https:');
+  currentStreamUrl=url;
+  attemptStream(url,true);
 }
 
 function setAmbientGlow(favicon){
-  if(!favicon){document.getElementById('ambientBg').style.background='none';return;}
-  const img=new Image();img.crossOrigin='anonymous';
-  img.onload=()=>{
-    try{const c=document.createElement('canvas');c.width=c.height=1;const cx=c.getContext('2d');cx.drawImage(img,0,0,1,1);const[r,g,b]=cx.getImageData(0,0,1,1).data;
-      document.getElementById('ambientBg').style.background=`radial-gradient(ellipse at 50% 0%,rgba(${r},${g},${b},0.8) 0%,transparent 70%)`;}catch{}
-  };img.src=favicon;
+  if(!favicon){document.getElementById('ambientBg').style.background='none';return;}
+  const img=new Image();img.crossOrigin='anonymous';
+  img.onload=()=>{
+    try{const c=document.createElement('canvas');c.width=c.height=1;const cx=c.getContext('2d');cx.drawImage(img,0,0,1,1);const[r,g,b]=cx.getImageData(0,0,1,1).data;
+      document.getElementById('ambientBg').style.background=`radial-gradient(ellipse at 50% 0%,rgba(${r},${g},${b},0.8) 0%,transparent 70%)`;}catch{}
+  };img.src=favicon;
 }
 
 function attemptStream(url,cors){
-  activeAudio=cors?audioCORS:audioFallback;useRealVisualizer=cors;
-  const onErr=()=>{if(cors)attemptStream(url,false);else document.getElementById('pStatus').innerHTML='<span style="color:var(--danger)">⚠ Unavailable</span>';};
-  if(Hls.isSupported()&&url.includes('.m3u8')){
-    currentHls=new Hls();
-    currentHls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)onErr();});
-    currentHls.loadSource(url);currentHls.attachMedia(activeAudio);
-    currentHls.on(Hls.Events.MANIFEST_PARSED,()=>activeAudio.play().catch(()=>{}));
-  }else{
-    activeAudio.src=url;activeAudio.load();
-    activeAudio.addEventListener('error',onErr,{once:true});
-    activeAudio.play().catch(onErr);
-  }
+  activeAudio=cors?audioCORS:audioFallback;useRealVisualizer=cors;
+  const onErr=()=>{if(cors)attemptStream(url,false);else document.getElementById('pStatus').innerHTML='<span style="color:var(--danger)">⚠ Unavailable</span>';};
+  if(Hls.isSupported()&&url.includes('.m3u8')){
+    currentHls=new Hls();
+    currentHls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)onErr();});
+    currentHls.loadSource(url);currentHls.attachMedia(activeAudio);
+    currentHls.on(Hls.Events.MANIFEST_PARSED,()=>activeAudio.play().catch(()=>{}));
+  }else{
+    activeAudio.src=url;activeAudio.load();
+    activeAudio.addEventListener('error',onErr,{once:true});
+    activeAudio.play().catch(onErr);
+  }
 }
 
 function setupAudioListeners(){
-  [audioCORS,audioFallback].forEach(el=>{
-    el.addEventListener('playing',()=>{
-      if(el===audioCORS){if(!isAudioCtxSetup)initTrueVisualizer();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
-      document.getElementById('pStatus').innerHTML='<span class="live-dot"></span>Live';
-      document.getElementById('pStatus').style.color='var(--accent)';
-      document.getElementById('playerArt').classList.add('playing');
-      vizCanvas.classList.add('active');
-      if('mediaSession' in navigator)navigator.mediaSession.playbackState='playing';
-    });
-    el.addEventListener('pause',()=>{
-      document.getElementById('pStatus').textContent='Paused';
-      document.getElementById('playerArt').classList.remove('playing');
-      if('mediaSession' in navigator)navigator.mediaSession.playbackState='paused';
-    });
-  });
+  [audioCORS,audioFallback].forEach(el=>{
+    el.addEventListener('playing',()=>{
+      if(el===audioCORS){if(!isAudioCtxSetup)initTrueVisualizer();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
+      document.getElementById('pStatus').innerHTML='<span class="live-dot"></span>Live';
+      document.getElementById('pStatus').style.color='var(--accent)';
+      document.getElementById('playerArt').classList.add('playing');
+      vizCanvas.classList.add('active');
+      if('mediaSession' in navigator)navigator.mediaSession.playbackState='playing';
+    });
+    el.addEventListener('pause',()=>{
+      document.getElementById('pStatus').textContent='Paused';
+      document.getElementById('playerArt').classList.remove('playing');
+      if('mediaSession' in navigator)navigator.mediaSession.playbackState='paused';
+    });
+  });
 }
 
 function stopPlayback(){
-  if(currentHls){currentHls.destroy();currentHls=null;}
-  audioCORS.pause();audioCORS.removeAttribute('src');audioCORS.load();
-  audioFallback.pause();audioFallback.removeAttribute('src');audioFallback.load();
-  vizCanvas.classList.remove('active');
-  if(metaPollInterval){clearInterval(metaPollInterval);metaPollInterval=null;}
-  document.getElementById('pStatus').textContent='Stopped';
-  document.getElementById('playerArt').classList.remove('playing');
-  document.getElementById('nowPlayingBar').style.display='none';
-  if('mediaSession' in navigator)navigator.mediaSession.playbackState='none';
+  if(currentHls){currentHls.destroy();currentHls=null;}
+  audioCORS.pause();audioCORS.removeAttribute('src');audioCORS.load();
+  audioFallback.pause();audioFallback.removeAttribute('src');audioFallback.load();
+  vizCanvas.classList.remove('active');
+  if(metaPollInterval){clearInterval(metaPollInterval);metaPollInterval=null;}
+  document.getElementById('pStatus').textContent='Stopped';
+  document.getElementById('playerArt').classList.remove('playing');
+  document.getElementById('nowPlayingBar').style.display='none';
+  if('mediaSession' in navigator)navigator.mediaSession.playbackState='none';
 }
 
 function restoreVolume(){const v=parseFloat(storage.get('radio_volume')??'1');const vol=isNaN(v)?1:v;audioCORS.volume=audioFallback.volume=document.getElementById('volSlider').value=vol;}
@@ -819,214 +819,214 @@ function changeVolume(v){audioCORS.volume=audioFallback.volume=v;if(v>0){audioCO
 function toggleEQ(){const panel=document.getElementById('eqPanel');panel.classList.toggle('active');document.getElementById('eqBtn').classList.toggle('active-btn');}
 function updateEQ(){if(!isAudioCtxSetup)return;bassNode.gain.value=document.getElementById('eqBass').value;midNode.gain.value=document.getElementById('eqMid').value;trebleNode.gain.value=document.getElementById('eqTreble').value;}
 function resetEQ(){['eqBass','eqMid','eqTreble'].forEach(id=>{document.getElementById(id).value=0;});updateEQ();showToast('EQ reset');}
-function showNowPlaying(text){if(!text)return;const bar=document.getElementById('nowPlayingBar'),inner=document.getElementById('nowPlayingInner');bar.style.display='block';inner.textContent='♪ '+text;const ns=inner.scrollWidth>bar.offsetWidth;inner.classList.toggle('scrolling',ns);if(ns)inner.textContent=('♪ '+text+'    ').repeat(2);}
+function showNowPlaying(text){if(!text)return;const bar=document.getElementById('nowPlayingBar'),inner=document.getElementById('nowPlayingInner');bar.style.display='block';inner.textContent='♪ '+text;const ns=inner.scrollWidth>bar.offsetWidth;inner.classList.toggle('scrolling',ns);if(ns)inner.textContent=('♪ '+text+'    ').repeat(2);}
 
 function initTrueVisualizer(){
-  if(isAudioCtxSetup)return;
-  const AC=window.AudioContext||window.webkitAudioContext;audioCtx=new AC();
-  analyser=audioCtx.createAnalyser();analyser.fftSize=128;dataArray=new Uint8Array(analyser.frequencyBinCount);
-  bassNode=audioCtx.createBiquadFilter();bassNode.type='lowshelf';bassNode.frequency.value=250;
-  midNode=audioCtx.createBiquadFilter();midNode.type='peaking';midNode.frequency.value=1000;midNode.Q.value=1;
-  trebleNode=audioCtx.createBiquadFilter();trebleNode.type='highshelf';trebleNode.frequency.value=6000;
-  const src=audioCtx.createMediaElementSource(audioCORS);
-  src.connect(bassNode);bassNode.connect(midNode);midNode.connect(trebleNode);trebleNode.connect(analyser);analyser.connect(audioCtx.destination);
-  isAudioCtxSetup=true;
+  if(isAudioCtxSetup)return;
+  const AC=window.AudioContext||window.webkitAudioContext;audioCtx=new AC();
+  analyser=audioCtx.createAnalyser();analyser.fftSize=128;dataArray=new Uint8Array(analyser.frequencyBinCount);
+  bassNode=audioCtx.createBiquadFilter();bassNode.type='lowshelf';bassNode.frequency.value=250;
+  midNode=audioCtx.createBiquadFilter();midNode.type='peaking';midNode.frequency.value=1000;midNode.Q.value=1;
+  trebleNode=audioCtx.createBiquadFilter();trebleNode.type='highshelf';trebleNode.frequency.value=6000;
+  const src=audioCtx.createMediaElementSource(audioCORS);
+  src.connect(bassNode);bassNode.connect(midNode);midNode.connect(trebleNode);trebleNode.connect(analyser);analyser.connect(audioCtx.destination);
+  isAudioCtxSetup=true;
 }
 function setVizMode(m){vizMode=m;document.querySelectorAll('.viz-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.viz===m));}
 function startVisualizer(){if(!vizRunning){vizRunning=true;_vizLoop();}}
 function stopVisualizer(){vizRunning=false;if(rafId)cancelAnimationFrame(rafId);rafId=null;}
 function _vizLoop(){
-  if(!vizRunning)return;
-  const W=vizCanvas.width,H=vizCanvas.height;vizCtx.clearRect(0,0,W,H);
-  const isPlaying=!activeAudio.paused&&!activeAudio.muted&&activeAudio.volume>0;
-  if(isPlaying){
-    const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
-    vizTime+=0.12;
-    if(vizMode==='bars'){const bars=30,bw=W/bars;for(let i=0;i<bars;i++){let h;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);h=Math.max(1,(dataArray[i]||0)/255*H);}else{h=Math.max(1,Math.abs(Math.sin(vizTime+i*0.5)*Math.cos(vizTime*0.7-i*0.3))*H*0.85*activeAudio.volume);}vizCtx.fillStyle=color;vizCtx.fillRect(i*bw,H-h,bw-1.5,h);}}
-    else if(vizMode==='wave'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1.5;const pts=60;for(let i=0;i<pts;i++){let y;if(useRealVisualizer&&isAudioCtxSetup&&analyser){const wf=new Uint8Array(analyser.fftSize);analyser.getByteTimeDomainData(wf);y=(wf[Math.floor(i*wf.length/pts)]/128-1)*(H/2)+(H/2);}else{y=H/2+Math.sin(vizTime*1.5+i*0.2)*Math.cos(vizTime*0.9+i*0.1)*(H/2)*0.7*activeAudio.volume;}i===0?vizCtx.moveTo(i*W/pts,y):vizCtx.lineTo(i*W/pts,y);}vizCtx.stroke();}
-    else if(vizMode==='radial'){const cx=W/2,cy=H/2,r=H/2-3,bars=24;for(let i=0;i<bars;i++){let len;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);len=(dataArray[i]||0)/255*r*0.8;}else{len=Math.abs(Math.sin(vizTime+i*0.26))*r*0.7*activeAudio.volume;}const angle=(i/bars)*Math.PI*2;vizCtx.strokeStyle=color;vizCtx.lineWidth=2;vizCtx.beginPath();vizCtx.moveTo(cx+Math.cos(angle)*3,cy+Math.sin(angle)*3);vizCtx.lineTo(cx+Math.cos(angle)*(3+len),cy+Math.sin(angle)*(3+len));vizCtx.stroke();}}
-  }
-  rafId=requestAnimationFrame(_vizLoop);
+  if(!vizRunning)return;
+  const W=vizCanvas.width,H=vizCanvas.height;vizCtx.clearRect(0,0,W,H);
+  const isPlaying=!activeAudio.paused&&!activeAudio.muted&&activeAudio.volume>0;
+  if(isPlaying){
+    const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
+    vizTime+=0.12;
+    if(vizMode==='bars'){const bars=30,bw=W/bars;for(let i=0;i<bars;i++){let h;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);h=Math.max(1,(dataArray[i]||0)/255*H);}else{h=Math.max(1,Math.abs(Math.sin(vizTime+i*0.5)*Math.cos(vizTime*0.7-i*0.3))*H*0.85*activeAudio.volume);}vizCtx.fillStyle=color;vizCtx.fillRect(i*bw,H-h,bw-1.5,h);}}
+    else if(vizMode==='wave'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1.5;const pts=60;for(let i=0;i<pts;i++){let y;if(useRealVisualizer&&isAudioCtxSetup&&analyser){const wf=new Uint8Array(analyser.fftSize);analyser.getByteTimeDomainData(wf);y=(wf[Math.floor(i*wf.length/pts)]/128-1)*(H/2)+(H/2);}else{y=H/2+Math.sin(vizTime*1.5+i*0.2)*Math.cos(vizTime*0.9+i*0.1)*(H/2)*0.7*activeAudio.volume;}i===0?vizCtx.moveTo(i*W/pts,y):vizCtx.lineTo(i*W/pts,y);}vizCtx.stroke();}
+    else if(vizMode==='radial'){const cx=W/2,cy=H/2,r=H/2-3,bars=24;for(let i=0;i<bars;i++){let len;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);len=(dataArray[i]||0)/255*r*0.8;}else{len=Math.abs(Math.sin(vizTime+i*0.26))*r*0.7*activeAudio.volume;}const angle=(i/bars)*Math.PI*2;vizCtx.strokeStyle=color;vizCtx.lineWidth=2;vizCtx.beginPath();vizCtx.moveTo(cx+Math.cos(angle)*3,cy+Math.sin(angle)*3);vizCtx.lineTo(cx+Math.cos(angle)*(3+len),cy+Math.sin(angle)*(3+len));vizCtx.stroke();}}
+  }
+  rafId=requestAnimationFrame(_vizLoop);
 }
 
 let currentLetterFilter='';
 function buildAZFilter(){
-  const c=document.getElementById('azFilter');if(!c)return;c.innerHTML='';
-  const a=document.createElement('button');a.className='tab'+(currentLetterFilter===''?' active':'');a.textContent='All';a.onclick=()=>renderTV('');c.appendChild(a);
-  const n=document.createElement('button');n.className='tab'+(currentLetterFilter==='#'?' active':'');n.textContent='#';n.onclick=()=>renderTV('#');c.appendChild(n);
-  for(let i=65;i<=90;i++){const l=String.fromCharCode(i);const btn=document.createElement('button');btn.className='tab'+(currentLetterFilter===l?' active':'');btn.textContent=l;btn.onclick=()=>renderTV(l);c.appendChild(btn);}
+  const c=document.getElementById('azFilter');if(!c)return;c.innerHTML='';
+  const a=document.createElement('button');a.className='tab'+(currentLetterFilter===''?' active':'');a.textContent='All';a.onclick=()=>renderTV('');c.appendChild(a);
+  const n=document.createElement('button');n.className='tab'+(currentLetterFilter==='#'?' active':'');n.textContent='#';n.onclick=()=>renderTV('#');c.appendChild(n);
+  for(let i=65;i<=90;i++){const l=String.fromCharCode(i);const btn=document.createElement('button');btn.className='tab'+(currentLetterFilter===l?' active':'');btn.textContent=l;btn.onclick=()=>renderTV(l);c.appendChild(btn);}
 }
 function renderTV(letter=null){
-  if(letter!==null)currentLetterFilter=letter;
-  const grid=document.getElementById('tvGrid');
-  const search=(document.getElementById('tvSearch')?.value||'').toLowerCase();
-  const cat=document.getElementById('tvCatFilter')?.value||'';
-  let filtered=tvChannels.filter(c=>{
-    const ms=!search||c.name.toLowerCase().includes(search)||c.desc.toLowerCase().includes(search);
-    const mc=!cat||c.category===cat;
-    let ml=true;if(currentLetterFilter){const fc=c.name.charAt(0).toUpperCase();ml=currentLetterFilter==='#'?!/[A-Z]/.test(fc):fc===currentLetterFilter;}
-    return ms&&mc&&ml;
-  });
-  grid.innerHTML='';
-  if(!filtered.length){grid.innerHTML='<div class="message-box">No channels found.</div>';return;}
-  filtered.forEach((ch,i)=>{
-    const isPlaying=currentTVChannel&&currentTVChannel.id===ch.id;
-    const div=document.createElement('div');div.className='tv-card'+(isPlaying?' now-playing':'');div.style.animationDelay=`${(i%20)*0.04}s`;
-    div.innerHTML=`<div class="live-badge">LIVE</div><div class="tv-thumb">${ch.emoji}</div><div class="tv-name">${esc(ch.name)}</div><div class="tv-cat">${esc(ch.desc)}</div>`;
-    div.onclick=()=>playTVChannel(ch);grid.appendChild(div);
-  });
-  buildAZFilter();
+  if(letter!==null)currentLetterFilter=letter;
+  const grid=document.getElementById('tvGrid');
+  const search=(document.getElementById('tvSearch')?.value||'').toLowerCase();
+  const cat=document.getElementById('tvCatFilter')?.value||'';
+  let filtered=tvChannels.filter(c=>{
+    const ms=!search||c.name.toLowerCase().includes(search)||c.desc.toLowerCase().includes(search);
+    const mc=!cat||c.category===cat;
+    let ml=true;if(currentLetterFilter){const fc=c.name.charAt(0).toUpperCase();ml=currentLetterFilter==='#'?!/[A-Z]/.test(fc):fc===currentLetterFilter;}
+    return ms&&mc&&ml;
+  });
+  grid.innerHTML='';
+  if(!filtered.length){grid.innerHTML='<div class="message-box">No channels found.</div>';return;}
+  filtered.forEach((ch,i)=>{
+    const isPlaying=currentTVChannel&&currentTVChannel.id===ch.id;
+    const div=document.createElement('div');div.className='tv-card'+(isPlaying?' now-playing':'');div.style.animationDelay=`${(i%20)*0.04}s`;
+    div.innerHTML=`<div class="live-badge">LIVE</div><div class="tv-thumb">${ch.emoji}</div><div class="tv-name">${esc(ch.name)}</div><div class="tv-cat">${esc(ch.desc)}</div>`;
+    div.onclick=()=>playTVChannel(ch);grid.appendChild(div);
+  });
+  buildAZFilter();
 }
 function playTVChannel(ch){
-  currentTVChannel=ch;
-  document.getElementById('tvModalName').textContent=ch.name;document.getElementById('tvModalCat').textContent=ch.desc;
-  document.getElementById('tvModal').classList.add('open');
-  const video=document.getElementById('tvVideo');
-  if(tvHls){tvHls.destroy();tvHls=null;}video.pause();video.src='';
-  document.getElementById('pName').textContent='📺 '+ch.name;
-  document.getElementById('pStatus').innerHTML='<span class="connecting-spinner"></span>Buffering…';
-  if(Hls.isSupported()&&(ch.url.includes('.m3u8')||ch.url.includes('m3u'))){
-    tvHls=new Hls();tvHls.loadSource(ch.url);tvHls.attachMedia(video);
-    tvHls.on(Hls.Events.MANIFEST_PARSED,()=>{video.play().catch(()=>{});document.getElementById('pStatus').innerHTML='<span class="live-dot"></span>Live';});
-    tvHls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)document.getElementById('pStatus').innerHTML='<span style="color:var(--danger)">Stream unavailable</span>';});
-  }else{
-    video.src=ch.url;video.load();
-    video.play().catch(()=>{document.getElementById('pStatus').innerHTML='<span style="color:var(--danger)">Stream unavailable</span>';});
-    document.getElementById('pStatus').innerHTML='<span class="live-dot"></span>Live';
-  }
-  renderTV();
+  currentTVChannel=ch;
+  document.getElementById('tvModalName').textContent=ch.name;document.getElementById('tvModalCat').textContent=ch.desc;
+  document.getElementById('tvModal').classList.add('open');
+  const video=document.getElementById('tvVideo');
+  if(tvHls){tvHls.destroy();tvHls=null;}video.pause();video.src='';
+  document.getElementById('pName').textContent='📺 '+ch.name;
+  document.getElementById('pStatus').innerHTML='<span class="connecting-spinner"></span>Buffering…';
+  if(Hls.isSupported()&&(ch.url.includes('.m3u8')||ch.url.includes('m3u'))){
+    tvHls=new Hls();tvHls.loadSource(ch.url);tvHls.attachMedia(video);
+    tvHls.on(Hls.Events.MANIFEST_PARSED,()=>{video.play().catch(()=>{});document.getElementById('pStatus').innerHTML='<span class="live-dot"></span>Live';});
+    tvHls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)document.getElementById('pStatus').innerHTML='<span style="color:var(--danger)">Stream unavailable</span>';});
+  }else{
+    video.src=ch.url;video.load();
+    video.play().catch(()=>{document.getElementById('pStatus').innerHTML='<span style="color:var(--danger)">Stream unavailable</span>';});
+    document.getElementById('pStatus').innerHTML='<span class="live-dot"></span>Live';
+  }
+  renderTV();
 }
 function closeTVModal(){document.getElementById('tvModal').classList.remove('open');const v=document.getElementById('tvVideo');if(tvHls){tvHls.destroy();tvHls=null;}v.pause();v.src='';}
 function loadM3U(event){
-  const file=event.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{const lines=e.target.result.split('\n');let name='',added=0;lines.forEach(line=>{line=line.trim();if(line.startsWith('#EXTINF')){const m=line.match(/,(.+)$/);name=m?m[1].trim():'Unknown Channel';}else if(line&&!line.startsWith('#')){customTVChannels.push({id:'custom_'+Date.now()+'_'+added,name,category:'entertainment',emoji:'📺',url:line,desc:'Custom Channel'});added++;}});tvChannels=[...TV_CHANNELS,...customTVChannels];saveData();renderTV();showToast(`Loaded ${added} channels`);};
-  reader.readAsText(file);event.target.value='';
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{const lines=e.target.result.split('\n');let name='',added=0;lines.forEach(line=>{line=line.trim();if(line.startsWith('#EXTINF')){const m=line.match(/,(.+)$/);name=m?m[1].trim():'Unknown Channel';}else if(line&&!line.startsWith('#')){customTVChannels.push({id:'custom_'+Date.now()+'_'+added,name,category:'entertainment',emoji:'📺',url:line,desc:'Custom Channel'});added++;}});tvChannels=[...TV_CHANNELS,...customTVChannels];saveData();renderTV();showToast(`Loaded ${added} channels`);};
+  reader.readAsText(file);event.target.value='';
 }
 async function fetchRemotePlaylist(url){
-  showToast('Fetching channels…');
-  try{const r=await fetch(url);if(!r.ok)throw new Error();const text=await r.text();const lines=text.split('\n');let name='Unknown Channel',added=0;lines.forEach(line=>{line=line.trim();if(line.startsWith('#EXTINF')){const m=line.match(/,(.+)$/);name=m?m[1].trim():'Unknown Channel';}else if(line&&!line.startsWith('#')){customTVChannels.push({id:'imported_'+Date.now()+'_'+added,name,category:'entertainment',emoji:'📡',url:line,desc:'Web Channel'});added++;}});tvChannels=[...TV_CHANNELS,...customTVChannels];saveData();renderTV();showToast(`Loaded ${added} channels!`);}
-  catch{showToast('Failed (CORS or bad link)');}
+  showToast('Fetching channels…');
+  try{const r=await fetch(url);if(!r.ok)throw new Error();const text=await r.text();const lines=text.split('\n');let name='Unknown Channel',added=0;lines.forEach(line=>{line=line.trim();if(line.startsWith('#EXTINF')){const m=line.match(/,(.+)$/);name=m?m[1].trim():'Unknown Channel';}else if(line&&!line.startsWith('#')){customTVChannels.push({id:'imported_'+Date.now()+'_'+added,name,category:'entertainment',emoji:'📡',url:line,desc:'Web Channel'});added++;}});tvChannels=[...TV_CHANNELS,...customTVChannels];saveData();renderTV();showToast(`Loaded ${added} channels!`);}
+  catch{showToast('Failed (CORS or bad link)');}
 }
 
 function searchPodcasts(retryCount=0){
-  const term=document.getElementById('podcastSearch').value;if(!term)return;
-  const grid=document.getElementById('podcastGrid');
-  if(retryCount===0)grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Connecting to Apple…</div>';
-  const cbName='itunes_cb_'+Date.now()+'_'+retryCount;
-  window[cbName]=function(data){
-    grid.innerHTML='';
-    if(!data.results||data.results.length===0){grid.innerHTML='<div class="message-box">No podcasts found.</div>';cleanup();return;}
-    data.results.forEach(pod=>{
-      const div=document.createElement('div');div.className='station-card';
-      const img=pod.artworkUrl600||pod.artworkUrl100||'https://cdn-icons-png.flaticon.com/512/3043/3043564.png';
-      div.innerHTML=`<img src="${img}" class="station-img"><div class="station-name">${esc(pod.collectionName)}</div><div class="station-tags">${esc(pod.artistName)}</div>`;
-      div.onclick=()=>{if(pod.collectionId)loadPodcastEpisodes(pod.collectionId,pod.collectionName,img);else showToast('Episodes unavailable');};
-      grid.appendChild(div);
-    });
-    cleanup();
-  };
-  function cleanup(){delete window[cbName];const s=document.getElementById(cbName);if(s)s.remove();}
-  const script=document.createElement('script');script.id=cbName;
-  script.src=`https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${cbName}`;
-  script.onerror=()=>{cleanup();if(retryCount<3){setTimeout(()=>searchPodcasts(retryCount+1),12000);}else{grid.innerHTML='<div class="message-box" style="color:var(--danger)">Apple servers busy. Try again.</div>';}};
-  document.body.appendChild(script);
+  const term=document.getElementById('podcastSearch').value;if(!term)return;
+  const grid=document.getElementById('podcastGrid');
+  if(retryCount===0)grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Connecting to Apple…</div>';
+  const cbName='itunes_cb_'+Date.now()+'_'+retryCount;
+  window[cbName]=function(data){
+    grid.innerHTML='';
+    if(!data.results||data.results.length===0){grid.innerHTML='<div class="message-box">No podcasts found.</div>';cleanup();return;}
+    data.results.forEach(pod=>{
+      const div=document.createElement('div');div.className='station-card';
+      const img=pod.artworkUrl600||pod.artworkUrl100||'https://cdn-icons-png.flaticon.com/512/3043/3043564.png';
+      div.innerHTML=`<img src="${img}" class="station-img"><div class="station-name">${esc(pod.collectionName)}</div><div class="station-tags">${esc(pod.artistName)}</div>`;
+      div.onclick=()=>{if(pod.collectionId)loadPodcastEpisodes(pod.collectionId,pod.collectionName,img);else showToast('Episodes unavailable');};
+      grid.appendChild(div);
+    });
+    cleanup();
+  };
+  function cleanup(){delete window[cbName];const s=document.getElementById(cbName);if(s)s.remove();}
+  const script=document.createElement('script');script.id=cbName;
+  script.src=`https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${cbName}`;
+  script.onerror=()=>{cleanup();if(retryCount<3){setTimeout(()=>searchPodcasts(retryCount+1),12000);}else{grid.innerHTML='<div class="message-box" style="color:var(--danger)">Apple servers busy. Try again.</div>';}};
+  document.body.appendChild(script);
 }
 function loadPodcastEpisodes(collectionId,podcastName,img){
-  const modal=document.getElementById('episodeModal'),list=document.getElementById('episodeList');
-  document.getElementById('epModalTitle').textContent=podcastName;document.getElementById('epModalImg').src=img;
-  list.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Loading episodes…</div>';
-  modal.classList.add('open');
-  const cbName='episodes_cb_'+Date.now();
-  window[cbName]=function(data){
-    list.innerHTML='';
-    if(!data.results||data.results.length<=1){list.innerHTML='<div class="message-box">No episodes found.</div>';cleanup();return;}
-    const episodes=data.results.filter(item=>item.wrapperType==='podcastEpisode');
-    if(!episodes.length){list.innerHTML='<div class="message-box">No playable episodes available.</div>';cleanup();return;}
-    episodes.forEach(ep=>{
-      if(!ep.episodeUrl)return;
-      const title=ep.trackName||'Untitled Episode';
-      let dateStr='';if(ep.releaseDate){const d=new Date(ep.releaseDate);if(!isNaN(d))dateStr=d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});}
-      const row=document.createElement('div');row.className='ep-row';
-      row.innerHTML=`<div class="ep-title">${esc(title)}</div><div class="ep-date">${esc(dateStr)}</div>`;
-      row.onclick=()=>{playStation({stationuuid:'pod_ep_'+ep.trackId,name:podcastName+': '+title,url:ep.episodeUrl,favicon:img,tags:'Podcast'});closeEpisodeModal();};
-      list.appendChild(row);
-    });
-    cleanup();
-  };
-  function cleanup(){delete window[cbName];const s=document.getElementById(cbName);if(s)s.remove();}
-  const script=document.createElement('script');script.id=cbName;
-  script.src=`https://itunes.apple.com/lookup?id=${collectionId}&entity=podcastEpisode&limit=100&callback=${cbName}`;
-  script.onerror=()=>{cleanup();list.innerHTML='<div class="message-box" style="color:var(--danger)">Apple servers blocked. <button onclick="loadPodcastEpisodes(\''+collectionId+'\',\''+podcastName+'\',\''+img+'\')">Retry</button></div>';};
-  document.body.appendChild(script);
+  const modal=document.getElementById('episodeModal'),list=document.getElementById('episodeList');
+  document.getElementById('epModalTitle').textContent=podcastName;document.getElementById('epModalImg').src=img;
+  list.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Loading episodes…</div>';
+  modal.classList.add('open');
+  const cbName='episodes_cb_'+Date.now();
+  window[cbName]=function(data){
+    list.innerHTML='';
+    if(!data.results||data.results.length<=1){list.innerHTML='<div class="message-box">No episodes found.</div>';cleanup();return;}
+    const episodes=data.results.filter(item=>item.wrapperType==='podcastEpisode');
+    if(!episodes.length){list.innerHTML='<div class="message-box">No playable episodes available.</div>';cleanup();return;}
+    episodes.forEach(ep=>{
+      if(!ep.episodeUrl)return;
+      const title=ep.trackName||'Untitled Episode';
+      let dateStr='';if(ep.releaseDate){const d=new Date(ep.releaseDate);if(!isNaN(d))dateStr=d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});}
+      const row=document.createElement('div');row.className='ep-row';
+      row.innerHTML=`<div class="ep-title">${esc(title)}</div><div class="ep-date">${esc(dateStr)}</div>`;
+      row.onclick=()=>{playStation({stationuuid:'pod_ep_'+ep.trackId,name:podcastName+': '+title,url:ep.episodeUrl,favicon:img,tags:'Podcast'});closeEpisodeModal();};
+      list.appendChild(row);
+    });
+    cleanup();
+  };
+  function cleanup(){delete window[cbName];const s=document.getElementById(cbName);if(s)s.remove();}
+  const script=document.createElement('script');script.id=cbName;
+  script.src=`https://itunes.apple.com/lookup?id=${collectionId}&entity=podcastEpisode&limit=100&callback=${cbName}`;
+  script.onerror=()=>{cleanup();list.innerHTML='<div class="message-box" style="color:var(--danger)">Apple servers blocked. <button onclick="loadPodcastEpisodes(\''+collectionId+'\',\''+podcastName+'\',\''+img+'\')">Retry</button></div>';};
+  document.body.appendChild(script);
 }
 function closeEpisodeModal(){document.getElementById('episodeModal').classList.remove('open');document.getElementById('episodeList').innerHTML='';}
 
 async function searchArchiveMusic(){
-  const term=document.getElementById('musicSearch').value;if(!term)return;
-  const grid=document.getElementById('musicGrid');
-  grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Searching Archive.org…</div>';
-  try{
-    const url=`https://archive.org/advancedsearch.php?q=mediatype:audio AND title:${encodeURIComponent(term)}&fl[]=identifier,title,creator&output=json&rows=20`;
-    const res=await fetch(url);const data=await res.json();
-    grid.innerHTML='';const docs=data.response.docs;
-    if(!docs.length){grid.innerHTML='<div class="message-box">No music found.</div>';return;}
-    docs.forEach(track=>{
-      const div=document.createElement('div');div.className='station-card';
-      div.innerHTML=`<div style="font-size:2.5rem;margin-bottom:12px;">🎵</div><div class="station-name">${esc(track.title)}</div><div class="station-tags">${esc(track.creator||'Unknown Artist')}</div>`;
-      div.onclick=()=>playArchiveTrack(track);grid.appendChild(div);
-    });
-  }catch{grid.innerHTML='<div class="message-box">Error fetching music.</div>';}
+  const term=document.getElementById('musicSearch').value;if(!term)return;
+  const grid=document.getElementById('musicGrid');
+  grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Searching Archive.org…</div>';
+  try{
+    const url=`https://archive.org/advancedsearch.php?q=mediatype:audio AND title:${encodeURIComponent(term)}&fl[]=identifier,title,creator&output=json&rows=20`;
+    const res=await fetch(url);const data=await res.json();
+    grid.innerHTML='';const docs=data.response.docs;
+    if(!docs.length){grid.innerHTML='<div class="message-box">No music found.</div>';return;}
+    docs.forEach(track=>{
+      const div=document.createElement('div');div.className='station-card';
+      div.innerHTML=`<div style="font-size:2.5rem;margin-bottom:12px;">🎵</div><div class="station-name">${esc(track.title)}</div><div class="station-tags">${esc(track.creator||'Unknown Artist')}</div>`;
+      div.onclick=()=>playArchiveTrack(track);grid.appendChild(div);
+    });
+  }catch{grid.innerHTML='<div class="message-box">Error fetching music.</div>';}
 }
 async function playArchiveTrack(track){
-  showToast('Locating file…');
-  try{
-    const res=await fetch(`https://archive.org/metadata/${track.identifier}`);const meta=await res.json();
-    const mp3=meta.files.find(f=>f.name.endsWith('.mp3'));
-    if(mp3){playStation({stationuuid:track.identifier,name:track.title,url:`https://archive.org/download/${track.identifier}/${mp3.name}`,favicon:'https://cdn-icons-png.flaticon.com/512/26/26805.png',tags:track.creator});}
-    else{showToast('No MP3 available.');}
-  }catch{showToast('Failed to load track.');}
+  showToast('Locating file…');
+  try{
+    const res=await fetch(`https://archive.org/metadata/${track.identifier}`);const meta=await res.json();
+    const mp3=meta.files.find(f=>f.name.endsWith('.mp3'));
+    if(mp3){playStation({stationuuid:track.identifier,name:track.title,url:`https://archive.org/download/${track.identifier}/${mp3.name}`,favicon:'https://cdn-icons-png.flaticon.com/512/26/26805.png',tags:track.creator});}
+    else{showToast('No MP3 available.');}
+  }catch{showToast('Failed to load track.');}
 }
 
 function renderLofi(){
-  const grid=document.getElementById('lofiGrid');grid.innerHTML='';
-  LOFI_STREAMS.forEach(s=>{
-    const div=document.createElement('div');div.className='station-card';
-    div.innerHTML=`<div style="font-size:2.5rem;margin-bottom:12px;">${s.favicon}</div><div class="station-name">${esc(s.name)}</div><div class="station-tags">${esc(s.tags)}</div>`;
-    div.onclick=()=>playStation(s);grid.appendChild(div);
-  });
+  const grid=document.getElementById('lofiGrid');grid.innerHTML='';
+  LOFI_STREAMS.forEach(s=>{
+    const div=document.createElement('div');div.className='station-card';
+    div.innerHTML=`<div style="font-size:2.5rem;margin-bottom:12px;">${s.favicon}</div><div class="station-name">${esc(s.name)}</div><div class="station-tags">${esc(s.tags)}</div>`;
+    div.onclick=()=>playStation(s);grid.appendChild(div);
+  });
 }
 
 function setupLocalDrop(){
-  const dz=document.getElementById('dropZone');if(!dz)return;
-  dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--accent)';});
-  dz.addEventListener('dragleave',()=>dz.style.borderColor='var(--border)');
-  dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='var(--border)';handleLocalFiles({target:{files:e.dataTransfer.files}});});
+  const dz=document.getElementById('dropZone');if(!dz)return;
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--accent)';});
+  dz.addEventListener('dragleave',()=>dz.style.borderColor='var(--border)');
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='var(--border)';handleLocalFiles({target:{files:e.dataTransfer.files}});});
 }
 function handleLocalFiles(event){
-  const files=Array.from(event.target.files).filter(f=>f.type.startsWith('audio/')||f.name.endsWith('.mp3'));
-  if(!files.length)return;
-  const grid=document.getElementById('localFileList');
-  files.forEach(file=>{
-    const localUrl=URL.createObjectURL(file);
-    const div=document.createElement('div');div.className='station-card';
-    div.innerHTML=`<div style="font-size:2.5rem;margin-bottom:12px;">📀</div><div class="station-name">${esc(file.name.replace(/\.[^.]+$/,''))}</div><div class="station-tags">Local File</div>`;
-    div.onclick=()=>playStation({stationuuid:'local_'+Date.now(),name:file.name.replace(/\.[^.]+$/,''),url:localUrl,favicon:'',tags:'Local MP3'});
-    grid.appendChild(div);
-  });
-  showToast(`Added ${files.length} file${files.length>1?'s':''}`);
+  const files=Array.from(event.target.files).filter(f=>f.type.startsWith('audio/')||f.name.endsWith('.mp3'));
+  if(!files.length)return;
+  const grid=document.getElementById('localFileList');
+  files.forEach(file=>{
+    const localUrl=URL.createObjectURL(file);
+    const div=document.createElement('div');div.className='station-card';
+    div.innerHTML=`<div style="font-size:2.5rem;margin-bottom:12px;">📀</div><div class="station-name">${esc(file.name.replace(/\.[^.]+$/,''))}</div><div class="station-tags">Local File</div>`;
+    div.onclick=()=>playStation({stationuuid:'local_'+Date.now(),name:file.name.replace(/\.[^.]+$/,''),url:localUrl,favicon:'',tags:'Local MP3'});
+    grid.appendChild(div);
+  });
+  showToast(`Added ${files.length} file${files.length>1?'s':''}`);
 }
 
 function moreLikeThis(){
-  if(!currentStation){showToast('Play a station first!');return;}
-  const tags=(currentStation.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
-  if(!tags.length){showToast('No tags to match');return;}
-  const tag=tags[0];
-  document.getElementById('searchInput').value='';document.getElementById('genreSelect').value='';
-  currentView=VIEW_SEARCH;document.getElementById('btnFav').classList.remove('btn-active');document.getElementById('btnHist').classList.remove('btn-active');
-  const grid=document.getElementById('stationGrid');
-  grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Finding similar stations…</div>';
-  fetch(`${MIRRORS[mirrorIdx]}/stations/search?limit=40&hidebroken=true&order=clickcount&reverse=true&tag=${encodeURIComponent(tag)}`).then(r=>r.json()).then(data=>{currentStations=data;data.forEach(s=>stationMap.set(s.stationuuid,s));renderGrid(currentStations);showToast(`Stations tagged "${tag}"`);}).catch(()=>showToast('Search failed'));
+  if(!currentStation){showToast('Play a station first!');return;}
+  const tags=(currentStation.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+  if(!tags.length){showToast('No tags to match');return;}
+  const tag=tags[0];
+  document.getElementById('searchInput').value='';document.getElementById('genreSelect').value='';
+  currentView=VIEW_SEARCH;document.getElementById('btnFav').classList.remove('btn-active');document.getElementById('btnHist').classList.remove('btn-active');
+  const grid=document.getElementById('stationGrid');
+  grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Finding similar stations…</div>';
+  fetch(`${MIRRORS[mirrorIdx]}/stations/search?limit=40&hidebroken=true&order=clickcount&reverse=true&tag=${encodeURIComponent(tag)}`).then(r=>r.json()).then(data=>{currentStations=data;data.forEach(s=>stationMap.set(s.stationuuid,s));renderGrid(currentStations);showToast(`Stations tagged "${tag}"`);}).catch(()=>showToast('Search failed'));
 }
 function addToHistory(s){historyList=[s,...historyList.filter(h=>h.stationuuid!==s.stationuuid)].slice(0,15);saveData();}
 function exportFavorites(){if(!favouriteList.length){showToast('No saved stations!');return;}const blob=new Blob([JSON.stringify(favouriteList,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='radio_favorites.json';document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('Exported!');}
@@ -1050,418 +1050,418 @@ function startMetaPoll(){if(metaPollInterval)clearInterval(metaPollInterval);if(
 if('serviceWorker' in navigator){const sw=`self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>clients.claim());self.addEventListener('fetch',e=>{});`;const blob=new Blob([sw],{type:'application/javascript'});navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});}
 
 const gState = {
-  initialized: false,
-  scene: null, camera: null, renderer: null,
-  earth: null, atmosphere: null, marker: null, markerRing: null,
-  stars: null, animId: null,
-  isDragging: false,
-  mouseDownPos: null, prevMouse: { x: 0, y: 0 },
-  velocity: { x: 0, y: 0 },
-  targetZoom: 2.6, currentZoom: 2.6,
-  autoRotate: true,
-  geocodeCache: {},
-  lastGeocode: 0,
-  currentCountryCode: null,
+  initialized: false,
+  scene: null, camera: null, renderer: null,
+  earth: null, atmosphere: null, marker: null, markerRing: null,
+  stars: null, animId: null,
+  isDragging: false,
+  mouseDownPos: null, prevMouse: { x: 0, y: 0 },
+  velocity: { x: 0, y: 0 },
+  targetZoom: 2.6, currentZoom: 2.6,
+  autoRotate: true,
+  geocodeCache: {},
+  lastGeocode: 0,
+  currentCountryCode: null,
 };
 
 function initGlobe() {
-  if (gState.initialized) return;
-  gState.initialized = true;
+  if (gState.initialized) return;
+  gState.initialized = true;
 
-  const wrap = document.getElementById('globeCanvasWrap');
-  const canvas = document.getElementById('globeCanvas');
-  const W = wrap.clientWidth || 800;
-  const H = wrap.clientHeight || 600;
+  const wrap = document.getElementById('globeCanvasWrap');
+  const canvas = document.getElementById('globeCanvas');
+  const W = wrap.clientWidth || 800;
+  const H = wrap.clientHeight || 600;
 
-  gState.scene = new THREE.Scene();
+  gState.scene = new THREE.Scene();
 
-  gState.camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 200);
-  gState.camera.position.z = gState.targetZoom;
+  gState.camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 200);
+  gState.camera.position.z = gState.targetZoom;
 
-  gState.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  gState.renderer.setSize(W, H);
-  gState.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  gState.renderer.setClearColor(0x000000, 0);
+  gState.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  gState.renderer.setSize(W, H);
+  gState.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  gState.renderer.setClearColor(0x000000, 0);
 
-  const starVerts = new Float32Array(8000 * 3);
-  for (let i = 0; i < 8000; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    const r = 60 + Math.random() * 30;
-    starVerts[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
-    starVerts[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-    starVerts[i * 3 + 2] = r * Math.cos(phi);
-  }
-  const starGeo = new THREE.BufferGeometry();
-  starGeo.setAttribute('position', new THREE.BufferAttribute(starVerts, 3));
-  gState.stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.09, transparent: true, opacity: 0.85 }));
-  gState.scene.add(gState.stars);
+  const starVerts = new Float32Array(8000 * 3);
+  for (let i = 0; i < 8000; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 60 + Math.random() * 30;
+    starVerts[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+    starVerts[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    starVerts[i * 3 + 2] = r * Math.cos(phi);
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starVerts, 3));
+  gState.stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.09, transparent: true, opacity: 0.85 }));
+  gState.scene.add(gState.stars);
 
-  const ambient = new THREE.AmbientLight(0x223344, 1.8);
-  gState.scene.add(ambient);
-  const sun = new THREE.DirectionalLight(0xfff5e4, 2.2);
-  sun.position.set(5, 3, 5);
-  gState.scene.add(sun);
-  const fill = new THREE.DirectionalLight(0x334466, 0.4);
-  fill.position.set(-4, -2, -3);
-  gState.scene.add(fill);
+  const ambient = new THREE.AmbientLight(0x223344, 1.8);
+  gState.scene.add(ambient);
+  const sun = new THREE.DirectionalLight(0xfff5e4, 2.2);
+  sun.position.set(5, 3, 5);
+  gState.scene.add(sun);
+  const fill = new THREE.DirectionalLight(0x334466, 0.4);
+  fill.position.set(-4, -2, -3);
+  gState.scene.add(fill);
 
-  const earthGeo = new THREE.SphereGeometry(1, 72, 72);
-  const earthMat = new THREE.MeshPhongMaterial({
-    color: 0x1a4a7a,
-    specular: new THREE.Color(0x1a2a4a),
-    shininess: 12,
-    emissive: new THREE.Color(0x000811),
-  });
-  gState.earth = new THREE.Mesh(earthGeo, earthMat);
-  gState.scene.add(gState.earth);
+  const earthGeo = new THREE.SphereGeometry(1, 72, 72);
+  const earthMat = new THREE.MeshPhongMaterial({
+    color: 0x1a4a7a,
+    specular: new THREE.Color(0x1a2a4a),
+    shininess: 12,
+    emissive: new THREE.Color(0x000811),
+  });
+  gState.earth = new THREE.Mesh(earthGeo, earthMat);
+  gState.scene.add(gState.earth);
 
-  const loader = new THREE.TextureLoader();
-  loader.crossOrigin = 'anonymous';
-  const tryTextures = [
-    'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
-    'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/textures/land_ocean_ice_cloud_2048.jpg',
-  ];
-  function tryLoad(urls, idx = 0) {
-    if (idx >= urls.length) return;
-    loader.load(urls[idx], (tex) => {
-      tex.anisotropy = gState.renderer.capabilities.getMaxAnisotropy();
-      earthMat.map = tex;
-      earthMat.color.set(0xffffff);
-      earthMat.needsUpdate = true;
-    }, undefined, () => tryLoad(urls, idx + 1));
-  }
-  tryLoad(tryTextures);
+  const loader = new THREE.TextureLoader();
+  loader.crossOrigin = 'anonymous';
+  const tryTextures = [
+    'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/textures/land_ocean_ice_cloud_2048.jpg',
+  ];
+  function tryLoad(urls, idx = 0) {
+    if (idx >= urls.length) return;
+    loader.load(urls[idx], (tex) => {
+      tex.anisotropy = gState.renderer.capabilities.getMaxAnisotropy();
+      earthMat.map = tex;
+      earthMat.color.set(0xffffff);
+      earthMat.needsUpdate = true;
+    }, undefined, () => tryLoad(urls, idx + 1));
+  }
+  tryLoad(tryTextures);
 
-  loader.load('https://unpkg.com/three-globe/example/img/earth-water.png', (spec) => {
-    earthMat.specularMap = spec;
-    earthMat.specular.set(0x2255aa);
-    earthMat.shininess = 18;
-    earthMat.needsUpdate = true;
-  });
+  loader.load('https://unpkg.com/three-globe/example/img/earth-water.png', (spec) => {
+    earthMat.specularMap = spec;
+    earthMat.specular.set(0x2255aa);
+    earthMat.shininess = 18;
+    earthMat.needsUpdate = true;
+  });
 
-  const nightMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending });
-  loader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg', (nightTex) => {
-    nightMat.map = nightTex; nightMat.needsUpdate = true;
-  });
-  gState.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.001, 72, 72), nightMat));
+  const nightMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending });
+  loader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg', (nightTex) => {
+    nightMat.map = nightTex; nightMat.needsUpdate = true;
+  });
+  gState.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.001, 72, 72), nightMat));
 
-  const atmMat = new THREE.ShaderMaterial({
-    vertexShader: `
-      varying vec3 vNormal;
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }`,
-    fragmentShader: `
-      varying vec3 vNormal;
-      uniform vec3 glowColor;
-      void main() {
-        float intensity = pow(0.72 - dot(vNormal, vec3(0,0,1.0)), 3.0);
-        gl_FragColor = vec4(glowColor, 1.0) * intensity;
-      }`,
-    uniforms: { glowColor: { value: new THREE.Color(0x4488ff) } },
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending,
-    transparent: true,
-  });
-  gState.atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.18, 72, 72), atmMat);
-  gState.scene.add(gState.atmosphere);
+  const atmMat = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec3 vNormal;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: `
+      varying vec3 vNormal;
+      uniform vec3 glowColor;
+      void main() {
+        float intensity = pow(0.72 - dot(vNormal, vec3(0,0,1.0)), 3.0);
+        gl_FragColor = vec4(glowColor, 1.0) * intensity;
+      }`,
+    uniforms: { glowColor: { value: new THREE.Color(0x4488ff) } },
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+  });
+  gState.atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.18, 72, 72), atmMat);
+  gState.scene.add(gState.atmosphere);
 
-  const markerMat = new THREE.MeshBasicMaterial({ color: 0xff3344 });
-  gState.marker = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 16), markerMat);
-  gState.marker.visible = false;
-  gState.earth.add(gState.marker);
+  const markerMat = new THREE.MeshBasicMaterial({ color: 0xff3344 });
+  gState.marker = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 16), markerMat);
+  gState.marker.visible = false;
+  gState.earth.add(gState.marker);
 
-  const ringGeo = new THREE.RingGeometry(0.03, 0.055, 24);
-  const ringMat = new THREE.MeshBasicMaterial({ color: 0xff3344, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
-  gState.markerRing = new THREE.Mesh(ringGeo, ringMat);
-  gState.markerRing.visible = false;
-  gState.earth.add(gState.markerRing);
+  const ringGeo = new THREE.RingGeometry(0.03, 0.055, 24);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xff3344, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+  gState.markerRing = new THREE.Mesh(ringGeo, ringMat);
+  gState.markerRing.visible = false;
+  gState.earth.add(gState.markerRing);
 
-  let ringPulse = 0;
-  function animate() {
-    gState.animId = requestAnimationFrame(animate);
+  let ringPulse = 0;
+  function animate() {
+    gState.animId = requestAnimationFrame(animate);
 
-    if (!gState.isDragging) {
-      gState.earth.rotation.y += gState.velocity.y;
-      gState.earth.rotation.x += gState.velocity.x;
-      gState.velocity.x *= 0.92;
-      gState.velocity.y *= 0.92;
-      if (gState.autoRotate) gState.earth.rotation.y += 0.0015;
-    }
-    gState.earth.rotation.x = Math.max(-1.1, Math.min(1.1, gState.earth.rotation.x));
+    if (!gState.isDragging) {
+      gState.earth.rotation.y += gState.velocity.y;
+      gState.earth.rotation.x += gState.velocity.x;
+      gState.velocity.x *= 0.92;
+      gState.velocity.y *= 0.92;
+      if (gState.autoRotate) gState.earth.rotation.y += 0.0015;
+    }
+    gState.earth.rotation.x = Math.max(-1.1, Math.min(1.1, gState.earth.rotation.x));
 
-    const zDiff = gState.targetZoom - gState.camera.position.z;
-    gState.camera.position.z += zDiff * 0.08;
+    const zDiff = gState.targetZoom - gState.camera.position.z;
+    gState.camera.position.z += zDiff * 0.08;
 
-    if (gState.markerRing.visible) {
-      ringPulse += 0.04;
-      const s = 1 + 0.35 * Math.sin(ringPulse);
-      gState.markerRing.scale.set(s, s, s);
-      gState.markerRing.material.opacity = 0.3 + 0.4 * (1 - Math.abs(Math.sin(ringPulse)));
-    }
+    if (gState.markerRing.visible) {
+      ringPulse += 0.04;
+      const s = 1 + 0.35 * Math.sin(ringPulse);
+      gState.markerRing.scale.set(s, s, s);
+      gState.markerRing.material.opacity = 0.3 + 0.4 * (1 - Math.abs(Math.sin(ringPulse)));
+    }
 
-    gState.stars.rotation.y -= 0.00012;
+    gState.stars.rotation.y -= 0.00012;
 
-    gState.renderer.render(gState.scene, gState.camera);
-  }
-  animate();
+    gState.renderer.render(gState.scene, gState.camera);
+  }
+  animate();
 
-  setupGlobeControls(canvas, wrap);
+  setupGlobeControls(canvas, wrap);
 
-  new ResizeObserver(() => {
-    const ww = wrap.clientWidth, wh = wrap.clientHeight;
-    if (!ww || !wh) return;
-    gState.camera.aspect = ww / wh;
-    gState.camera.updateProjectionMatrix();
-    gState.renderer.setSize(ww, wh);
-  }).observe(wrap);
+  new ResizeObserver(() => {
+    const ww = wrap.clientWidth, wh = wrap.clientHeight;
+    if (!ww || !wh) return;
+    gState.camera.aspect = ww / wh;
+    gState.camera.updateProjectionMatrix();
+    gState.renderer.setSize(ww, wh);
+  }).observe(wrap);
 }
 
 function setupGlobeControls(canvas, wrap) {
-  let mouseDidMove = false;
+  let mouseDidMove = false;
 
-  canvas.addEventListener('mousedown', e => {
-    gState.isDragging = true;
-    gState.prevMouse = { x: e.clientX, y: e.clientY };
-    gState.mouseDownPos = { x: e.clientX, y: e.clientY };
-    gState.velocity = { x: 0, y: 0 };
-    mouseDidMove = false;
-    canvas.style.cursor = 'grabbing';
-  });
+  canvas.addEventListener('mousedown', e => {
+    gState.isDragging = true;
+    gState.prevMouse = { x: e.clientX, y: e.clientY };
+    gState.mouseDownPos = { x: e.clientX, y: e.clientY };
+    gState.velocity = { x: 0, y: 0 };
+    mouseDidMove = false;
+    canvas.style.cursor = 'grabbing';
+  });
 
-  window.addEventListener('mousemove', e => {
-    if (!gState.isDragging) return;
-    const dx = e.clientX - gState.prevMouse.x;
-    const dy = e.clientY - gState.prevMouse.y;
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) mouseDidMove = true;
-    gState.velocity.y = dx * 0.006;
-    gState.velocity.x = dy * 0.006;
-    gState.earth.rotation.y += dx * 0.006;
-    gState.earth.rotation.x += dy * 0.006;
-    gState.earth.rotation.x = Math.max(-1.1, Math.min(1.1, gState.earth.rotation.x));
-    gState.prevMouse = { x: e.clientX, y: e.clientY };
-  });
+  window.addEventListener('mousemove', e => {
+    if (!gState.isDragging) return;
+    const dx = e.clientX - gState.prevMouse.x;
+    const dy = e.clientY - gState.prevMouse.y;
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) mouseDidMove = true;
+    gState.velocity.y = dx * 0.006;
+    gState.velocity.x = dy * 0.006;
+    gState.earth.rotation.y += dx * 0.006;
+    gState.earth.rotation.x += dy * 0.006;
+    gState.earth.rotation.x = Math.max(-1.1, Math.min(1.1, gState.earth.rotation.x));
+    gState.prevMouse = { x: e.clientX, y: e.clientY };
+  });
 
-  window.addEventListener('mouseup', e => {
-    if (!gState.isDragging) return;
-    gState.isDragging = false;
-    canvas.style.cursor = 'grab';
-    if (!mouseDidMove && gState.mouseDownPos) {
-      globeHandleClick(e.clientX, e.clientY, canvas);
-    }
-    gState.mouseDownPos = null;
-  });
+  window.addEventListener('mouseup', e => {
+    if (!gState.isDragging) return;
+    gState.isDragging = false;
+    canvas.style.cursor = 'grab';
+    if (!mouseDidMove && gState.mouseDownPos) {
+      globeHandleClick(e.clientX, e.clientY, canvas);
+    }
+    gState.mouseDownPos = null;
+  });
 
-  canvas.addEventListener('wheel', e => {
-    e.preventDefault();
-    gState.targetZoom = Math.max(1.35, Math.min(5, gState.targetZoom + e.deltaY * 0.004));
-  }, { passive: false });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    gState.targetZoom = Math.max(1.35, Math.min(5, gState.targetZoom + e.deltaY * 0.004));
+  }, { passive: false });
 
-  let touchStart = null, lastTouch = null, pinchDist = 0;
-  canvas.addEventListener('touchstart', e => {
-    e.preventDefault();
-    if (e.touches.length === 1) {
-      gState.isDragging = true;
-      touchStart = lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      gState.velocity = { x: 0, y: 0 };
-    } else if (e.touches.length === 2) {
-      pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-    }
-  }, { passive: false });
+  let touchStart = null, lastTouch = null, pinchDist = 0;
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      gState.isDragging = true;
+      touchStart = lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      gState.velocity = { x: 0, y: 0 };
+    } else if (e.touches.length === 2) {
+      pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    }
+  }, { passive: false });
 
-  canvas.addEventListener('touchmove', e => {
-    e.preventDefault();
-    if (e.touches.length === 1 && gState.isDragging) {
-      const dx = e.touches[0].clientX - lastTouch.x;
-      const dy = e.touches[0].clientY - lastTouch.y;
-      gState.velocity.y = dx * 0.006;
-      gState.velocity.x = dy * 0.006;
-      gState.earth.rotation.y += dx * 0.006;
-      gState.earth.rotation.x += dy * 0.006;
-      gState.earth.rotation.x = Math.max(-1.1, Math.min(1.1, gState.earth.rotation.x));
-      lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    } else if (e.touches.length === 2) {
-      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      gState.targetZoom = Math.max(1.35, Math.min(5, gState.targetZoom - (dist - pinchDist) * 0.006));
-      pinchDist = dist;
-    }
-  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && gState.isDragging) {
+      const dx = e.touches[0].clientX - lastTouch.x;
+      const dy = e.touches[0].clientY - lastTouch.y;
+      gState.velocity.y = dx * 0.006;
+      gState.velocity.x = dy * 0.006;
+      gState.earth.rotation.y += dx * 0.006;
+      gState.earth.rotation.x += dy * 0.006;
+      gState.earth.rotation.x = Math.max(-1.1, Math.min(1.1, gState.earth.rotation.x));
+      lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      gState.targetZoom = Math.max(1.35, Math.min(5, gState.targetZoom - (dist - pinchDist) * 0.006));
+      pinchDist = dist;
+    }
+  }, { passive: false });
 
-  canvas.addEventListener('touchend', e => {
-    if (e.changedTouches.length && touchStart) {
-      const t = e.changedTouches[0];
-      const dist = Math.hypot(t.clientX - touchStart.x, t.clientY - touchStart.y);
-      if (dist < 12 && e.touches.length === 0) {
-        globeHandleClick(t.clientX, t.clientY, canvas);
-      }
-    }
-    if (e.touches.length === 0) { gState.isDragging = false; touchStart = null; }
-  });
+  canvas.addEventListener('touchend', e => {
+    if (e.changedTouches.length && touchStart) {
+      const t = e.changedTouches[0];
+      const dist = Math.hypot(t.clientX - touchStart.x, t.clientY - touchStart.y);
+      if (dist < 12 && e.touches.length === 0) {
+        globeHandleClick(t.clientX, t.clientY, canvas);
+      }
+    }
+    if (e.touches.length === 0) { gState.isDragging = false; touchStart = null; }
+  });
 
-  document.addEventListener('keydown', e => {
-    if (currentTab !== 'globe') return;
-    const spd = 0.06;
-    switch (e.key) {
-      case 'ArrowLeft':  gState.earth.rotation.y -= spd; gState.velocity.y = -spd * 0.5; break;
-      case 'ArrowRight': gState.earth.rotation.y += spd; gState.velocity.y =  spd * 0.5; break;
-      case 'ArrowUp':    gState.earth.rotation.x = Math.max(-1.1, gState.earth.rotation.x - spd); break;
-      case 'ArrowDown':  gState.earth.rotation.x = Math.min( 1.1, gState.earth.rotation.x + spd); break;
-      case '+': case '=': gState.targetZoom = Math.max(1.35, gState.targetZoom - 0.25); break;
-      case '-': case '_': gState.targetZoom = Math.min(5,    gState.targetZoom + 0.25); break;
-    }
-  });
+  document.addEventListener('keydown', e => {
+    if (currentTab !== 'globe') return;
+    const spd = 0.06;
+    switch (e.key) {
+      case 'ArrowLeft':  gState.earth.rotation.y -= spd; gState.velocity.y = -spd * 0.5; break;
+      case 'ArrowRight': gState.earth.rotation.y += spd; gState.velocity.y =  spd * 0.5; break;
+      case 'ArrowUp':    gState.earth.rotation.x = Math.max(-1.1, gState.earth.rotation.x - spd); break;
+      case 'ArrowDown':  gState.earth.rotation.x = Math.min( 1.1, gState.earth.rotation.x + spd); break;
+      case '+': case '=': gState.targetZoom = Math.max(1.35, gState.targetZoom - 0.25); break;
+      case '-': case '_': gState.targetZoom = Math.min(5,    gState.targetZoom + 0.25); break;
+    }
+  });
 }
 
 async function globeHandleClick(clientX, clientY, canvas) {
-  if (!gState.earth) return;
-  const rect = canvas.getBoundingClientRect();
-  const ndcX = ((clientX - rect.left) / rect.width)  *  2 - 1;
-  const ndcY = ((clientY - rect.top)  / rect.height) * -2 + 1;
+  if (!gState.earth) return;
+  const rect = canvas.getBoundingClientRect();
+  const ndcX = ((clientX - rect.left) / rect.width)  * 2 - 1;
+  const ndcY = ((clientY - rect.top)  / rect.height) * -2 + 1;
 
-  const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera({ x: ndcX, y: ndcY }, gState.camera);
-  const hits = raycaster.intersectObject(gState.earth);
-  if (!hits.length) return;
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera({ x: ndcX, y: ndcY }, gState.camera);
+  const hits = raycaster.intersectObject(gState.earth);
+  if (!hits.length) return;
 
-const localPt = gState.earth.worldToLocal(hits[0].point.clone()).normalize();
-const lat = Math.asin(Math.max(-1, Math.min(1, localPt.y))) * (180 / Math.PI);
-const lon = Math.atan2(-localPt.z, localPt.x) * (180 / Math.PI);
+  const localPt = gState.earth.worldToLocal(hits[0].point.clone()).normalize();
+  const lat = Math.asin(Math.max(-1, Math.min(1, localPt.y))) * (180 / Math.PI);
+  const lon = Math.atan2(-localPt.z, localPt.x) * (180 / Math.PI);
 
-  gState.marker.position.copy(localPt.multiplyScalar(1.02));
-  gState.markerRing.position.copy(gState.marker.position);
-  gState.markerRing.lookAt(gState.earth.position);
-  gState.marker.visible = true;
-  gState.markerRing.visible = true;
+  gState.marker.position.copy(localPt.multiplyScalar(1.02));
+  gState.markerRing.position.copy(gState.marker.position);
+  gState.markerRing.lookAt(gState.earth.position);
+  gState.marker.visible = true;
+  gState.markerRing.visible = true;
 
-  globePanelLoading();
+  globePanelLoading();
 
-  const cacheKey = `${Math.round(lat)}_${Math.round(lon)}`;
-  let geoData = gState.geocodeCache[cacheKey];
+  const cacheKey = `${Math.round(lat)}_${Math.round(lon)}`;
+  let geoData = gState.geocodeCache[cacheKey];
 
-  if (!geoData) {
-    const now = Date.now();
-    const wait = Math.max(0, 1000 - (now - gState.lastGeocode));
-    await new Promise(r => setTimeout(r, wait));
-    gState.lastGeocode = Date.now();
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&format=json&zoom=3`,
-        { headers: { 'Accept-Language': 'en' } }
-      );
-      geoData = await res.json();
-      gState.geocodeCache[cacheKey] = geoData;
-    } catch {
-      globePanelError('Geocoding failed. Check your connection.');
-      return;
-    }
-  }
+  if (!geoData) {
+    const now = Date.now();
+    const wait = Math.max(0, 1000 - (now - gState.lastGeocode));
+    await new Promise(r => setTimeout(r, wait));
+    gState.lastGeocode = Date.now();
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&format=json&zoom=3`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      geoData = await res.json();
+      gState.geocodeCache[cacheKey] = geoData;
+    } catch {
+      globePanelError('Geocoding failed. Check your connection.');
+      return;
+    }
+  }
 
-  const countryCode = geoData?.address?.country_code?.toUpperCase();
-  const countryName = geoData?.address?.country || geoData?.display_name?.split(',').pop()?.trim();
+  const countryCode = geoData?.address?.country_code?.toUpperCase();
+  const countryName = geoData?.address?.country || geoData?.display_name?.split(',').pop()?.trim();
 
-  if (!countryCode) {
-    globePanelOcean();
-    globeLabelShow('🌊', 'Open Ocean');
-    return;
-  }
+  if (!countryCode) {
+    globePanelOcean();
+    globeLabelShow('🌊', 'Open Ocean');
+    return;
+  }
 
-  const flag = countryCodeToFlag(countryCode);
-  gState.currentCountryCode = countryCode;
-  globeLabelShow(flag, countryName);
-  document.getElementById('globePanelTitle').textContent = flag + ' ' + (countryName || countryCode);
-  await globeLoadStations(countryCode, countryName);
+  const flag = countryCodeToFlag(countryCode);
+  gState.currentCountryCode = countryCode;
+  globeLabelShow(flag, countryName);
+  document.getElementById('globePanelTitle').textContent = flag + ' ' + (countryName || countryCode);
+  await globeLoadStations(countryCode, countryName);
 }
 
 function countryCodeToFlag(code) {
-  if (!code || code.length !== 2) return '🏳️';
-  return [...code.toUpperCase()].map(c => String.fromCodePoint(c.charCodeAt(0) + 127397)).join('');
+  if (!code || code.length !== 2) return '🏳️';
+  return [...code.toUpperCase()].map(c => String.fromCodePoint(c.charCodeAt(0) + 127397)).join('');
 }
 
 async function globeLoadStations(countryCode, countryName) {
-  const list = document.getElementById('globeStationList');
-  list.innerHTML = `<div class="globe-panel-state"><span class="connecting-spinner" style="width:20px;height:20px;border-width:3px;"></span><span style="margin-top:8px;">Finding stations in ${countryName||countryCode}…</span></div>`;
+  const list = document.getElementById('globeStationList');
+  list.innerHTML = `<div class="globe-panel-state"><span class="connecting-spinner" style="width:20px;height:20px;border-width:3px;"></span><span style="margin-top:8px;">Finding stations in ${countryName||countryCode}…</span></div>`;
 
-  try {
-    const url = `${MIRRORS[mirrorIdx]}/stations/search?limit=50&hidebroken=true&order=clickcount&reverse=true&countrycode=${encodeURIComponent(countryCode)}`;
-    const r = await fetch(url);
-    const stations = await r.json();
+  try {
+    const url = `${MIRRORS[mirrorIdx]}/stations/search?limit=50&hidebroken=true&order=clickcount&reverse=true&countrycode=${encodeURIComponent(countryCode)}`;
+    const r = await fetch(url);
+    const stations = await r.json();
 
-    if (!stations || stations.length === 0) {
-      list.innerHTML = `<div class="globe-panel-state"><div class="big-emoji">📻</div><strong>No stations found</strong>No radio stations from this country in our database.</div>`;
-      document.getElementById('globePanelCount').textContent = '';
-      return;
-    }
+    if (!stations || stations.length === 0) {
+      list.innerHTML = `<div class="globe-panel-state"><div class="big-emoji">📻</div><strong>No stations found</strong>No radio stations from this country in our database.</div>`;
+      document.getElementById('globePanelCount').textContent = '';
+      return;
+    }
 
-    stations.forEach(s => stationMap.set(s.stationuuid, s));
-    document.getElementById('globePanelCount').textContent = `${stations.length} stations`;
+    stations.forEach(s => stationMap.set(s.stationuuid, s));
+    document.getElementById('globePanelCount').textContent = `${stations.length} stations`;
 
-    list.innerHTML = '';
-    stations.forEach((s, i) => {
-      const isPlaying = currentStation && currentStation.stationuuid === s.stationuuid;
-      const row = document.createElement('div');
-      row.className = 'globe-station-row' + (isPlaying ? ' now-playing' : '');
-      row.dataset.uuid = s.stationuuid;
-      row.style.animationDelay = `${Math.min(i, 30) * 0.03}s`;
-      row.innerHTML = `
-        <img class="globe-station-avatar" src="${esc(s.favicon)||'https://cdn-icons-png.flaticon.com/512/565/565296.png'}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565296.png'" loading="lazy" alt="">
-        <div class="globe-station-info">
-          <div class="globe-station-name">${esc(s.name)}</div>
-          <div class="globe-station-tags">${esc(s.tags||'radio')}${s.bitrate?' · '+s.bitrate+'kbps':''}</div>
-        </div>
-        <button class="globe-play-btn" title="Play">▶</button>
-      `;
-      row.querySelector('.globe-play-btn').addEventListener('click', e => { e.stopPropagation(); globePlayStation(s, row); });
-      row.addEventListener('click', () => globePlayStation(s, row));
-      list.appendChild(row);
-    });
-  } catch {
-    globePanelError('Failed to load stations. Please try again.');
-  }
+    list.innerHTML = '';
+    stations.forEach((s, i) => {
+      const isPlaying = currentStation && currentStation.stationuuid === s.stationuuid;
+      const row = document.createElement('div');
+      row.className = 'globe-station-row' + (isPlaying ? ' now-playing' : '');
+      row.dataset.uuid = s.stationuuid;
+      row.style.animationDelay = `${Math.min(i, 30) * 0.03}s`;
+      row.innerHTML = `
+        <img class="globe-station-avatar" src="${esc(s.favicon)||'https://cdn-icons-png.flaticon.com/512/565/565296.png'}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565296.png'" loading="lazy" alt="">
+        <div class="globe-station-info">
+          <div class="globe-station-name">${esc(s.name)}</div>
+          <div class="globe-station-tags">${esc(s.tags||'radio')}${s.bitrate?' · '+s.bitrate+'kbps':''}</div>
+        </div>
+        <button class="globe-play-btn" title="Play">▶</button>
+      `;
+      row.querySelector('.globe-play-btn').addEventListener('click', e => { e.stopPropagation(); globePlayStation(s, row); });
+      row.addEventListener('click', () => globePlayStation(s, row));
+      list.appendChild(row);
+    });
+  } catch {
+    globePanelError('Failed to load stations. Please try again.');
+  }
 }
 
 function globePlayStation(s, rowEl) {
-  document.querySelectorAll('.globe-station-row').forEach(r => r.classList.remove('now-playing'));
-  rowEl.classList.add('now-playing');
-  playStation(s);
-  showToast(`▶ ${s.name}`);
+  document.querySelectorAll('.globe-station-row').forEach(r => r.classList.remove('now-playing'));
+  rowEl.classList.add('now-playing');
+  playStation(s);
+  showToast(`▶ ${s.name}`);
 }
 
 function globePanelLoading() {
-  document.getElementById('globeStationList').innerHTML = `<div class="globe-panel-state"><span class="connecting-spinner" style="width:20px;height:20px;border-width:3px;"></span><span style="margin-top:8px;">Identifying location…</span></div>`;
-  document.getElementById('globePanelTitle').textContent = 'Stations';
-  document.getElementById('globePanelCount').textContent = '';
+  document.getElementById('globeStationList').innerHTML = `<div class="globe-panel-state"><span class="connecting-spinner" style="width:20px;height:20px;border-width:3px;"></span><span style="margin-top:8px;">Identifying location…</span></div>`;
+  document.getElementById('globePanelTitle').textContent = 'Stations';
+  document.getElementById('globePanelCount').textContent = '';
 }
 function globePanelOcean() {
-  document.getElementById('globeStationList').innerHTML = `<div class="globe-panel-state"><div class="big-emoji">🌊</div><strong>Open Ocean</strong>Try clicking on a landmass to browse a country's stations.</div>`;
-  document.getElementById('globePanelTitle').textContent = 'Stations';
-  document.getElementById('globePanelCount').textContent = '';
+  document.getElementById('globeStationList').innerHTML = `<div class="globe-panel-state"><div class="big-emoji">🌊</div><strong>Open Ocean</strong>Try clicking on a landmass to browse a country's stations.</div>`;
+  document.getElementById('globePanelTitle').textContent = 'Stations';
+  document.getElementById('globePanelCount').textContent = '';
 }
 function globePanelError(msg) {
-  document.getElementById('globeStationList').innerHTML = `<div class="globe-panel-state"><div class="big-emoji">⚠️</div><strong>Error</strong>${msg}</div>`;
-  document.getElementById('globePanelCount').textContent = '';
+  document.getElementById('globeStationList').innerHTML = `<div class="globe-panel-state"><div class="big-emoji">⚠️</div><strong>Error</strong>${msg}</div>`;
+  document.getElementById('globePanelCount').textContent = '';
 }
 
 function globeLabelShow(flag, name) {
-  const label = document.getElementById('globeCountryLabel');
-  document.getElementById('globeCountryFlag').textContent = flag;
-  document.getElementById('globeCountryName').textContent = name;
-  label.classList.add('visible');
+  const label = document.getElementById('globeCountryLabel');
+  document.getElementById('globeCountryFlag').textContent = flag;
+  document.getElementById('globeCountryName').textContent = name;
+  label.classList.add('visible');
 }
 
 function globeResetView() {
-  gState.targetZoom = 2.6;
-  gState.velocity = { x: 0, y: 0 };
-  gState.earth.rotation.x = 0;
-  gState.earth.rotation.y = 0;
-  showToast('View reset');
+  gState.targetZoom = 2.6;
+  gState.velocity = { x: 0, y: 0 };
+  gState.earth.rotation.x = 0;
+  gState.earth.rotation.y = 0;
+  showToast('View reset');
 }
 function toggleGlobeAutoRotate() {
-  gState.autoRotate = !gState.autoRotate;
-  const btn = document.getElementById('btnGlobeAutoRotate');
-  btn.classList.toggle('btn-active', gState.autoRotate);
-  showToast(gState.autoRotate ? '⟳ Auto-rotate on' : 'Auto-rotate off');
+  gState.autoRotate = !gState.autoRotate;
+  const btn = document.getElementById('btnGlobeAutoRotate');
+  btn.classList.toggle('btn-active', gState.autoRotate);
+  showToast(gState.autoRotate ? '⟳ Auto-rotate on' : 'Auto-rotate off');
 }
 
 </script>
