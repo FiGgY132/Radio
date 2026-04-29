@@ -1,2 +1,2 @@
 # Radio
-HTML5 Radio player
+Fully featured HTML5 Radio player - every internet radio station I can find. Podcasts too.
