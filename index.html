@@ -528,7 +528,7 @@ let mirrorIdx=0;
 const VIEW_SEARCH=0,VIEW_FAV=1,VIEW_HIST=2;
 let currentView=VIEW_SEARCH,currentTab='radio';
 let currentStations=[],stationMap=new Map();
-let favouriteSet=new Set(),favouriteList=[],historyList=[],ratingsMap={};
+let favouriteSet=new Set(),favouriteList=[],historyList=[],ratingsMap={},podcastHistoryList=[];
 let searchController=null,searchDebounceTimer=null;
 let currentHls=null,currentStation=null,currentTVChannel=null,tvHls=null;
 let sleepTimerTimeout=null,alarmTimeout=null,alarmStation=null;
@@ -584,12 +584,14 @@ function loadData(){
   try{ratingsMap=JSON.parse(storage.get('radio_ratings'))||{};}catch{ratingsMap={};}
   try{const t=storage.get('radio_theme');if(t)setTheme(t,true);}catch{}
   try{customTVChannels=JSON.parse(storage.get('tv_custom'))||[];tvChannels=[...TV_CHANNELS,...customTVChannels];}catch{}
+  try{podcastHistoryList=JSON.parse(storage.get('podcast_history'))||[];}catch{podcastHistoryList=[];}
 }
 function saveData(){
   storage.set('radio_favs_v2',JSON.stringify(favouriteList));
   storage.set('radio_history',JSON.stringify(historyList));
   storage.set('radio_ratings',JSON.stringify(ratingsMap));
   storage.set('tv_custom',JSON.stringify(customTVChannels));
+  storage.set('podcast_history',JSON.stringify(podcastHistoryList));
 }
 
 window.addEventListener('load',async()=>{
@@ -642,6 +644,10 @@ function switchTab(tab){
   }
 
   if(tab==='lofi'&&document.getElementById('lofiGrid').innerHTML==='') renderLofi();
+  if(tab==='podcast'){
+    document.getElementById('podcastSearch').value='';
+    loadDefaultPodcasts();
+  }
 }
 
 function startSearch(){
@@ -909,29 +915,87 @@ async function fetchRemotePlaylist(url){
   catch{showToast('Failed (CORS or bad link)');}
 }
 
-function searchPodcasts(retryCount=0){
-  const term=document.getElementById('podcastSearch').value;if(!term)return;
-  const grid=document.getElementById('podcastGrid');
-  if(retryCount===0)grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Connecting to Apple…</div>';
-  const cbName='itunes_cb_'+Date.now()+'_'+retryCount;
-  window[cbName]=function(data){
-    grid.innerHTML='';
-    if(!data.results||data.results.length===0){grid.innerHTML='<div class="message-box">No podcasts found.</div>';cleanup();return;}
-    data.results.forEach(pod=>{
-      const div=document.createElement('div');div.className='station-card';
-      const img=pod.artworkUrl600||pod.artworkUrl100||'https://cdn-icons-png.flaticon.com/512/3043/3043564.png';
-      div.innerHTML=`<img src="${img}" class="station-img"><div class="station-name">${esc(pod.collectionName)}</div><div class="station-tags">${esc(pod.artistName)}</div>`;
-      div.onclick=()=>{if(pod.collectionId)loadPodcastEpisodes(pod.collectionId,pod.collectionName,img);else showToast('Episodes unavailable');};
-      grid.appendChild(div);
-    });
+function loadDefaultPodcasts() {
+  const grid = document.getElementById('podcastGrid');
+  grid.innerHTML = '<div class="message-box"><span class="connecting-spinner"></span> Discovering podcasts...</div>';
+  const categories = ["True Crime", "Comedy", "Technology", "Daily News", "History", "Business", "Science"];
+  const randomCat = categories[Math.floor(Math.random() * categories.length)];
+  const cbName = 'itunes_cb_default_' + Date.now();
+  window[cbName] = function(data) {
+    grid.innerHTML = '';
+    if (podcastHistoryList.length > 0) {
+      const histTitle = document.createElement('div');
+      histTitle.style.gridColumn = '1 / -1';
+      histTitle.style.fontWeight = '800';
+      histTitle.style.marginTop = '10px';
+      histTitle.style.color = 'var(--txt2)';
+      histTitle.textContent = '🕒 Recently Played';
+      grid.appendChild(histTitle);
+      podcastHistoryList.slice(0, 6).forEach(pod => grid.appendChild(createPodcastCard(pod)));
+      const popTitle = document.createElement('div');
+      popTitle.style.gridColumn = '1 / -1';
+      popTitle.style.fontWeight = '800';
+      popTitle.style.marginTop = '20px';
+      popTitle.style.color = 'var(--txt2)';
+      popTitle.textContent = `🔥 Popular in ${randomCat}`;
+      grid.appendChild(popTitle);
+    }
+    if (data.results && data.results.length > 0) {
+      data.results.forEach(pod => grid.appendChild(createPodcastCard(pod)));
+    } else {
+      grid.innerHTML += '<div class="message-box">No recommendations found.</div>';
+    }
     cleanup();
   };
   function cleanup(){delete window[cbName];const s=document.getElementById(cbName);if(s)s.remove();}
   const script=document.createElement('script');script.id=cbName;
-  script.src=`https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=20&callback=${cbName}`;
+  script.src=`https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(randomCat)}&limit=18&callback=${cbName}`;
+  script.onerror=()=>{cleanup();grid.innerHTML='<div class="message-box" style="color:var(--danger)">Network error loading podcasts.</div>';};
+  document.body.appendChild(script);
+}
+
+function createPodcastCard(pod) {
+  const div=document.createElement('div');div.className='station-card';
+  const img=pod.artworkUrl600||pod.artworkUrl100||'https://cdn-icons-png.flaticon.com/512/3043/3043564.png';
+  div.innerHTML=`<img src="${img}" class="station-img"><div class="station-name">${esc(pod.collectionName)}</div><div class="station-tags">${esc(pod.artistName)}</div>`;
+  div.onclick=()=>{
+    addToPodcastHistory(pod);
+    if(pod.collectionId)loadPodcastEpisodes(pod.collectionId,pod.collectionName,img);
+    else showToast('Episodes unavailable');
+  };
+  return div;
+}
+
+function addToPodcastHistory(pod) {
+  podcastHistoryList = [pod, ...podcastHistoryList.filter(h => h.collectionId !== pod.collectionId)].slice(0, 12);
+  saveData();
+}
+
+function searchPodcasts(retryCount=0){
+  const term=document.getElementById('podcastSearch').value;if(!term)return;
+  const grid=document.getElementById('podcastGrid');
+  if(retryCount===0)grid.innerHTML='<div class="message-box"><span class="connecting-spinner"></span> Searching iTunes...</div>';
+  const cbName='itunes_cb_'+Date.now()+'_'+retryCount;
+  window[cbName]=function(data){
+    grid.innerHTML='';
+    const searchTitle = document.createElement('div');
+    searchTitle.style.gridColumn = '1 / -1';
+    searchTitle.style.fontWeight = '800';
+    searchTitle.style.marginTop = '10px';
+    searchTitle.style.color = 'var(--txt2)';
+    searchTitle.textContent = `🔍 Results for "${term}"`;
+    grid.appendChild(searchTitle);
+    if(!data.results||data.results.length===0){grid.innerHTML+='<div class="message-box">No podcasts found.</div>';cleanup();return;}
+    data.results.forEach(pod => grid.appendChild(createPodcastCard(pod)));
+    cleanup();
+  };
+  function cleanup(){delete window[cbName];const s=document.getElementById(cbName);if(s)s.remove();}
+  const script=document.createElement('script');script.id=cbName;
+  script.src=`https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}&limit=24&callback=${cbName}`;
   script.onerror=()=>{cleanup();if(retryCount<3){setTimeout(()=>searchPodcasts(retryCount+1),12000);}else{grid.innerHTML='<div class="message-box" style="color:var(--danger)">Apple servers busy. Try again.</div>';}};
   document.body.appendChild(script);
 }
+
 function loadPodcastEpisodes(collectionId,podcastName,img){
   const modal=document.getElementById('episodeModal'),list=document.getElementById('episodeList');
   document.getElementById('epModalTitle').textContent=podcastName;document.getElementById('epModalImg').src=img;
