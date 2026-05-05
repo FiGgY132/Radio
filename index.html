@@ -400,6 +400,9 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <div class="viz-mode-btn" data-viz="tracker" onclick="setVizMode('tracker')">☷</div>
         <div class="viz-mode-btn" data-viz="sym" onclick="setVizMode('sym')">≏</div>
         <div class="viz-mode-btn" data-viz="glitch" onclick="setVizMode('glitch')">░</div>
+        <div class="viz-mode-btn" data-viz="matrix" onclick="setVizMode('matrix')">⑆</div>
+        <div class="viz-mode-btn" data-viz="copper" onclick="setVizMode('copper')">▨</div>
+        <div class="viz-mode-btn" data-viz="tunnel" onclick="setVizMode('tunnel')">⎔</div>
       </div>
       <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
       <button class="icon-btn" onclick="moreLikeThis()" title="More like this">🔍</button>
@@ -803,7 +806,9 @@ function startVisualizer(){if(!vizRunning){vizRunning=true;_vizLoop();}}
 function stopVisualizer(){vizRunning=false;if(rafId)cancelAnimationFrame(rafId);rafId=null;}
 function _vizLoop(){
   if(!vizRunning)return;
-  const W=vizCanvas.width,H=vizCanvas.height;vizCtx.clearRect(0,0,W,H);
+  const W=vizCanvas.width,H=vizCanvas.height;
+  vizCtx.globalAlpha=1.0;
+  vizCtx.clearRect(0,0,W,H);
   const isPlaying=!activeAudio.paused&&!activeAudio.muted&&activeAudio.volume>0;
   if(isPlaying){
     const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
@@ -814,6 +819,9 @@ function _vizLoop(){
     else if(vizMode==='tracker'){const bars=32,bw=W/bars;for(let i=0;i<bars;i++){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);v=(dataArray[i]||0)/255;}else{v=Math.abs(Math.sin(vizTime+i*0.4))*activeAudio.volume;}let blocks=Math.floor(v*5.5);for(let b=0;b<blocks;b++){vizCtx.fillStyle=b>3?'#ff4060':b>2?'#ffcc00':color;vizCtx.fillRect(i*bw,H-(b*4)-3,bw-1,3);}}}
     else if(vizMode==='sym'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1;const pts=90;for(let i=0;i<pts;i++){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);v=(dataArray[i]||0)/255;}else{v=Math.abs(Math.sin(vizTime*2+i*0.1))*activeAudio.volume;}let h=v*(H/2)*0.9;vizCtx.moveTo(i*(W/pts),H/2-h);vizCtx.lineTo(i*(W/pts),H/2+h);}vizCtx.stroke();}
     else if(vizMode==='glitch'){for(let i=0;i<H;i+=2){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);v=(dataArray[Math.floor((i/H)*64)]||0)/255;}else{v=Math.abs(Math.cos(vizTime*3+i))*activeAudio.volume;}if(v>0.2){vizCtx.fillStyle=(i%4===0)?color:'#ffffff';let w=v*W;let x=(Math.sin(vizTime*10+i)*5)+(W/2-w/2);vizCtx.fillRect(x,i,w,2);}}}
+    else if(vizMode==='matrix'){let bass=0.5;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);bass=(dataArray[2]||0)/255;}else{bass=Math.abs(Math.sin(vizTime))*activeAudio.volume;}vizCtx.fillStyle=color;for(let x=0;x<W;x+=8){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser)v=(dataArray[Math.floor((x/W)*64)]||0)/255;else v=Math.abs(Math.cos(vizTime+(x/20)))*activeAudio.volume;if(v>0.1)vizCtx.fillRect(x,H/2-(v*H/2.5),3,v*H/1.25);}vizCtx.font='bold 14px "Space Mono", monospace';vizCtx.fillStyle='#fff';let txt=currentStation?`${currentStation.name.toUpperCase()} [${currentStation.country||'NET'}] `:'AWAITING SIGNAL... ';let tW=vizCtx.measureText(txt).width;let offset=-(vizTime*60)%tW;for(let loop=0;loop<Math.ceil(W/tW)+1;loop++){let cx=offset+(loop*tW);for(let i=0;i<txt.length;i++){let charW=vizCtx.measureText(txt[i]).width;if(cx>-20&&cx<W+20){let cy=H/2+5+Math.sin(vizTime*4+(cx/30))*12*(0.5+bass*0.5);vizCtx.fillText(txt[i],cx,cy);}cx+=charW;}}}
+    else if(vizMode==='copper'){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);v=(dataArray[4]||0)/255;}else{v=Math.abs(Math.sin(vizTime))*activeAudio.volume;}for(let i=0;i<5;i++){const y=H/2+Math.sin(vizTime*1.5+i*1.2)*(H/2.2)*(1+v*0.3);const grad=vizCtx.createLinearGradient(0,y-10,0,y+10);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(0.5,i%2===0?color:'#ff4060');grad.addColorStop(1,'rgba(0,0,0,0)');vizCtx.fillStyle=grad;vizCtx.fillRect(0,y-10,W,20);}}
+    else if(vizMode==='tunnel'){if(useRealVisualizer&&isAudioCtxSetup&&analyser)analyser.getByteFrequencyData(dataArray);const cx=W/2,cy=H/2;vizCtx.lineWidth=1.5;for(let i=14;i>0;i--){const z=i-(vizTime*2.5%1);const scale=80/Math.max(0.1,z);let ringAudio=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser&&dataArray)ringAudio=(dataArray[Math.floor(i*4)]||0)/255;else ringAudio=Math.abs(Math.sin(vizTime+i))*activeAudio.volume;const r=scale*(0.8+ringAudio*0.4);const rot=vizTime*0.5+(i*0.2);const offsetX=Math.sin(vizTime*1.2+i*0.1)*(40/z);const offsetY=Math.cos(vizTime*0.9+i*0.1)*(40/z);vizCtx.strokeStyle=i%3===0?'#ff4060':color;vizCtx.globalAlpha=Math.max(0,1-(z/14));vizCtx.beginPath();for(let s=0;s<=6;s++){const a=rot+(s/6)*Math.PI*2;const px=cx+offsetX+Math.cos(a)*r;const py=cy+offsetY+Math.sin(a)*r;if(s===0)vizCtx.moveTo(px,py);else vizCtx.lineTo(px,py);}vizCtx.stroke();}vizCtx.globalAlpha=1.0;}
   }
   rafId=requestAnimationFrame(_vizLoop);
 }
