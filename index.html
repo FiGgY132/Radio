@@ -1184,7 +1184,7 @@ function initGlobe() {
     shininess: 12,
     emissive: new THREE.Color(0x000811),
   });
-  gState.earth = new Mesh(earthGeo, earthMat);
+  gState.earth = new THREE.Mesh(earthGeo, earthMat);
   gState.scene.add(gState.earth);
 
   const loader = new THREE.TextureLoader();
