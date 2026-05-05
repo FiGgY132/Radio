@@ -119,7 +119,7 @@ main.globe-active{overflow:hidden;padding:0;}
 .now-playing-bar{overflow:hidden;white-space:nowrap;height:18px;position:relative;}
 .now-playing-inner{display:inline-block;font-size:0.7rem;font-family:var(--font-mono);color:var(--accent);}
 .now-playing-inner.scrolling{animation:npScroll 20s linear infinite;padding-right:80px;}
-#visualizerCanvas{display:none;height:44px;}
+#visualizerCanvas{display:none;height:80px;}
 #visualizerCanvas.active{display:block;}
 .player-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .icon-btn{background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;font-size:0.9rem;padding:0;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
@@ -385,7 +385,7 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <span class="now-playing-inner" id="nowPlayingInner"></span>
       </div>
     </div>
-    <canvas id="visualizerCanvas" width="220" height="44" aria-hidden="true"></canvas>
+    <canvas id="visualizerCanvas" width="220" height="80" aria-hidden="true"></canvas>
     <div class="player-controls">
       <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
       <button class="icon-btn" onclick="stopPlayback()" title="Stop">⏹️</button>
