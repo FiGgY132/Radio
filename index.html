@@ -14,6 +14,9 @@
 [data-theme="synthwave"]{--bg:#0d0021;--bg2:#130030;--card:rgba(100,20,160,0.2);--card-hover:rgba(140,30,200,0.3);--border:rgba(255,45,126,0.2);--txt:#ffe8ff;--txt2:#c090d0;--accent:#ff2d7e;--accent2:#00d4ff;--danger:#ff6b35;--player-bg:#08001a;--viz-color:#ff2d7e;--glow:rgba(255,45,126,0.3);--scan-opacity:0;--grid-bg:linear-gradient(rgba(255,45,126,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,45,126,0.04) 1px,transparent 1px);--grid-size:40px;--card-radius:4px;}
 [data-theme="crt"]{--bg:#040800;--bg2:#070d00;--card:#0a1100;--card-hover:#111a00;--border:rgba(51,255,0,0.15);--txt:#a0ff60;--txt2:#508030;--accent:#33ff00;--accent2:#ffcc00;--danger:#ff4400;--player-bg:#020400;--viz-color:#33ff00;--glow:rgba(51,255,0,0.2);--scan-opacity:0.04;--grid-bg:none;--card-radius:2px;}
 [data-theme="arctic"]{--bg:#e8eef5;--bg2:#f2f6fb;--card:rgba(255,255,255,0.7);--card-hover:rgba(255,255,255,0.9);--border:rgba(0,100,220,0.12);--txt:#1a2540;--txt2:#607090;--accent:#0055ff;--accent2:#ff4060;--danger:#cc0030;--player-bg:rgba(240,246,255,0.95);--viz-color:#0055ff;--glow:rgba(0,85,255,0.15);--scan-opacity:0;--grid-bg:none;--card-radius:16px;--glass:blur(12px);}
+[data-theme="cyberpunk"]{--bg:#0f0f0f;--bg2:#1f1f1f;--card:#1a1a00;--card-hover:#2a2a00;--border:#ff003c;--txt:#fcee09;--txt2:#00f0ff;--accent:#00f0ff;--accent2:#ff003c;--danger:#ff003c;--player-bg:#000;--viz-color:#fcee09;--glow:rgba(0,240,255,0.4);--scan-opacity:0.02;--grid-bg:linear-gradient(rgba(255,0,60,0.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,0,60,0.1) 1px,transparent 1px);--grid-size:30px;--card-radius:0px;}
+[data-theme="coffee"]{--bg:#f4ece2;--bg2:#ebdacc;--card:#fff;--card-hover:#fdfaf7;--border:#d5c3b3;--txt:#4a3b32;--txt2:#7a6b62;--accent:#c97a34;--accent2:#8c5b35;--danger:#b83b3b;--player-bg:#fff;--viz-color:#c97a34;--glow:rgba(201,122,52,0.15);--scan-opacity:0;--grid-bg:none;--card-radius:12px;}
+[data-theme="hacker"]{--bg:#000;--bg2:#050505;--card:#0a0a0a;--card-hover:#111;--border:#003300;--txt:#00ff00;--txt2:#008800;--accent:#00ff00;--accent2:#00cc00;--danger:#ff0000;--player-bg:#000;--viz-color:#00ff00;--glow:rgba(0,255,0,0.3);--scan-opacity:0.02;--grid-bg:none;--card-radius:0px;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font-display);background-color:var(--bg);color:var(--txt);height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;transition:background-color 0.4s,color 0.4s;position:relative;}
 #ambientBg{position:fixed;inset:0;z-index:0;pointer-events:none;transition:background 2s ease;opacity:0.15;}
@@ -57,6 +60,9 @@ button:hover{border-color:var(--accent);color:var(--accent);}
 .theme-dot[data-t="synthwave"]{background:conic-gradient(#ff2d7e,#00d4ff,#0d0021);}
 .theme-dot[data-t="crt"]{background:conic-gradient(#33ff00,#ffcc00,#040800);}
 .theme-dot[data-t="arctic"]{background:conic-gradient(#0055ff,#ff4060,#e8eef5);}
+.theme-dot[data-t="cyberpunk"]{background:conic-gradient(#ff003c,#00f0ff,#fcee09);}
+.theme-dot[data-t="coffee"]{background:conic-gradient(#c97a34,#ebdacc,#f4ece2);}
+.theme-dot[data-t="hacker"]{background:conic-gradient(#00ff00,#003300,#000);}
 
 main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;position:relative;z-index:1;}
 main.globe-active{overflow:hidden;padding:0;}
@@ -113,7 +119,7 @@ main.globe-active{overflow:hidden;padding:0;}
 .now-playing-bar{overflow:hidden;white-space:nowrap;height:18px;position:relative;}
 .now-playing-inner{display:inline-block;font-size:0.7rem;font-family:var(--font-mono);color:var(--accent);}
 .now-playing-inner.scrolling{animation:npScroll 20s linear infinite;padding-right:80px;}
-#visualizerCanvas{display:none;height:70px;}
+#visualizerCanvas{display:none;height:60px;}
 #visualizerCanvas.active{display:block;}
 .player-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .icon-btn{background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;font-size:0.9rem;padding:0;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
@@ -300,6 +306,9 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <div class="theme-dot" data-t="synthwave" onclick="setTheme('synthwave')"></div>
         <div class="theme-dot" data-t="crt" onclick="setTheme('crt')"></div>
         <div class="theme-dot" data-t="arctic" onclick="setTheme('arctic')"></div>
+        <div class="theme-dot" data-t="cyberpunk" onclick="setTheme('cyberpunk')"></div>
+        <div class="theme-dot" data-t="coffee" onclick="setTheme('coffee')"></div>
+        <div class="theme-dot" data-t="hacker" onclick="setTheme('hacker')"></div>
       </div>
     </div>
   </div>
@@ -429,7 +438,7 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <span class="now-playing-inner" id="nowPlayingInner"></span>
       </div>
     </div>
-    <canvas id="visualizerCanvas" width="180" height="65" aria-hidden="true"></canvas>
+    <canvas id="visualizerCanvas" width="220" height="60" aria-hidden="true"></canvas>
     <div class="player-controls">
       <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
       <button class="icon-btn" onclick="stopPlayback()" title="Stop">⏹️</button>
@@ -441,6 +450,9 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <div class="viz-mode-btn active" data-viz="bars" onclick="setVizMode('bars')">▮▮▮</div>
         <div class="viz-mode-btn" data-viz="wave" onclick="setVizMode('wave')">∿</div>
         <div class="viz-mode-btn" data-viz="radial" onclick="setVizMode('radial')">◎</div>
+        <div class="viz-mode-btn" data-viz="tracker" onclick="setVizMode('tracker')">☷</div>
+        <div class="viz-mode-btn" data-viz="sym" onclick="setVizMode('sym')">≏</div>
+        <div class="viz-mode-btn" data-viz="glitch" onclick="setVizMode('glitch')">░</div>
       </div>
       <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
       <button class="icon-btn" onclick="moreLikeThis()" title="More like this">🔍</button>
@@ -851,6 +863,9 @@ function _vizLoop(){
     if(vizMode==='bars'){const bars=30,bw=W/bars;for(let i=0;i<bars;i++){let h;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);h=Math.max(1,(dataArray[i]||0)/255*H);}else{h=Math.max(1,Math.abs(Math.sin(vizTime+i*0.5)*Math.cos(vizTime*0.7-i*0.3))*H*0.85*activeAudio.volume);}vizCtx.fillStyle=color;vizCtx.fillRect(i*bw,H-h,bw-1.5,h);}}
     else if(vizMode==='wave'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1.5;const pts=60;for(let i=0;i<pts;i++){let y;if(useRealVisualizer&&isAudioCtxSetup&&analyser){const wf=new Uint8Array(analyser.fftSize);analyser.getByteTimeDomainData(wf);y=(wf[Math.floor(i*wf.length/pts)]/128-1)*(H/2)+(H/2);}else{y=H/2+Math.sin(vizTime*1.5+i*0.2)*Math.cos(vizTime*0.9+i*0.1)*(H/2)*0.7*activeAudio.volume;}i===0?vizCtx.moveTo(i*W/pts,y):vizCtx.lineTo(i*W/pts,y);}vizCtx.stroke();}
     else if(vizMode==='radial'){const cx=W/2,cy=H/2,r=H/2-3,bars=24;for(let i=0;i<bars;i++){let len;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);len=(dataArray[i]||0)/255*r*0.8;}else{len=Math.abs(Math.sin(vizTime+i*0.26))*r*0.7*activeAudio.volume;}const angle=(i/bars)*Math.PI*2;vizCtx.strokeStyle=color;vizCtx.lineWidth=2;vizCtx.beginPath();vizCtx.moveTo(cx+Math.cos(angle)*3,cy+Math.sin(angle)*3);vizCtx.lineTo(cx+Math.cos(angle)*(3+len),cy+Math.sin(angle)*(3+len));vizCtx.stroke();}}
+    else if(vizMode==='tracker'){const bars=32,bw=W/bars;for(let i=0;i<bars;i++){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);v=(dataArray[i]||0)/255;}else{v=Math.abs(Math.sin(vizTime+i*0.4))*activeAudio.volume;}let blocks=Math.floor(v*5.5);for(let b=0;b<blocks;b++){vizCtx.fillStyle=b>3?'#ff4060':b>2?'#ffcc00':color;vizCtx.fillRect(i*bw,H-(b*4)-3,bw-1,3);}}}
+    else if(vizMode==='sym'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1;const pts=90;for(let i=0;i<pts;i++){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);v=(dataArray[i]||0)/255;}else{v=Math.abs(Math.sin(vizTime*2+i*0.1))*activeAudio.volume;}let h=v*(H/2)*0.9;vizCtx.moveTo(i*(W/pts),H/2-h);vizCtx.lineTo(i*(W/pts),H/2+h);}vizCtx.stroke();}
+    else if(vizMode==='glitch'){for(let i=0;i<H;i+=2){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);v=(dataArray[Math.floor((i/H)*64)]||0)/255;}else{v=Math.abs(Math.cos(vizTime*3+i))*activeAudio.volume;}if(v>0.2){vizCtx.fillStyle=(i%4===0)?color:'#ffffff';let w=v*W;let x=(Math.sin(vizTime*10+i)*5)+(W/2-w/2);vizCtx.fillRect(x,i,w,2);}}}
   }
   rafId=requestAnimationFrame(_vizLoop);
 }
