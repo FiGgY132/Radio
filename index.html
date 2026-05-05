@@ -217,6 +217,12 @@ input[type="range"]{accent-color:var(--accent);cursor:pointer;}
   overflow:hidden;
   transition:width 0.3s;
 }
+#globePanel.collapsed {
+  width: 0 !important;
+  border-width: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
 .globe-panel-header{
   padding:16px 16px 10px;
   border-bottom:1px solid var(--border);
@@ -282,6 +288,8 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
   #globeArea{flex-direction:column;}
   #globeCanvasWrap{flex:none;height:50vw;min-height:220px;}
   #globePanel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:40vh;}
+  #globePanel.collapsed {
+    max-height: 0 !important;}
 }
 </style>
 </head>
@@ -410,7 +418,10 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
     <div id="globePanel">
       <div class="globe-panel-header">
-        <span id="globePanelTitle">Stations</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button onclick="document.getElementById('globePanel').classList.add('collapsed')" style="background:none;border:none;color:var(--txt2);font-size:1.2rem;cursor:pointer;line-height:1;" title="Hide Panel">×</button>
+          <span id="globePanelTitle">Stations</span>
+        </div>
         <span id="globePanelCount" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--txt2);"></span>
       </div>
       <div id="globeStationList">
@@ -1505,6 +1516,7 @@ function globePlayStation(s, rowEl) {
   rowEl.classList.add('now-playing');
   playStation(s);
   showToast(`▶ ${s.name}`);
+  document.getElementById('globePanel').classList.add('collapsed');
 }
 
 function globePanelLoading() {
