@@ -807,6 +807,8 @@ function startVisualizer(){if(!vizRunning){vizRunning=true;_vizLoop();}}
 function stopVisualizer(){vizRunning=false;if(rafId)cancelAnimationFrame(rafId);rafId=null;}
 function _vizLoop(){
   if(!vizRunning)return;
+  vizCanvas.width = vizCanvas.clientWidth;
+  vizCanvas.height = vizCanvas.clientHeight;
   const W=vizCanvas.width,H=vizCanvas.height;
   vizCtx.globalAlpha=1.0;
   vizCtx.clearRect(0,0,W,H);
