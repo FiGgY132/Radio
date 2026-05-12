@@ -876,7 +876,7 @@ function _vizLoop(){
           }else{
             audioBump=Math.abs(Math.sin(x*0.2+vizTime))*activeAudio.volume;
           }
-          let y=Math.sin(x*0.2+vizTime)*2.5+Math.cos(realZ*0.3-vizTime)*2.5;
+          let y=Math.sin(x*0.2+vizTime)*2.5+Math.cos(realZ*0.3-vizTime)*2.5+20;
           y-=audioBump*8;
           const proj=60/realZ;
           const px=cx+(x*8)*proj;
