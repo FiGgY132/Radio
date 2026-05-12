@@ -863,7 +863,7 @@ function _vizLoop(){
       vizCtx.globalAlpha=1.0;
     }
     else if(vizMode==='terrain'){
-      const cx=W/2,cy=H/2+5;
+      const cx=W/2,cy=H/2+15;
       vizCtx.fillStyle=color;
       for(let z=20;z>=2;z--){
         const zOffset=(vizTime*3)%1;
@@ -876,7 +876,7 @@ function _vizLoop(){
           }else{
             audioBump=Math.abs(Math.sin(x*0.2+vizTime))*activeAudio.volume;
           }
-          let y=Math.sin(x*0.2+vizTime)*2.5+Math.cos(realZ*0.3-vizTime)*2.5+20;
+          let y=Math.sin(x*0.2+vizTime)*2.5+Math.cos(realZ*0.3-vizTime)*2.5;
           y-=audioBump*8;
           const proj=60/realZ;
           const px=cx+(x*8)*proj;
