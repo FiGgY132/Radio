@@ -404,6 +404,8 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <div class="viz-mode-btn" data-viz="copper" onclick="setVizMode('copper')">▨</div>
         <div class="viz-mode-btn" data-viz="tunnel" onclick="setVizMode('tunnel')">⎔</div>
         <div class="viz-mode-btn" data-viz="terrain" onclick="setVizMode('terrain')">▧</div>
+        <div class="viz-mode-btn" data-viz="blobs" onclick="setVizMode('blobs')">⚇</div>
+        <div class="viz-mode-btn" data-viz="cube" onclick="setVizMode('cube')">⧆</div>
       </div>
       <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
       <button class="icon-btn" onclick="moreLikeThis()" title="More like this">🔍</button>
@@ -862,30 +864,101 @@ function _vizLoop(){
       }
       vizCtx.globalAlpha=1.0;
     }
-    else if(vizMode==='terrain'){
+else if(vizMode==='terrain'){
       const cx=W/2,cy=H/2+15;
       vizCtx.fillStyle=color;
       for(let z=20;z>=2;z--){
-        const zOffset=(vizTime*3)%1;
+        const zOffset=(vizTime*2)%1;
         const realZ=z-zOffset;
         vizCtx.globalAlpha=Math.max(0,1-(realZ/20));
-        for(let x=-25;x<=25;x++){
+        
+        for(let x=-20;x<=20;x++){
           let audioBump=0;
           if(useRealVisualizer&&isAudioCtxSetup&&analyser){
             audioBump=(dataArray[Math.abs(x)]||0)/255;
           }else{
             audioBump=Math.abs(Math.sin(x*0.2+vizTime))*activeAudio.volume;
           }
-          let y=Math.sin(x*0.2+vizTime)*2.5+Math.cos(realZ*0.3-vizTime)*2.5;
-          y-=audioBump*8;
-          const proj=60/realZ;
-          const px=cx+(x*8)*proj;
-          const py=cy+(y*5)*proj;
-          const size=Math.max(0.5,proj*1.2);
+          
+          let y=Math.sin(x*0.2+vizTime)*2+Math.cos(realZ*0.3-vizTime)*2;
+          y-=audioBump*6;
+          const proj= (W*0.6) / realZ; 
+          const px=cx+(x/20)*proj;
+          const py=cy+(y/10)*proj;
+          const size=Math.max(1,proj*0.03);
+          
           vizCtx.fillRect(px,py,size,size);
         }
       }
       vizCtx.globalAlpha=1.0;
+    }
+    else if(vizMode==='blobs'){
+      vizCtx.globalCompositeOperation='lighter';
+      for(let i=0;i<3;i++){
+        let bump=0;
+        if(useRealVisualizer&&isAudioCtxSetup&&analyser){
+          analyser.getByteFrequencyData(dataArray);
+          bump=(dataArray[i*8+2]||0)/255;
+        }else{
+          bump=Math.abs(Math.sin(vizTime*(1+i*0.2)))*activeAudio.volume;
+        }
+
+        const px=W/2 + Math.sin(vizTime*(0.5+i*0.2)+i*2)*(W/4);
+        const py=H/2 + Math.cos(vizTime*(0.4+i*0.3)+i*2)*(H/4);
+        const r=20 + bump*30;
+
+        const grad=vizCtx.createRadialGradient(px,py,0,px,py,r);
+        grad.addColorStop(0,color);
+        grad.addColorStop(1,'rgba(0,0,0,0)');
+        
+        vizCtx.globalAlpha=0.6;
+        vizCtx.fillStyle=grad;
+        vizCtx.beginPath();
+        vizCtx.arc(px,py,r,0,Math.PI*2);
+        vizCtx.fill();
+      }
+      vizCtx.globalCompositeOperation='source-over';
+      vizCtx.globalAlpha=1.0;
+    }
+    else if(vizMode==='cube'){
+      let bump=0;
+      if(useRealVisualizer&&isAudioCtxSetup&&analyser){
+        analyser.getByteFrequencyData(dataArray);
+        bump=(dataArray[3]||0)/255;
+      }else{
+        bump=Math.abs(Math.sin(vizTime*2))*activeAudio.volume;
+      }
+      
+      const cx=W/2, cy=H/2;
+      const size=25 + bump*15;
+      
+      const nodes = [[-1,-1,-1],[-1,-1,1],[-1,1,-1],[-1,1,1],[1,-1,-1],[1,-1,1],[1,1,-1],[1,1,1]];
+      const edges = [[0,1],[1,3],[3,2],[2,0], [4,5],[5,7],[7,6],[6,4], [0,4],[1,5],[2,6],[3,7]];
+      
+      const angleX=vizTime*0.5, angleY=vizTime*0.7;
+      const sinX=Math.sin(angleX), cosX=Math.cos(angleX);
+      const sinY=Math.sin(angleY), cosY=Math.cos(angleY);
+
+      vizCtx.strokeStyle=color;
+      vizCtx.lineWidth=2;
+      vizCtx.beginPath();
+      const projNodes = nodes.map(n => {
+        // Y-axis rotation
+        let x = n[0]*cosY - n[2]*sinY;
+        let z = n[0]*sinY + n[2]*cosY;
+        let y = n[1];
+
+        let y2 = y*cosX - z*sinX;
+        let z2 = y*sinX + z*cosX;
+
+        const proj = 100/(150 + z2*size); 
+        return [cx + x*size*proj, cy + y2*size*proj];
+      });
+      edges.forEach(e => {
+        vizCtx.moveTo(projNodes[e[0]][0], projNodes[e[0]][1]);
+        vizCtx.lineTo(projNodes[e[1]][0], projNodes[e[1]][1]);
+      });
+      vizCtx.stroke();
     }
   }
   rafId=requestAnimationFrame(_vizLoop);
