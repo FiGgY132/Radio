@@ -838,6 +838,7 @@ else if(vizMode==='tunnel'){
         tunnelDir*=-1;
         lastBeatTime=vizTime;
       }
+
       tunnelRot+=0.005*tunnelDir*(1+bass*2);
       
       const globalOffsetX=Math.sin(vizTime*0.5)*50;
@@ -847,9 +848,10 @@ else if(vizMode==='tunnel'){
       
       const segments = 12;
       let prevRingCoords = null;
+      const currentTwist = Math.sin(vizTime * 0.2) * 0.2; 
 
       for(let i=18; i>=1; i--){
-        const z = i - ((vizTime*1.5)%1) + 1;
+        const z = i - ((vizTime*1.5)%1) + 1; 
         const proj = (W*0.6) / z; 
         
         let ringAudio=0;
@@ -866,14 +868,15 @@ else if(vizMode==='tunnel'){
         
         const currentRingCoords = [];
         vizCtx.strokeStyle = i%3===0 ? '#ff4060' : color;
+        
         let alpha = 1;
-        if (z > 14) alpha = Math.max(0, 1 - (z-14)/5);
-        else if (z < 2) alpha = Math.max(0, z-1);
+        if (z > 14) alpha = Math.max(0, 1 - (z-14)/5); 
+        else if (z < 2) alpha = Math.max(0, z-1);      
         vizCtx.globalAlpha = alpha;
         
         vizCtx.beginPath();
         for(let s=0; s<=segments; s++){
-          const a = tunnelRot + (z*0.15*tunnelDir) + (s/segments)*Math.PI*2;
+          const a = tunnelRot + (z * currentTwist) + (s/segments)*Math.PI*2;
           const vx = px + Math.cos(a)*r;
           const vy = py + Math.sin(a)*r;
           currentRingCoords.push({x: vx, y: vy});
@@ -882,6 +885,7 @@ else if(vizMode==='tunnel'){
           else vizCtx.lineTo(vx,vy);
         }
         vizCtx.stroke();
+        
         if (prevRingCoords) {
           vizCtx.beginPath();
           for(let s=0; s<segments; s++){
