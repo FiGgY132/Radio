@@ -967,7 +967,7 @@ else if(vizMode==='terrain'){
       if(typeof window.vizShapeIdx === 'undefined') window.vizShapeIdx = 0;
       
       if(bass > 0.8 && vizTime - lastBeatTime > 1.0){
-        window.vizShapeIdx = (window.vizShapeIdx + 1) % 7;
+        window.vizShapeIdx = (window.vizShapeIdx + 1) % 11;
         lastBeatTime = vizTime;
       }
       
