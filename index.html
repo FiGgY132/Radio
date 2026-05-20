@@ -809,12 +809,27 @@ function startVisualizer(){if(!vizRunning){vizRunning=true;_vizLoop();}}
 function stopVisualizer(){vizRunning=false;if(rafId)cancelAnimationFrame(rafId);rafId=null;}
 function _vizLoop(){
   if(!vizRunning)return;
-  vizCanvas.width = vizCanvas.clientWidth;
-  vizCanvas.height = vizCanvas.clientHeight;
-  const W=vizCanvas.width,H=vizCanvas.height;
+
+  if(vizCanvas.width !== vizCanvas.clientWidth || vizCanvas.height !== vizCanvas.clientHeight){
+    vizCanvas.width = vizCanvas.clientWidth;
+    vizCanvas.height = vizCanvas.clientHeight;
+  }
+  
+  const W=vizCanvas.width, H=vizCanvas.height;
   vizCtx.globalAlpha=1.0;
-  vizCtx.clearRect(0,0,W,H);
+  const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain'];
+  if(trailModes.includes(vizMode)) {
+    vizCtx.globalCompositeOperation = 'source-over';
+    vizCtx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    vizCtx.fillRect(0, 0, W, H);
+  } else {
+    vizCtx.clearRect(0, 0, W, H);
+  }
+  
   const isPlaying=!activeAudio.paused&&!activeAudio.muted&&activeAudio.volume>0;
+  if(isPlaying){
+    const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
+    vizTime+=0.12;
   if(isPlaying){
     const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
     vizTime+=0.12;
