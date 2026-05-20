@@ -834,19 +834,19 @@ else if(vizMode==='tunnel'){
       }else{
         bass=Math.abs(Math.sin(vizTime*4))*activeAudio.volume;
       }
-     // if(bass>0.8&&vizTime-lastBeatTime>1.5){
-      //  tunnelDir*=-1;
-      //  lastBeatTime=vizTime;
-     // }
+      if(bass>0.8&&vizTime-lastBeatTime>1.5){
+        tunnelDir*=-0.5;
+        lastBeatTime=vizTime;
+      }
 
-      tunnelRot+=0.005*tunnelDir*(1+bass*2);
+      tunnelRot+=0.015*tunnelDir*(1+bass*2);
       
       const globalOffsetX=Math.sin(vizTime*0.5)*50;
       const globalOffsetY=Math.cos(vizTime*0.4)*30;
       const cx=W/2, cy=H/2;
       vizCtx.lineWidth=1.5;
       
-      const segments = 24;
+      const segments = 5;
       let prevRingCoords = null;
       const currentTwist = Math.sin(vizTime * 0.2) * 0.2; 
 
