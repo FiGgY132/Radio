@@ -996,15 +996,15 @@ else if(vizMode==='cube'){
             // window.shapeSpinDir *= -1;
 
             if (Date.now() - window.lastShapeChange > 10000) {
-                let nextShape = Math.floor(Math.random() * 16);
-                while(nextShape === 11) nextShape = Math.floor(Math.random() * 16);
+                let nextShape = Math.floor(Math.random() * 21);
+                while(nextShape === 11) nextShape = Math.floor(Math.random() * 21);
                 window.vizShapeIdx = nextShape;
                 window.lastShapeChange = Date.now();
             }
         } else {
 
-            let nextShape = Math.floor(Math.random() * 16);
-            while(nextShape === window.vizShapeIdx) nextShape = Math.floor(Math.random() * 16);
+            let nextShape = Math.floor(Math.random() * 21);
+            while(nextShape === window.vizShapeIdx) nextShape = Math.floor(Math.random() * 21);
             window.vizShapeIdx = nextShape;
             window.lastShapeChange = Date.now();
         }
@@ -1182,6 +1182,115 @@ else if(vizMode==='cube'){
         for(let i=0; i<8; i++){ nodes.push([0.35 + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); edges.push([nLen+i, nLen+((i+1)%8)]); }
         nLen = nodes.length;
         for(let i=0; i<10; i++){ nodes.push([Math.cos(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, -Math.sin(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, 0.2]); if(i>0) edges.push([nLen+i-1, nLen+i]); }
+      }
+      else if(s === 16){
+        for(let z=-0.2; z<=0.2; z+=0.4){
+          let base = nodes.length;
+          for(let i=0; i<10; i++){
+            let a = i * Math.PI/5 - Math.PI/2;
+            let r = i%2===0 ? 1.2 : 0.5;
+            if(useRealVisualizer&&isAudioCtxSetup&&analyser) r += (dataArray[2]||0)/255 * 0.2;
+            nodes.push([r*Math.cos(a), r*Math.sin(a), z]);
+            edges.push([base+i, base + ((i+1)%10)]);
+          }
+          if(z === 0.2){
+             for(let i=0; i<10; i++) edges.push([i, i+10]); 
+          }
+        }
+      }
+      else if(s === 17){
+        const petals = 6, layers = 4;
+        for(let l=1; l<=layers; l++){
+          let radius = l * 0.35;
+          let z = (layers - l) * -0.25;
+          let layerBase = nodes.length;
+          const pts = 36;
+          for(let i=0; i<pts; i++){
+            let a = i * Math.PI*2 / pts;
+            let r = radius * (1 + 0.5 * Math.sin(petals * a));
+
+            if(useRealVisualizer&&isAudioCtxSetup&&analyser){
+               r += (dataArray[l*4]||0)/255 * 0.6;
+            }
+            
+            nodes.push([r*Math.cos(a), r*Math.sin(a), z + r*0.5]);
+            if(i>0) edges.push([layerBase+i-1, layerBase+i]);
+          }
+          edges.push([layerBase+pts-1, layerBase]);
+          
+          if(l > 1){
+             let prevBase = layerBase - pts;
+             for(let i=0; i<pts; i+=3) edges.push([prevBase+i, layerBase+i]);
+          }
+        }
+      }
+      else if(s === 18){
+        for(let z=-0.15; z<=0.15; z+=0.3){
+          let base = nodes.length;
+          const pts = 20;
+          for(let i=0; i<pts; i++){
+            let a = i * Math.PI*2 / pts;
+            nodes.push([Math.cos(a)*1.2, Math.sin(a)*1.2, z]);
+            edges.push([base+i, base + ((i+1)%pts)]);
+          }
+          let cIdx = nodes.length;
+          nodes.push([0, 0, z]);
+          nodes.push([0, 1.2, z]);
+          nodes.push([0, -1.2, z]);
+          nodes.push([-Math.cos(Math.PI/4)*1.2, -Math.sin(Math.PI/4)*1.2, z]);
+          nodes.push([Math.cos(Math.PI/4)*1.2, -Math.sin(Math.PI/4)*1.2, z]);
+          
+          edges.push([cIdx, cIdx+1], [cIdx, cIdx+2], [cIdx, cIdx+3], [cIdx, cIdx+4]);
+          
+          if(z === 0.15){
+             for(let i=0; i<pts+5; i++) edges.push([i, i+(pts+5)]);
+          }
+        }
+      }
+      else if(s === 19){
+        const wrist = [0, -1.2, 0];
+        const palmL = [-0.5, -0.6, 0.1], palmR = [0.5, -0.6, 0.1];
+        const knPinky = [-0.7, 0.1, 0.2], knRing = [-0.3, 0.3, 0.2], knMid = [0.2, 0.3, 0.2], knIndex = [0.7, 0.1, 0.2];
+        const thBase = [0.8, -0.4, 0.3], thMid = [1.1, 0.0, 0.4], thTip = [1.3, 0.3, 0.5];
+        
+        nodes.push(wrist, palmL, palmR, knPinky, knRing, knMid, knIndex, thBase, thMid, thTip);
+        edges.push([0,1],[0,2],[1,2],[1,3],[2,6],[3,4],[4,5],[5,6]);
+        edges.push([2,7],[7,8],[8,9]);
+
+        const f = [ {k: 3, len: 0.5, dx: -0.2}, {k: 4, len: 0.8, dx: -0.1}, {k: 5, len: 0.9, dx: 0.0}, {k: 6, len: 0.7, dx: 0.2} ];
+        f.forEach(finger => {
+           let baseNode = nodes[finger.k];
+           let mid = [baseNode[0] + finger.dx, baseNode[1] + finger.len*0.5, baseNode[2] - 0.1];
+           let tip = [baseNode[0] + finger.dx*1.5, baseNode[1] + finger.len, baseNode[2] - 0.2];
+           nodes.push(mid, tip);
+           edges.push([finger.k, nodes.length-2], [nodes.length-2, nodes.length-1]);
+        });
+        
+        let numNodes = nodes.length;
+        for(let i=0; i<numNodes; i++) {
+           nodes.push([nodes[i][0], nodes[i][1], nodes[i][2] - 0.3]); 
+           edges.push([i, i+numNodes]);
+        }
+        
+        let b = numNodes;
+        edges.push([b+0,b+1],[b+0,b+2],[b+1,b+2],[b+1,b+3],[b+2,b+6],[b+3,b+4],[b+4,b+5],[b+5,b+6]);
+        edges.push([b+2,b+7],[b+7,b+8],[b+8,b+9]);
+        f.forEach((finger, i) => edges.push([b+finger.k, b+10+(i*2)], [b+10+(i*2), b+11+(i*2)]));
+      }
+      else if(s === 20){
+        nodes.push([0, 1.2, 0]);
+        nodes.push([0, -1.2, 0]);
+        const sides = 8;
+        for(let i=0; i<sides; i++){
+          let a = i * Math.PI*2 / sides;
+          nodes.push([Math.cos(a)*0.6, 0.4, Math.sin(a)*0.6]); 
+          nodes.push([Math.cos(a)*1.0, 0.0, Math.sin(a)*1.0]); 
+        }
+        for(let i=0; i<sides; i++){
+          let topRing = 2 + i*2, nextTop = 2 + ((i+1)%sides)*2;
+          let girdle = 3 + i*2, nextGirdle = 3 + ((i+1)%sides)*2;
+          edges.push([0, topRing], [topRing, nextTop], [topRing, girdle], [girdle, nextGirdle], [girdle, 1]);
+        }
       }
 
       const sinX=Math.sin(window.shapeAngleX), cosX=Math.cos(window.shapeAngleX);
