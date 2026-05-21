@@ -830,9 +830,6 @@ function _vizLoop(){
   if(isPlaying){
     const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
     vizTime+=0.12;
-  if(isPlaying){
-    const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
-    vizTime+=0.12;
     if(vizMode==='bars'){const bars=30,bw=W/bars;for(let i=0;i<bars;i++){let h;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);h=Math.max(1,(dataArray[i]||0)/255*H);}else{h=Math.max(1,Math.abs(Math.sin(vizTime+i*0.5)*Math.cos(vizTime*0.7-i*0.3))*H*0.85*activeAudio.volume);}vizCtx.fillStyle=color;vizCtx.fillRect(i*bw,H-h,bw-1.5,h);}}
     else if(vizMode==='wave'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1.5;const pts=60;for(let i=0;i<pts;i++){let y;if(useRealVisualizer&&isAudioCtxSetup&&analyser){const wf=new Uint8Array(analyser.fftSize);analyser.getByteTimeDomainData(wf);y=(wf[Math.floor(i*wf.length/pts)]/128-1)*(H/2)+(H/2);}else{y=H/2+Math.sin(vizTime*1.5+i*0.2)*Math.cos(vizTime*0.9+i*0.1)*(H/2)*0.7*activeAudio.volume;}i===0?vizCtx.moveTo(i*W/pts,y):vizCtx.lineTo(i*W/pts,y);}vizCtx.stroke();}
     else if(vizMode==='radial'){const cx=W/2,cy=H/2,r=H/2-3,bars=24;for(let i=0;i<bars;i++){let len;if(useRealVisualizer&&isAudioCtxSetup&&analyser){analyser.getByteFrequencyData(dataArray);len=(dataArray[i]||0)/255*r*0.8;}else{len=Math.abs(Math.sin(vizTime+i*0.26))*r*0.7*activeAudio.volume;}const angle=(i/bars)*Math.PI*2;vizCtx.strokeStyle=color;vizCtx.lineWidth=2;vizCtx.beginPath();vizCtx.moveTo(cx+Math.cos(angle)*3,cy+Math.sin(angle)*3);vizCtx.lineTo(cx+Math.cos(angle)*(3+len),cy+Math.sin(angle)*(3+len));vizCtx.stroke();}}
@@ -1112,6 +1109,7 @@ else if(vizMode==='terrain'){
         vizCtx.lineTo(projNodes[e[1]][0], projNodes[e[1]][1]);
       });
       vizCtx.stroke();
+      vizCtx.shadowBlur = 0;
     }
   }
   rafId=requestAnimationFrame(_vizLoop);
