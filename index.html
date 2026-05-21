@@ -1201,7 +1201,7 @@ else if(vizMode==='cube'){
         let y2 = y*cosX - z*sinX;
         let z2 = y*sinX + z*cosX;
 
-        const proj = 100/(150 + z2*size); 
+        const proj = 180 / Math.max(15, 250 + z2*size); 
         return [cx + x*size*proj, cy + y2*size*proj];
       });
       
