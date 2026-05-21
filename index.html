@@ -979,7 +979,7 @@ else if(vizMode==='terrain'){
       if(typeof window.vizShapeIdx === 'undefined') window.vizShapeIdx = 0;
       
       if(bass > 0.8 && vizTime - lastBeatTime > 1.0){
-        window.vizShapeIdx = (window.vizShapeIdx + 1) % 11;
+        window.vizShapeIdx = (window.vizShapeIdx + 1) % 16;
         lastBeatTime = vizTime;
       }
       
@@ -1083,6 +1083,89 @@ else if(vizMode==='terrain'){
           const nextT = ((i+1)%segs)*2+1, nextB = ((i+1)%segs)*2+2;
           edges.push([0, t], [0, b], [t, nextT], [b, nextB]); 
         }
+      }
+      else if(s === 11){
+        const cols = 5, rows = 5, spacing = 0.55;
+        for(let r=0; r<rows; r++){
+          for(let c=0; c<cols; c++){
+            let idx = r*cols + c;
+            let h = 0.2;
+            if(useRealVisualizer&&isAudioCtxSetup&&analyser){
+              h = 0.2 + (dataArray[(idx*2)%dataArray.length]||0)/255 * 1.8;
+            } else {
+              h = 0.2 + Math.abs(Math.sin(vizTime + idx*0.5)) * activeAudio.volume * 1.5;
+            }
+            let x = (c - cols/2 + 0.5) * spacing;
+            let z = (r - rows/2 + 0.5) * spacing;
+            let base = nodes.length;
+            nodes.push([x-0.2, -1.2, z-0.2], [x+0.2, -1.2, z-0.2], [x+0.2, -1.2, z+0.2], [x-0.2, -1.2, z+0.2]);
+            nodes.push([x-0.2, -1.2+h, z-0.2], [x+0.2, -1.2+h, z-0.2], [x+0.2, -1.2+h, z+0.2], [x-0.2, -1.2+h, z+0.2]);
+            edges.push(
+              [base+0,base+1], [base+1,base+2], [base+2,base+3], [base+3,base+0],
+              [base+4,base+5], [base+5,base+6], [base+6,base+7], [base+7,base+4],
+              [base+0,base+4], [base+1,base+5], [base+2,base+6], [base+3,base+7]
+            );
+          }
+        }
+      }
+      else if(s === 12){
+        const segs = 14, layers = 10, scale = 0.08;
+        for(let j=0; j<=layers; j++){
+          let v = j/layers * Math.PI; 
+          for(let i=0; i<segs; i++){
+            let u = i/segs * 2 * Math.PI; 
+            let x = scale * (16 * Math.sin(u)**3) * Math.sin(v);
+            let y = scale * (13 * Math.cos(u) - 5 * Math.cos(2*u) - 2 * Math.cos(3*u) - Math.cos(4*u)) * Math.sin(v);
+            let z = scale * 15 * Math.cos(v);
+            nodes.push([x, -y, z]);
+            let curr = j*segs + i;
+            if (j < layers) edges.push([curr, (j+1)*segs + i]);
+            edges.push([curr, j*segs + ((i+1)%segs)]);
+          }
+        }
+      }
+      else if(s === 13){
+        const rungs = 12;
+        for(let i=0; i<rungs; i++){
+          let y = (i - rungs/2) * 0.25;
+          let a = i * 0.6 + vizTime;
+          nodes.push([Math.cos(a)*0.8, y, Math.sin(a)*0.8]);
+          nodes.push([Math.cos(a+Math.PI)*0.8, y, Math.sin(a+Math.PI)*0.8]);
+          edges.push([i*2, i*2+1]);
+          if(i > 0){
+            edges.push([i*2, (i-1)*2], [i*2+1, (i-1)*2+1]);
+          }
+        }
+      }
+      else if(s === 14){
+        const rings = 12, pts = 12;
+        for(let i=0; i<=rings; i++){
+          let v = i/rings * Math.PI;
+          for(let j=0; j<pts; j++){
+            let u = j/pts * Math.PI*2;
+            let bump = 0;
+            if(useRealVisualizer&&isAudioCtxSetup&&analyser){
+              bump = (dataArray[(i*pts+j) % 64]||0)/255 * 0.8;
+            } else {
+              bump = Math.abs(Math.sin(vizTime + i + j))*0.3*activeAudio.volume;
+            }
+            let r = 0.8 + bump;
+            nodes.push([r*Math.sin(v)*Math.cos(u), r*Math.cos(v), r*Math.sin(v)*Math.sin(u)]);
+            let curr = i*pts + j;
+            if(i < rings) edges.push([curr, curr+pts]);
+            edges.push([curr, i*pts + ((j+1)%pts)]);
+          }
+        }
+      }
+      else if(s === 15){
+        let nLen = nodes.length;
+        for(let i=0; i<20; i++){ nodes.push([Math.cos(i/20*Math.PI*2), Math.sin(i/20*Math.PI*2), 0]); edges.push([nLen+i, nLen+((i+1)%20)]); }
+        nLen = nodes.length;
+        for(let i=0; i<8; i++){ nodes.push([-0.35 + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); edges.push([nLen+i, nLen+((i+1)%8)]); }
+        nLen = nodes.length;
+        for(let i=0; i<8; i++){ nodes.push([0.35 + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); edges.push([nLen+i, nLen+((i+1)%8)]); }
+        nLen = nodes.length;
+        for(let i=0; i<10; i++){ nodes.push([Math.cos(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, -Math.sin(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, 0.2]); if(i>0) edges.push([nLen+i-1, nLen+i]); }
       }
 
       const angleX=vizTime*0.5, angleY=vizTime*0.7;
