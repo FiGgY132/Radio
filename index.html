@@ -984,8 +984,11 @@ else if(vizMode==='cube'){
         window.shapeSpinDir = 1;
       }
   
-      window.shapeAngleX += 0.06 * window.shapeSpinDir;
-      window.shapeAngleY += 0.08 * window.shapeSpinDir;
+      const speedX = window.vizShapeIdx === 11 ? 0.015 : 0.06;
+      const speedY = window.vizShapeIdx === 11 ? 0.020 : 0.08;
+      
+      window.shapeAngleX += speedX * window.shapeSpinDir;
+      window.shapeAngleY += speedY * window.shapeSpinDir;
       
       if(bass > 0.8 && vizTime - lastBeatTime > 1.0){
         
@@ -1104,9 +1107,9 @@ else if(vizMode==='cube'){
             let idx = r*cols + c;
             let h = 0.2;
             if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-              h = 0.2 + (dataArray[(idx*2)%dataArray.length]||0)/255 * 1.8;
+              h = 0.2 + (dataArray[(idx*2)%dataArray.length]||0)/255 * 4.0;
             } else {
-              h = 0.2 + Math.abs(Math.sin(vizTime + idx*0.5)) * activeAudio.volume * 1.5;
+              h = 0.2 + Math.abs(Math.sin(vizTime + idx*0.5)) * activeAudio.volume * 3.0;
             }
             let x = (c - cols/2 + 0.5) * spacing;
             let z = (r - rows/2 + 0.5) * spacing;
