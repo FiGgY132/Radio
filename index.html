@@ -407,6 +407,7 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <div class="viz-mode-btn" data-viz="blobs" onclick="setVizMode('blobs')">⚇</div>
         <div class="viz-mode-btn" data-viz="cube" onclick="setVizMode('cube')">⧆</div>
       </div>
+      <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen Visuals">⛶</button>
       <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
       <button class="icon-btn" onclick="moreLikeThis()" title="More like this">🔍</button>
       <select class="sleep-select" id="sleepSelect" onchange="setSleepTimer(this.value)">
@@ -2036,7 +2037,25 @@ function toggleGlobeAutoRotate() {
   btn.classList.toggle('btn-active', gState.autoRotate);
   showToast(gState.autoRotate ? '⟳ Auto-rotate on' : 'Auto-rotate off');
 }
+function toggleFullscreen() {
+  const canvas = document.getElementById('visualizerCanvas');
 
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    if (canvas.requestFullscreen) {
+      canvas.requestFullscreen();
+    } else if (canvas.webkitRequestFullscreen) {
+      canvas.webkitRequestFullscreen();
+    }
+    showToast('Press ESC to exit fullscreen');
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+}
+document.getElementById('visualizerCanvas').addEventListener('dblclick', toggleFullscreen);
 </script>
 </body>
 </html>
