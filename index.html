@@ -507,6 +507,27 @@ let isAudioCtxSetup=false,useRealVisualizer=true;
 let vizRunning=false,rafId=null,vizTime=0,vizMode='bars',tunnelRot=0,tunnelDir=1,lastBeatTime=0;
 const vizCanvas=document.getElementById('visualizerCanvas');
 const vizCtx=vizCanvas.getContext('2d');
+let vizManualRotX=0, vizManualRotY=0, vizIsDragging=false, vizLastMouse={x:0,y:0};
+
+vizCanvas.addEventListener('mousedown', e => { vizIsDragging = true; vizLastMouse = {x: e.clientX, y: e.clientY}; });
+window.addEventListener('mousemove', e => {
+  if(!vizIsDragging) return;
+  vizManualRotY += (e.clientX - vizLastMouse.x) * 0.01;
+  vizManualRotX += (e.clientY - vizLastMouse.y) * 0.01;
+  vizLastMouse = {x: e.clientX, y: e.clientY};
+});
+window.addEventListener('mouseup', () => vizIsDragging = false);
+
+vizCanvas.addEventListener('touchstart', e => { 
+  if(e.touches.length === 1){ vizIsDragging = true; vizLastMouse = {x: e.touches[0].clientX, y: e.touches[0].clientY}; }
+}, {passive: false});
+window.addEventListener('touchmove', e => {
+  if(!vizIsDragging) return;
+  vizManualRotY += (e.touches[0].clientX - vizLastMouse.x) * 0.01;
+  vizManualRotX += (e.touches[0].clientY - vizLastMouse.y) * 0.01;
+  vizLastMouse = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+}, {passive: false});
+window.addEventListener('touchend', () => vizIsDragging = false);
 
 const TV_CHANNELS=[
   {id:'cbs_news',name:'CBS News',category:'news',emoji:'📰',url:'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8',desc:'US & World News'},
