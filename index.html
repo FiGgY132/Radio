@@ -208,6 +208,23 @@ input[type="range"]{accent-color:var(--accent);cursor:pointer;}
 .globe-panel-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;gap:12px;color:var(--txt2);font-family:var(--font-mono);font-size:0.82rem;line-height:1.6;}
 .globe-panel-state .big-emoji{font-size:3rem;margin-bottom:4px;}
 .globe-panel-state strong{color:var(--txt);font-family:var(--font-display);font-size:1rem;}
+.ios-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  min-width: none !important;
+  margin: 0 !important;
+  z-index: 99999 !important;
+  background-color: #000;
+}
+
+body.lock-scroll {
+  overflow: hidden !important;
+}
 
 main::-webkit-scrollbar{width:4px;}
 main::-webkit-scrollbar-track{background:transparent;}
