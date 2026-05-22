@@ -1330,14 +1330,17 @@ else if(s === 15){
         }
       }
 
-      const sinX=Math.sin(window.shapeAngleX), cosX=Math.cos(window.shapeAngleX);
-      const sinY=Math.sin(window.shapeAngleY), cosY=Math.cos(window.shapeAngleY);
+      const finalAngleX = window.shapeAngleX + vizManualRotX;
+      const finalAngleY = window.shapeAngleY + vizManualRotY;
+      const sinX=Math.sin(finalAngleX), cosX=Math.cos(finalAngleX);
+      const sinY=Math.sin(finalAngleY), cosY=Math.cos(finalAngleY);
+
       const hue = (vizTime * 30) % 360; 
       vizCtx.strokeStyle = `hsl(${hue}, 100%, 65%)`;
-      vizCtx.shadowBlur = 10; 
+      vizCtx.shadowBlur = Math.max(10, Math.min(W, H) / 20); 
       vizCtx.shadowColor = vizCtx.strokeStyle;
       
-      vizCtx.lineWidth=2;
+      vizCtx.lineWidth = Math.max(2, Math.min(W, H) / 150);
       vizCtx.beginPath();
       
       const projNodes = nodes.map(n => {
@@ -1346,8 +1349,9 @@ else if(s === 15){
         let y = n[1];
         let y2 = y*cosX - z*sinX;
         let z2 = y*sinX + z*cosX;
-
-        const proj = 180 / Math.max(15, 250 + z2*size); 
+        
+        const screenScale = Math.min(W, H) * 1.3;
+        const proj = screenScale / Math.max(15, 250 + z2*size); 
         return [cx + x*size*proj, cy + y2*size*proj];
       });
       
