@@ -2080,20 +2080,30 @@ function toggleGlobeAutoRotate() {
   showToast(gState.autoRotate ? '⟳ Auto-rotate on' : 'Auto-rotate off');
 }
 function toggleFullscreen() {
-  const canvas = document.getElementById('visualizerCanvas');
+  const canvasWrap = document.getElementById('visualizerCanvas');
+  const body = document.body;
 
-  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-    if (canvas.requestFullscreen) {
-      canvas.requestFullscreen();
-    } else if (canvas.webkitRequestFullscreen) {
-      canvas.webkitRequestFullscreen();
+  const isNativeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+  const isIosFullscreen = canvasWrap.classList.contains('ios-fullscreen');
+
+  if (!isNativeFullscreen && !isIosFullscreen) {
+    if (canvasWrap.requestFullscreen) {
+      canvasWrap.requestFullscreen();
+    } else if (canvasWrap.webkitRequestFullscreen) { 
+      canvasWrap.webkitRequestFullscreen();
+    } else {
+      canvasWrap.classList.add('ios-fullscreen');
+      body.classList.add('lock-scroll');
     }
-    showToast('Press ESC to exit fullscreen');
+    showToast('Press ESC or tap button to exit fullscreen');
   } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
+    if (isNativeFullscreen) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+    if (isIosFullscreen) {
+      canvasWrap.classList.remove('ios-fullscreen');
+      body.classList.remove('lock-scroll');
     }
   }
 }
