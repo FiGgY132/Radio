@@ -1192,15 +1192,32 @@ else if(vizMode==='cube'){
           }
         }
       }
-      else if(s === 15){
+else if(s === 15){
+        const eyeShiftX = Math.sin(vizTime * 2) * 0.15; 
+        const eyeShiftY = Math.cos(vizTime * 3) * 0.05;
+
         let nLen = nodes.length;
-        for(let i=0; i<20; i++){ nodes.push([Math.cos(i/20*Math.PI*2), Math.sin(i/20*Math.PI*2), 0]); edges.push([nLen+i, nLen+((i+1)%20)]); }
+        for(let i=0; i<20; i++){ 
+            nodes.push([Math.cos(i/20*Math.PI*2), Math.sin(i/20*Math.PI*2), 0]); 
+            edges.push([nLen+i, nLen+((i+1)%20)]); 
+        }
+        
         nLen = nodes.length;
-        for(let i=0; i<8; i++){ nodes.push([-0.35 + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); edges.push([nLen+i, nLen+((i+1)%8)]); }
+        for(let i=0; i<8; i++){ 
+            nodes.push([-0.35 + eyeShiftX + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + eyeShiftY + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); 
+            edges.push([nLen+i, nLen+((i+1)%8)]); 
+        }
+        
         nLen = nodes.length;
-        for(let i=0; i<8; i++){ nodes.push([0.35 + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); edges.push([nLen+i, nLen+((i+1)%8)]); }
+        for(let i=0; i<8; i++){ 
+            nodes.push([0.35 + eyeShiftX + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + eyeShiftY + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); 
+            edges.push([nLen+i, nLen+((i+1)%8)]); 
+        }
         nLen = nodes.length;
-        for(let i=0; i<10; i++){ nodes.push([Math.cos(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, -Math.sin(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, 0.2]); if(i>0) edges.push([nLen+i-1, nLen+i]); }
+        for(let i=0; i<10; i++){ 
+            nodes.push([Math.cos(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, -Math.sin(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, 0.2]); 
+            if(i>0) edges.push([nLen+i-1, nLen+i]); 
+        }
       }
       else if(s === 16){
         for(let z=-0.2; z<=0.2; z+=0.4){
