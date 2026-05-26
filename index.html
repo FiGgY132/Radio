@@ -524,8 +524,21 @@ let isAudioCtxSetup=false,useRealVisualizer=true;
 let vizRunning=false,rafId=null,vizTime=0,vizMode='bars',tunnelRot=0,tunnelDir=1,lastBeatTime=0;
 const vizCanvas=document.getElementById('visualizerCanvas');
 const vizCtx=vizCanvas.getContext('2d');
-let vizManualRotX=0, vizManualRotY=0, vizIsDragging=false, vizLastMouse={x:0,y:0};
+let cvW = 220, cvH = 100;
+const vizResizeObs = new ResizeObserver(entries => {
+  for(let e of entries){
+    vizCanvas.width = cvW = e.contentRect.width;
+    vizCanvas.height = cvH = e.contentRect.height;
+  }
+});
+vizResizeObs.observe(vizCanvas);
 
+let cachedVizColor = '#00e5a0';
+let frameCounter = 0;
+const maxNodes = 1000;
+const projNodesPool = new Array(maxNodes);
+for(let i=0; i<maxNodes; i++) projNodesPool[i] = [0,0];
+let vizManualRotX=0, vizManualRotY=0, vizIsDragging=false, vizLastMouse={x:0,y:0};
 vizCanvas.addEventListener('mousedown', e => { vizIsDragging = true; vizLastMouse = {x: e.clientX, y: e.clientY}; });
 window.addEventListener('mousemove', e => {
   if(!vizIsDragging) return;
@@ -848,19 +861,11 @@ function startVisualizer(){if(!vizRunning){vizRunning=true;_vizLoop();}}
 function stopVisualizer(){vizRunning=false;if(rafId)cancelAnimationFrame(rafId);rafId=null;}
 function _vizLoop(){
   if(!vizRunning)return;
-  if (vizCanvas.clientWidth === 0 || vizCanvas.clientHeight === 0) {
+  const W = cvW, H = cvH;
+  if(W === 0 || H === 0) {
     rafId = requestAnimationFrame(_vizLoop);
     return;
   }
-
-  if(vizCanvas.width !== vizCanvas.clientWidth || vizCanvas.height !== vizCanvas.clientHeight){
-    vizCanvas.width = vizCanvas.clientWidth;
-    vizCanvas.height = vizCanvas.clientHeight;
-  }
-  
-  const W=vizCanvas.width, H=vizCanvas.height;
-  const minWH = Math.min(W, H);
-  
   vizCtx.globalAlpha=1.0;
   
   const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain'];
@@ -874,8 +879,12 @@ function _vizLoop(){
   
   const isPlaying=!activeAudio.paused&&!activeAudio.muted&&activeAudio.volume>0;
   if(isPlaying){
-    const color=getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim()||'#00e5a0';
+    if(frameCounter++ % 60 === 0) {
+      cachedVizColor = getComputedStyle(document.documentElement).getPropertyValue('--viz-color').trim() || '#00e5a0';
+    }
+    const color = cachedVizColor;
     vizTime+=0.12;
+
     if(useRealVisualizer && isAudioCtxSetup && analyser) {
       analyser.getByteFrequencyData(dataArray);
     }
@@ -1369,7 +1378,6 @@ function _vizLoop(){
           edges.push([0, topRing], [topRing, nextTop], [topRing, girdle], [girdle, nextGirdle], [girdle, 1]);
         }
       }
-
       const finalAngleX = window.shapeAngleX + vizManualRotX;
       const finalAngleY = window.shapeAngleY + vizManualRotY;
       const sinX=Math.sin(finalAngleX), cosX=Math.cos(finalAngleX);
@@ -1377,8 +1385,9 @@ function _vizLoop(){
 
       vizCtx.beginPath();
       
-      const screenScale = minWH * 1.3;
-      const projNodes = nodes.map(n => {
+      const screenScale = Math.min(W, H) * 1.3;
+      for(let i=0; i<nodes.length; i++){
+        let n = nodes[i];
         let x = n[0]*cosY - n[2]*sinY;
         let z = n[0]*sinY + n[2]*cosY;
         let y = n[1];
@@ -1386,25 +1395,29 @@ function _vizLoop(){
         let z2 = y*sinX + z*cosX;
         
         const proj = screenScale / Math.max(15, 250 + z2*size); 
-        return [cx + x*size*proj, cy + y2*size*proj];
-      });
+        projNodesPool[i][0] = cx + x*size*proj;
+        projNodesPool[i][1] = cy + y2*size*proj;
+      }
       
-      edges.forEach(e => {
-        vizCtx.moveTo(projNodes[e[0]][0], projNodes[e[0]][1]);
-        vizCtx.lineTo(projNodes[e[1]][0], projNodes[e[1]][1]);
-      });
+      for(let i=0; i<edges.length; i++){
+        let e = edges[i];
+        vizCtx.moveTo(projNodesPool[e[0]][0], projNodesPool[e[0]][1]);
+        vizCtx.lineTo(projNodesPool[e[1]][0], projNodesPool[e[1]][1]);
+      }
       
       const hue = (vizTime * 30) % 360; 
       vizCtx.strokeStyle = `hsl(${hue}, 100%, 65%)`;
-      const baseThickness = Math.max(1.5, minWH / 200);
+      const baseThickness = Math.max(1.5, Math.min(W, H) / 200);
       
       vizCtx.globalCompositeOperation = 'lighter';
+      
       vizCtx.lineWidth = baseThickness * 4;
       vizCtx.globalAlpha = 0.25;
       vizCtx.stroke();
+      
       vizCtx.lineWidth = baseThickness;
       vizCtx.globalAlpha = 1.0;
-      vizCtx.stroke(); 
+      vizCtx.stroke();
       vizCtx.globalCompositeOperation = 'source-over';
     }
   }
