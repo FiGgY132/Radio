@@ -1,4 +1,4 @@
-<!DOCTYPE html> //deployment test
+<!DOCTYPE html>
 <html lang="en" data-theme="cosmos">
 <head>
 <meta charset="UTF-8">
@@ -119,8 +119,10 @@ main.globe-active{overflow:hidden;padding:0;}
 .now-playing-bar{overflow:hidden;white-space:nowrap;height:18px;position:relative;}
 .now-playing-inner{display:inline-block;font-size:0.7rem;font-family:var(--font-mono);color:var(--accent);}
 .now-playing-inner.scrolling{animation:npScroll 20s linear infinite;padding-right:80px;}
-#visualizerCanvas {display: none; height: 160px; width: 100%; max-width: 550px; min-width: 100px; flex: 1; margin: 0 10px;}
-#visualizerCanvas.active {display: block;}
+
+#vizContainer {display: none; height: 160px; width: 100%; max-width: 550px; min-width: 100px; flex: 1; margin: 0 10px; position: relative;}
+#vizContainer.active {display: block;}
+
 .player-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .icon-btn{background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;font-size:0.9rem;padding:0;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);}
@@ -402,7 +404,12 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <span class="now-playing-inner" id="nowPlayingInner"></span>
       </div>
     </div>
-    <canvas id="visualizerCanvas" width="220" height="100" aria-hidden="true"></canvas>
+    
+    <div id="vizContainer">
+      <canvas id="visualizerCanvas"></canvas>
+      <canvas id="threeVizCanvas"></canvas>
+    </div>
+
     <div class="player-controls">
       <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
       <button class="icon-btn" onclick="stopPlayback()" title="Stop">⏹️</button>
@@ -521,43 +528,63 @@ const audioFallback=document.getElementById('audioFallback');
 let activeAudio=audioCORS;
 let audioCtx=null,analyser=null,dataArray=null,bassNode,midNode,trebleNode;
 let isAudioCtxSetup=false,useRealVisualizer=true;
-let vizRunning=false,rafId=null,vizTime=0,vizMode='bars',tunnelRot=0,tunnelDir=1,lastBeatTime=0;
+let vizRunning=false,rafId=null,vizTime=0,vizMode='bars',lastBeatTime=0;
+const vizContainer=document.getElementById('vizContainer');
 const vizCanvas=document.getElementById('visualizerCanvas');
 const vizCtx=vizCanvas.getContext('2d');
 let cvW = 220, cvH = 100;
+
+let tScene, tCamera, tRenderer, tTerrain, tTunnelGroup;
+let isThreeVizReady = false;
+let threeVizCanvas;
+
+function initThreeViz() {
+    if (isThreeVizReady) return;
+    threeVizCanvas = document.getElementById('threeVizCanvas');
+    tScene = new THREE.Scene();
+    tCamera = new THREE.PerspectiveCamera(60, cvW / cvH, 0.1, 100);
+    tCamera.position.set(0, 0, 5);
+    tRenderer = new THREE.WebGLRenderer({ canvas: threeVizCanvas, alpha: true, antialias: true });
+    tRenderer.setSize(cvW, cvH);
+    const planeGeo = new THREE.PlaneGeometry(200, 200, 80, 80);
+    planeGeo.rotateX(-Math.PI / 2);
+    const terrainMat = new THREE.MeshBasicMaterial({ color: 0x00e5a0, wireframe: true, transparent: true, opacity: 0.35 });
+    tTerrain = new THREE.Mesh(planeGeo, terrainMat);
+    tTerrain.position.set(0, -6, -50); 
+    tScene.add(tTerrain);
+    tScene.fog = new THREE.FogExp2(0x000000, 0.012);
+    tTunnelGroup = new THREE.Group();
+    const ringGeo = new THREE.RingGeometry(1.5, 1.6, 24);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x00e5a0, wireframe: true, side: THREE.DoubleSide });
+    for(let i = 0; i < 25; i++) {
+        const ring = new THREE.Mesh(ringGeo, ringMat.clone());
+        ring.position.z = -i * 1.2;
+        tTunnelGroup.add(ring);
+    }
+    tScene.add(tTunnelGroup);
+    isThreeVizReady = true;
+}
+
 const vizResizeObs = new ResizeObserver(entries => {
   for(let e of entries){
-    vizCanvas.width = cvW = e.contentRect.width;
-    vizCanvas.height = cvH = e.contentRect.height;
+    cvW = e.contentRect.width;
+    cvH = e.contentRect.height;
+    vizCanvas.width = cvW;
+    vizCanvas.height = cvH;
+    if (isThreeVizReady) {
+        tRenderer.setSize(cvW, cvH);
+        tCamera.aspect = cvW / cvH;
+        tCamera.updateProjectionMatrix();
+    }
   }
 });
-vizResizeObs.observe(vizCanvas);
+vizResizeObs.observe(vizContainer);
 
 let cachedVizColor = '#00e5a0';
 let frameCounter = 0;
 const maxNodes = 1000;
 const projNodesPool = new Array(maxNodes);
 for(let i=0; i<maxNodes; i++) projNodesPool[i] = [0,0];
-let vizManualRotX=0, vizManualRotY=0, vizIsDragging=false, vizLastMouse={x:0,y:0};
-vizCanvas.addEventListener('mousedown', e => { vizIsDragging = true; vizLastMouse = {x: e.clientX, y: e.clientY}; });
-window.addEventListener('mousemove', e => {
-  if(!vizIsDragging) return;
-  vizManualRotY += (e.clientX - vizLastMouse.x) * 0.01;
-  vizManualRotX += (e.clientY - vizLastMouse.y) * 0.01;
-  vizLastMouse = {x: e.clientX, y: e.clientY};
-});
-window.addEventListener('mouseup', () => vizIsDragging = false);
-
-vizCanvas.addEventListener('touchstart', e => { 
-  if(e.touches.length === 1){ vizIsDragging = true; vizLastMouse = {x: e.touches[0].clientX, y: e.touches[0].clientY}; }
-}, {passive: false});
-window.addEventListener('touchmove', e => {
-  if(!vizIsDragging) return;
-  vizManualRotY += (e.touches[0].clientX - vizLastMouse.x) * 0.01;
-  vizManualRotX += (e.touches[0].clientY - vizLastMouse.y) * 0.01;
-  vizLastMouse = {x: e.touches[0].clientX, y: e.touches[0].clientY};
-}, {passive: false});
-window.addEventListener('touchend', () => vizIsDragging = false);
 
 const TV_CHANNELS=[
   {id:'cbs_news',name:'CBS News',category:'news',emoji:'📰',url:'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8',desc:'US & World News'},
@@ -774,7 +801,7 @@ function playStation(s){
   }
   if(currentHls){currentHls.destroy();currentHls=null;}
   audioCORS.pause();audioCORS.src='';audioFallback.pause();audioFallback.src='';
-  vizCanvas.classList.remove('active');
+  vizContainer.classList.remove('active');
   if(metaPollInterval){clearInterval(metaPollInterval);metaPollInterval=null;}
   let url=s.url_resolved||s.url||'';
   if(window.location.protocol==='https:'&&url.startsWith('http:'))url=url.replace('http:','https:');
@@ -813,7 +840,7 @@ function setupAudioListeners(){
       document.getElementById('pStatus').innerHTML='<span class="live-dot"></span>Live';
       document.getElementById('pStatus').style.color='var(--accent)';
       document.getElementById('playerArt').classList.add('playing');
-      vizCanvas.classList.add('active');
+      vizContainer.classList.add('active');
       if('mediaSession' in navigator)navigator.mediaSession.playbackState='playing';
       if(currentTab==='globe')document.getElementById('globePanel').classList.add('collapsed');
     });
@@ -829,7 +856,7 @@ function stopPlayback(){
   if(currentHls){currentHls.destroy();currentHls=null;}
   audioCORS.pause();audioCORS.removeAttribute('src');audioCORS.load();
   audioFallback.pause();audioFallback.removeAttribute('src');audioFallback.load();
-  vizCanvas.classList.remove('active');
+  vizContainer.classList.remove('active');
   if(metaPollInterval){clearInterval(metaPollInterval);metaPollInterval=null;}
   document.getElementById('pStatus').textContent='Stopped';
   document.getElementById('playerArt').classList.remove('playing');
@@ -859,6 +886,7 @@ function initTrueVisualizer(){
 function setVizMode(m){vizMode=m;document.querySelectorAll('.viz-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.viz===m));}
 function startVisualizer(){if(!vizRunning){vizRunning=true;_vizLoop();}}
 function stopVisualizer(){vizRunning=false;if(rafId)cancelAnimationFrame(rafId);rafId=null;}
+
 function _vizLoop(){
   if(!vizRunning)return;
   const W = cvW, H = cvH;
@@ -866,6 +894,17 @@ function _vizLoop(){
     rafId = requestAnimationFrame(_vizLoop);
     return;
   }
+
+  const threeModes = ['terrain', 'tunnel'];
+  if (threeModes.includes(vizMode)) {
+      vizCanvas.style.display = 'none';
+      if (document.getElementById('threeVizCanvas')) document.getElementById('threeVizCanvas').style.display = 'block';
+      if (!isThreeVizReady) initThreeViz();
+  } else {
+      if (document.getElementById('threeVizCanvas')) document.getElementById('threeVizCanvas').style.display = 'none';
+      vizCanvas.style.display = 'block';
+  }
+
   vizCtx.globalAlpha=1.0;
   
   const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain'];
@@ -893,6 +932,9 @@ function _vizLoop(){
     else if(vizMode==='wave'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1.5;const pts=60;for(let i=0;i<pts;i++){let y;if(useRealVisualizer&&isAudioCtxSetup&&analyser){const wf=new Uint8Array(analyser.fftSize);analyser.getByteTimeDomainData(wf);y=(wf[Math.floor(i*wf.length/pts)]/128-1)*(H/2)+(H/2);}else{y=H/2+Math.sin(vizTime*1.5+i*0.2)*Math.cos(vizTime*0.9+i*0.1)*(H/2)*0.7*activeAudio.volume;}i===0?vizCtx.moveTo(i*W/pts,y):vizCtx.lineTo(i*W/pts,y);}vizCtx.stroke();}
     else if(vizMode==='radial'){
       const cx=W/2, cy=H/2, r=H/2-3, bars=48;
+      vizCtx.strokeStyle=color;
+      vizCtx.lineWidth=2;
+      vizCtx.beginPath();
       for(let i=0; i<bars; i++){
         let len;
         if(useRealVisualizer&&isAudioCtxSetup&&analyser){
@@ -901,120 +943,48 @@ function _vizLoop(){
           len=Math.abs(Math.sin(vizTime+i*0.26))*r*0.7*activeAudio.volume;
         }
         const angle = (i/bars)*Math.PI*2 + (vizTime * 0.2); 
-        
-        vizCtx.strokeStyle=color;
-        vizCtx.lineWidth=2;
-        vizCtx.beginPath();
         vizCtx.moveTo(cx+Math.cos(angle)*3, cy+Math.sin(angle)*3);
         vizCtx.lineTo(cx+Math.cos(angle)*(3+len), cy+Math.sin(angle)*(3+len));
-        vizCtx.stroke();
       }
+      vizCtx.stroke();
     }
     else if(vizMode==='tracker'){const bars=32,bw=W/bars;for(let i=0;i<bars;i++){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[i]||0)/255;}else{v=Math.abs(Math.sin(vizTime+i*0.4))*activeAudio.volume;}let blocks=Math.floor(v*5.5);for(let b=0;b<blocks;b++){vizCtx.fillStyle=b>3?'#ff4060':b>2?'#ffcc00':color;vizCtx.fillRect(i*bw,H-(b*4)-3,bw-1,3);}}}
     else if(vizMode==='sym'){vizCtx.beginPath();vizCtx.strokeStyle=color;vizCtx.lineWidth=1;const pts=90;for(let i=0;i<pts;i++){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[i]||0)/255;}else{v=Math.abs(Math.sin(vizTime*2+i*0.1))*activeAudio.volume;}let h=v*(H/2)*0.9;vizCtx.moveTo(i*(W/pts),H/2-h);vizCtx.lineTo(i*(W/pts),H/2+h);}vizCtx.stroke();}
     else if(vizMode==='glitch'){for(let i=0;i<H;i+=2){let v;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[Math.floor((i/H)*64)]||0)/255;}else{v=Math.abs(Math.cos(vizTime*3+i))*activeAudio.volume;}if(v>0.2){vizCtx.fillStyle=(i%4===0)?color:'#ffffff';let w=v*W;let x=(Math.sin(vizTime*10+i)*5)+(W/2-w/2);vizCtx.fillRect(x,i,w,2);}}}
-    else if(vizMode==='matrix'){let bass=0.5;if(useRealVisualizer&&isAudioCtxSetup&&analyser){bass=(dataArray[2]||0)/255;}else{bass=Math.abs(Math.sin(vizTime))*activeAudio.volume;}vizCtx.fillStyle=color;for(let x=0;x<W;x+=8){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser)v=(dataArray[Math.floor((x/W)*64)]||0)/255;else v=Math.abs(Math.cos(vizTime+(x/20)))*activeAudio.volume;if(v>0.1)vizCtx.fillRect(x,H/2-(v*H/2.5),3,v*H/1.25);}vizCtx.font='bold 14px "Space Mono", monospace';vizCtx.fillStyle='#fff';let txt=currentStation?`${currentStation.name.toUpperCase()} [${currentStation.country||'NET'}] `:'AWAITING SIGNAL... ';let tW=vizCtx.measureText(txt).width;let offset=-(vizTime*15)%tW;for(let loop=0;loop<Math.ceil(W/tW)+1;loop++){let cx=offset+(loop*tW);for(let i=0;i<txt.length;i++){let charW=vizCtx.measureText(txt[i]).width;if(cx>-20&&cx<W+20){let cy=H/2+5+Math.sin(vizTime*1.5+(cx/30))*12*(0.5+bass*0.5);vizCtx.fillText(txt[i],cx,cy);}cx+=charW;}}}
-    else if(vizMode==='copper'){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[7]||0)/255;}else{v=Math.abs(Math.sin(vizTime))*activeAudio.volume;}for(let i=0;i<6;i++){const y=H/2+Math.sin(vizTime*0.5+i*1.2)*(H/2.2)*(1+v*0.3);const grad=vizCtx.createLinearGradient(0,y-10,0,y+10);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(0.5,i%2===0?color:'#ff4060');grad.addColorStop(1,'rgba(0,0,0,0)');vizCtx.fillStyle=grad;vizCtx.fillRect(0,y-10,W,20);}}
-    else if(vizMode==='tunnel'){
-      let bass=0;
-      if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-        bass=(dataArray[0]+dataArray[1]+dataArray[2])/3/255;
-      }else{
-        bass=Math.abs(Math.sin(vizTime*4))*activeAudio.volume;
-      }
-      if(bass>0.8&&vizTime-lastBeatTime>1.5){
-        tunnelDir*=-0.5;
-        lastBeatTime=vizTime;
-      }
-
-      tunnelRot+=0.015*tunnelDir*(1+bass*2);
+    else if(vizMode==='matrix'){
+      let bass=0.5;
+      if(useRealVisualizer&&isAudioCtxSetup&&analyser) bass=(dataArray[2]||0)/255;
+      else bass=Math.abs(Math.sin(vizTime))*activeAudio.volume;
       
-      const globalOffsetX=Math.sin(vizTime*0.5)*50;
-      const globalOffsetY=Math.cos(vizTime*0.4)*30;
-      const cx=W/2, cy=H/2;
-      vizCtx.lineWidth=1.5;
-      
-      const segments = 5;
-      let prevRingCoords = null;
-      const currentTwist = Math.sin(vizTime * 0.2) * 0.2; 
-
-      for(let i=18; i>=1; i--){
-        const z = i - ((vizTime*1.5)%1) + 1; 
-        const proj = (W*0.6) / z; 
-        
-        let ringAudio=0;
-        if(useRealVisualizer&&isAudioCtxSetup&&analyser&&dataArray){
-          const idx = Math.floor((18-i)*1.5) % dataArray.length;
-          ringAudio = (dataArray[idx]||0)/255;
-        }else{
-          ringAudio = Math.abs(Math.sin(vizTime+i))*activeAudio.volume;
-        }
-        
-        const r = proj * (0.8 + ringAudio*0.25); 
-        const px = cx + (globalOffsetX / z);
-        const py = cy + (globalOffsetY / z);
-        
-        const currentRingCoords = [];
-        vizCtx.strokeStyle = i%3===0 ? '#ff4060' : color;
-        
-        let alpha = 1;
-        if (z > 14) alpha = Math.max(0, 1 - (z-14)/5); 
-        else if (z < 2) alpha = Math.max(0, z-1);      
-        vizCtx.globalAlpha = alpha;
-        
-        vizCtx.beginPath();
-        for(let s=0; s<=segments; s++){
-          const a = tunnelRot + (z * currentTwist) + (s/segments)*Math.PI*2;
-          const vx = px + Math.cos(a)*r;
-          const vy = py + Math.sin(a)*r;
-          currentRingCoords.push({x: vx, y: vy});
-          
-          if(s===0) vizCtx.moveTo(vx,vy);
-          else vizCtx.lineTo(vx,vy);
-        }
-        vizCtx.stroke();
-        
-        if (prevRingCoords) {
-          vizCtx.beginPath();
-          for(let s=0; s<segments; s++){
-            vizCtx.moveTo(currentRingCoords[s].x, currentRingCoords[s].y);
-            vizCtx.lineTo(prevRingCoords[s].x, prevRingCoords[s].y);
-          }
-          vizCtx.stroke();
-        }
-        
-        prevRingCoords = currentRingCoords;
-      }
-      vizCtx.globalAlpha=1.0;
-    }
-    else if(vizMode==='terrain'){
-      const cx=W/2,cy=H/2+15;
       vizCtx.fillStyle=color;
-      for(let z=20;z>=2;z--){
-        const zOffset=(vizTime*2)%1;
-        const realZ=z-zOffset;
-        vizCtx.globalAlpha=Math.max(0,1-(realZ/20));
-        
-        for(let x=-20;x<=20;x++){
-          let audioBump=0;
-          if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-            audioBump=(dataArray[Math.abs(x)]||0)/255;
-          }else{
-            audioBump=Math.abs(Math.sin(x*0.2+vizTime))*activeAudio.volume;
+      for(let x=0;x<W;x+=8){
+        let v=0;
+        if(useRealVisualizer&&isAudioCtxSetup&&analyser) v=(dataArray[Math.floor((x/W)*64)]||0)/255;
+        else v=Math.abs(Math.cos(vizTime+(x/20)))*activeAudio.volume;
+        if(v>0.1)vizCtx.fillRect(x,H/2-(v*H/2.5),3,v*H/1.25);
+      }
+      
+      vizCtx.font='bold 14px "Space Mono", monospace';
+      vizCtx.fillStyle='#fff';
+      
+      if (!window.matrixCharW) window.matrixCharW = vizCtx.measureText("A").width;
+      
+      let txt=currentStation?`${currentStation.name.toUpperCase()} [${currentStation.country||'NET'}] `:'AWAITING SIGNAL... ';
+      let tW = window.matrixCharW * txt.length;
+      let offset=-(vizTime*15)%tW;
+      
+      for(let loop=0;loop<Math.ceil(W/tW)+1;loop++){
+        let cx=offset+(loop*tW);
+        for(let i=0;i<txt.length;i++){
+          if(cx>-20&&cx<W+20){
+            let cy=H/2+5+Math.sin(vizTime*1.5+(cx/30))*12*(0.5+bass*0.5);
+            vizCtx.fillText(txt[i],cx,cy);
           }
-          
-          let y=Math.sin(x*0.2+vizTime)*2+Math.cos(realZ*0.3-vizTime)*2;
-          y-=audioBump*6;
-          const proj= (W*0.6) / realZ; 
-          const px=cx+(x/20)*proj;
-          const py=cy+(y/10)*proj;
-          const size=Math.max(1,proj*0.03);
-          
-          vizCtx.fillRect(px,py,size,size);
+          cx += window.matrixCharW;
         }
       }
-      vizCtx.globalAlpha=1.0;
     }
+    else if(vizMode==='copper'){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[7]||0)/255;}else{v=Math.abs(Math.sin(vizTime))*activeAudio.volume;}for(let i=0;i<6;i++){const y=H/2+Math.sin(vizTime*0.5+i*1.2)*(H/2.2)*(1+v*0.3);const grad=vizCtx.createLinearGradient(0,y-10,0,y+10);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(0.5,i%2===0?color:'#ff4060');grad.addColorStop(1,'rgba(0,0,0,0)');vizCtx.fillStyle=grad;vizCtx.fillRect(0,y-10,W,20);}}
     else if(vizMode==='blobs'){
       vizCtx.globalCompositeOperation='lighter';
       for(let i=0;i<8;i++){
@@ -1056,6 +1026,7 @@ function _vizLoop(){
         window.shapeAngleX = 0;
         window.shapeAngleY = 0;
         window.shapeSpinDir = 1;
+        window.shapeCache = {};
       }
   
       const speedX = window.vizShapeIdx === 11 ? 0.015 : 0.06;
@@ -1088,298 +1059,39 @@ function _vizLoop(){
       let edges = [];
       const s = window.vizShapeIdx;
       
-      if(s === 0){
-        nodes = [[-1,-1,-1],[-1,-1,1],[-1,1,-1],[-1,1,1],[1,-1,-1],[1,-1,1],[1,1,-1],[1,1,1]];
-        edges = [[0,1],[1,3],[3,2],[2,0], [4,5],[5,7],[7,6],[6,4], [0,4],[1,5],[2,6],[3,7]];
-      } 
-      else if(s === 1){
-        nodes = [[1,1,1], [1,-1,-1], [-1,1,-1], [-1,-1,1]];
-        edges = [[0,1],[1,2],[2,0], [0,3],[1,3],[2,3]];
-      } 
-      else if(s === 2){
-        nodes = [[1.5,0,0],[-1.5,0,0],[0,1.5,0],[0,-1.5,0],[0,0,1.5],[0,0,-1.5]];
-        edges = [[0,2],[0,3],[0,4],[0,5], [1,2],[1,3],[1,4],[1,5], [2,4],[4,3],[3,5],[5,2]];
-      } 
-      else if(s === 3){
-        nodes = [[0,1.2,0], [-1,-1,-1], [1,-1,-1], [1,-1,1], [-1,-1,1]];
-        edges = [[0,1],[0,2],[0,3],[0,4], [1,2],[2,3],[3,4],[4,1]];
-      } 
-      else if(s === 4){
-        nodes = [[0,1.2,0]]; 
-        for(let i=0; i<8; i++) nodes.push([Math.cos(i*Math.PI/4), -1, Math.sin(i*Math.PI/4)]); 
-        for(let i=1; i<=8; i++){
-          edges.push([0, i]); 
-          edges.push([i, (i%8)+1]); 
-        }
-      } 
-      else if(s === 5){
-        const p = 1.618; 
-        nodes = [[0,1,p],[0,-1,p],[0,1,-p],[0,-1,-p],[1,p,0],[-1,p,0],[1,-p,0],[-1,-p,0],[p,0,1],[-p,0,1],[p,0,-1],[-p,0,-1]];
-        for(let i=0; i<nodes.length; i++) {
-          for(let j=i+1; j<nodes.length; j++) {
-            let dx=nodes[i][0]-nodes[j][0], dy=nodes[i][1]-nodes[j][1], dz=nodes[i][2]-nodes[j][2];
-            if(dx*dx+dy*dy+dz*dz < 4.1) edges.push([i,j]);
-          }
-        }
-      } 
-      else if(s === 6){
-        const p = 1.618, ip = 0.618;
-        nodes = [[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1],
-                 [0,ip,p],[0,ip,-p],[0,-ip,p],[0,-ip,-p],[ip,p,0],[ip,-p,0],[-ip,p,0],[-ip,-p,0],
-                 [p,0,ip],[p,0,-ip],[-p,0,ip],[-p,0,-ip]];
-        for(let i=0; i<nodes.length; i++) {
-          for(let j=i+1; j<nodes.length; j++) {
-            let dx=nodes[i][0]-nodes[j][0], dy=nodes[i][1]-nodes[j][1], dz=nodes[i][2]-nodes[j][2];
-            if(dx*dx+dy*dy+dz*dz < 1.6) edges.push([i,j]);
-          }
-        }
-      }
-      else if(s === 7){
-        const R = 1.2, r = 0.5, maj = 12, min = 6;
-        for(let i=0; i<maj; i++){
-          const u = i * Math.PI*2 / maj;
-          for(let j=0; j<min; j++){
-            const v = j * Math.PI*2 / min;
-            nodes.push([ (R + r*Math.cos(v))*Math.cos(u), r*Math.sin(v), (R + r*Math.cos(v))*Math.sin(u) ]);
-            const curr = i*min + j;
-            edges.push([curr, i*min + ((j+1)%min)], [curr, ((i+1)%maj)*min + j]);
-          }
-        }
-      }
-      else if(s === 8){
-        nodes = [[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1], [-1,-1,-1],[-1,1,1],[1,-1,1],[1,1,-1]];
-        edges = [[0,1],[1,2],[2,0],[0,3],[1,3],[2,3], [4,5],[5,6],[6,4],[4,7],[5,7],[6,7]];
-      }
-      else if(s === 9){
-        const segs = 10;
-        for(let i=0; i<segs; i++){
-          const a = i * Math.PI*2 / segs;
-          nodes.push([Math.cos(a), 1.2, Math.sin(a)], [Math.cos(a), -1.2, Math.sin(a)]);
-          const top = i*2, bot = i*2+1, nextTop = ((i+1)%segs)*2, nextBot = ((i+1)%segs)*2+1;
-          edges.push([top, bot], [top, nextTop], [bot, nextBot]); 
-        }
-      }
-      else if(s === 10){
-        const segs = 8;
-        nodes.push([0,0,0]); 
-        for(let i=0; i<segs; i++){
-          const a = i * Math.PI*2 / segs;
-          nodes.push([Math.cos(a), 1.2, Math.sin(a)], [Math.cos(a), -1.2, Math.sin(a)]);
-          const t = i*2+1, b = i*2+2, nextT = ((i+1)%segs)*2+1, nextB = ((i+1)%segs)*2+2;
-          edges.push([0, t], [0, b], [t, nextT], [b, nextB]); 
-        }
-      }
-      else if(s === 11){
-        const cols = 5, rows = 5, spacing = 0.55;
-        for(let r=0; r<rows; r++){
-          for(let c=0; c<cols; c++){
-            let idx = r*cols + c;
-            let h = 0.2;
-            if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-              h = 0.2 + (dataArray[(idx*2)%dataArray.length]||0)/255 * 4.0;
-            } else {
-              h = 0.2 + Math.abs(Math.sin(vizTime + idx*0.5)) * activeAudio.volume * 3.0;
-            }
-            let x = (c - cols/2 + 0.5) * spacing;
-            let z = (r - rows/2 + 0.5) * spacing;
-            let base = nodes.length;
-            nodes.push([x-0.2, -1.2, z-0.2], [x+0.2, -1.2, z-0.2], [x+0.2, -1.2, z+0.2], [x-0.2, -1.2, z+0.2]);
-            nodes.push([x-0.2, -1.2+h, z-0.2], [x+0.2, -1.2+h, z-0.2], [x+0.2, -1.2+h, z+0.2], [x-0.2, -1.2+h, z+0.2]);
-            edges.push(
-              [base+0,base+1], [base+1,base+2], [base+2,base+3], [base+3,base+0],
-              [base+4,base+5], [base+5,base+6], [base+6,base+7], [base+7,base+4],
-              [base+0,base+4], [base+1,base+5], [base+2,base+6], [base+3,base+7]
-            );
-          }
-        }
-      }
-      else if(s === 12){
-        const segs = 14, layers = 10, scale = 0.08;
-        for(let j=0; j<=layers; j++){
-          let v = j/layers * Math.PI; 
-          for(let i=0; i<segs; i++){
-            let u = i/segs * 2 * Math.PI; 
-            let x = scale * (16 * Math.sin(u)**3) * Math.sin(v);
-            let y = scale * (13 * Math.cos(u) - 5 * Math.cos(2*u) - 2 * Math.cos(3*u) - Math.cos(4*u)) * Math.sin(v);
-            let z = scale * 15 * Math.cos(v);
-            nodes.push([x, -y, z]); 
-            let curr = j*segs + i;
-            if (j < layers) edges.push([curr, (j+1)*segs + i]); 
-            edges.push([curr, j*segs + ((i+1)%segs)]); 
-          }
-        }
-      }
-      else if(s === 13){
-        const rungs = 12;
-        for(let i=0; i<rungs; i++){
-          let y = (i - rungs/2) * 0.25;
-          let a = i * 0.6 + vizTime;
-          nodes.push([Math.cos(a)*0.8, y, Math.sin(a)*0.8]);
-          nodes.push([Math.cos(a+Math.PI)*0.8, y, Math.sin(a+Math.PI)*0.8]);
-          edges.push([i*2, i*2+1]);
-          if(i > 0){
-            edges.push([i*2, (i-1)*2], [i*2+1, (i-1)*2+1]);
-          }
-        }
-      }
-      else if(s === 14){
-        const rings = 12, pts = 12;
-        for(let i=0; i<=rings; i++){
-          let v = i/rings * Math.PI;
-          for(let j=0; j<pts; j++){
-            let u = j/pts * Math.PI*2;
-            let bump = 0;
-            if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-              bump = (dataArray[(i*pts+j) % 64]||0)/255 * 0.8;
-            } else {
-              bump = Math.abs(Math.sin(vizTime + i + j))*0.3*activeAudio.volume;
-            }
-            let r = 0.8 + bump;
-            nodes.push([r*Math.sin(v)*Math.cos(u), r*Math.cos(v), r*Math.sin(v)*Math.sin(u)]);
-            let curr = i*pts + j;
-            if(i < rings) edges.push([curr, curr+pts]);
-            edges.push([curr, i*pts + ((j+1)%pts)]);
-          }
-        }
-      }
-      else if(s === 15){
-        const eyeShiftX = Math.sin(vizTime * 2) * 0.15; 
-        const eyeShiftY = Math.cos(vizTime * 3) * 0.05;
-
-        let nLen = nodes.length;
-        for(let i=0; i<20; i++){ 
-            nodes.push([Math.cos(i/20*Math.PI*2), Math.sin(i/20*Math.PI*2), 0]); 
-            edges.push([nLen+i, nLen+((i+1)%20)]); 
-        }
-        
-        nLen = nodes.length;
-        for(let i=0; i<8; i++){ 
-            nodes.push([-0.35 + eyeShiftX + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + eyeShiftY + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); 
-            edges.push([nLen+i, nLen+((i+1)%8)]); 
-        }
-        
-        nLen = nodes.length;
-        for(let i=0; i<8; i++){ 
-            nodes.push([0.35 + eyeShiftX + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + eyeShiftY + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); 
-            edges.push([nLen+i, nLen+((i+1)%8)]); 
-        }
-        nLen = nodes.length;
-        for(let i=0; i<10; i++){ 
-            nodes.push([Math.cos(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, -Math.sin(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, 0.2]); 
-            if(i>0) edges.push([nLen+i-1, nLen+i]); 
-        }
-      }
-      else if(s === 16){
-        for(let z=-0.2; z<=0.2; z+=0.4){
-          let base = nodes.length;
-          for(let i=0; i<10; i++){
-            let a = i * Math.PI/5 - Math.PI/2;
-            let r = i%2===0 ? 1.2 : 0.5;
-            if(useRealVisualizer&&isAudioCtxSetup&&analyser) r += (dataArray[2]||0)/255 * 0.2;
-            nodes.push([r*Math.cos(a), r*Math.sin(a), z]);
-            edges.push([base+i, base + ((i+1)%10)]);
-          }
-          if(z === 0.2){
-             for(let i=0; i<10; i++) edges.push([i, i+10]); 
-          }
-        }
-      }
-      else if(s === 17){
-        const petals = 6, layers = 4;
-        for(let l=1; l<=layers; l++){
-          let radius = l * 0.35;
-          let z = (layers - l) * -0.25;
-          let layerBase = nodes.length;
-          const pts = 36;
-          for(let i=0; i<pts; i++){
-            let a = i * Math.PI*2 / pts;
-            let r = radius * (1 + 0.5 * Math.sin(petals * a));
-
-            if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-               r += (dataArray[l*4]||0)/255 * 0.6;
-            }
-            
-            nodes.push([r*Math.cos(a), r*Math.sin(a), z + r*0.5]);
-            if(i>0) edges.push([layerBase+i-1, layerBase+i]);
-          }
-          edges.push([layerBase+pts-1, layerBase]);
+      if (s !== 11 && s !== 14 && window.shapeCache[s]) {
+          nodes = window.shapeCache[s].nodes;
+          edges = window.shapeCache[s].edges;
+      } else {
+          if(s === 0){ nodes = [[-1,-1,-1],[-1,-1,1],[-1,1,-1],[-1,1,1],[1,-1,-1],[1,-1,1],[1,1,-1],[1,1,1]]; edges = [[0,1],[1,3],[3,2],[2,0], [4,5],[5,7],[7,6],[6,4], [0,4],[1,5],[2,6],[3,7]]; } 
+          else if(s === 1){ nodes = [[1,1,1], [1,-1,-1], [-1,1,-1], [-1,-1,1]]; edges = [[0,1],[1,2],[2,0], [0,3],[1,3],[2,3]]; } 
+          else if(s === 2){ nodes = [[1.5,0,0],[-1.5,0,0],[0,1.5,0],[0,-1.5,0],[0,0,1.5],[0,0,-1.5]]; edges = [[0,2],[0,3],[0,4],[0,5], [1,2],[1,3],[1,4],[1,5], [2,4],[4,3],[3,5],[5,2]]; } 
+          else if(s === 3){ nodes = [[0,1.2,0], [-1,-1,-1], [1,-1,-1], [1,-1,1], [-1,-1,1]]; edges = [[0,1],[0,2],[0,3],[0,4], [1,2],[2,3],[3,4],[4,1]]; } 
+          else if(s === 4){ nodes = [[0,1.2,0]]; for(let i=0; i<8; i++) nodes.push([Math.cos(i*Math.PI/4), -1, Math.sin(i*Math.PI/4)]); for(let i=1; i<=8; i++){ edges.push([0, i]); edges.push([i, (i%8)+1]); } } 
+          else if(s === 5){ const p = 1.618; nodes = [[0,1,p],[0,-1,p],[0,1,-p],[0,-1,-p],[1,p,0],[-1,p,0],[1,-p,0],[-1,-p,0],[p,0,1],[-p,0,1],[p,0,-1],[-p,0,-1]]; for(let i=0; i<nodes.length; i++) { for(let j=i+1; j<nodes.length; j++) { let dx=nodes[i][0]-nodes[j][0], dy=nodes[i][1]-nodes[j][1], dz=nodes[i][2]-nodes[j][2]; if(dx*dx+dy*dy+dz*dz < 4.1) edges.push([i,j]); } } } 
+          else if(s === 6){ const p = 1.618, ip = 0.618; nodes = [[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1], [0,ip,p],[0,ip,-p],[0,-ip,p],[0,-ip,-p],[ip,p,0],[ip,-p,0],[-ip,p,0],[-ip,-p,0], [p,0,ip],[p,0,-ip],[-p,0,ip],[-p,0,-ip]]; for(let i=0; i<nodes.length; i++) { for(let j=i+1; j<nodes.length; j++) { let dx=nodes[i][0]-nodes[j][0], dy=nodes[i][1]-nodes[j][1], dz=nodes[i][2]-nodes[j][2]; if(dx*dx+dy*dy+dz*dz < 1.6) edges.push([i,j]); } } }
+          else if(s === 7){ const R = 1.2, r = 0.5, maj = 12, min = 6; for(let i=0; i<maj; i++){ const u = i * Math.PI*2 / maj; for(let j=0; j<min; j++){ const v = j * Math.PI*2 / min; nodes.push([ (R + r*Math.cos(v))*Math.cos(u), r*Math.sin(v), (R + r*Math.cos(v))*Math.sin(u) ]); const curr = i*min + j; edges.push([curr, i*min + ((j+1)%min)], [curr, ((i+1)%maj)*min + j]); } } }
+          else if(s === 8){ nodes = [[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1], [-1,-1,-1],[-1,1,1],[1,-1,1],[1,1,-1]]; edges = [[0,1],[1,2],[2,0],[0,3],[1,3],[2,3], [4,5],[5,6],[6,4],[4,7],[5,7],[6,7]]; }
+          else if(s === 9){ const segs = 10; for(let i=0; i<segs; i++){ const a = i * Math.PI*2 / segs; nodes.push([Math.cos(a), 1.2, Math.sin(a)], [Math.cos(a), -1.2, Math.sin(a)]); const top = i*2, bot = i*2+1, nextTop = ((i+1)%segs)*2, nextBot = ((i+1)%segs)*2+1; edges.push([top, bot], [top, nextTop], [bot, nextBot]); } }
+          else if(s === 10){ const segs = 8; nodes.push([0,0,0]); for(let i=0; i<segs; i++){ const a = i * Math.PI*2 / segs; nodes.push([Math.cos(a), 1.2, Math.sin(a)], [Math.cos(a), -1.2, Math.sin(a)]); const t = i*2+1, b = i*2+2, nextT = ((i+1)%segs)*2+1, nextB = ((i+1)%segs)*2+2; edges.push([0, t], [0, b], [t, nextT], [b, nextB]); } }
+          else if(s === 11){ const cols = 5, rows = 5, spacing = 0.55; for(let r=0; r<rows; r++){ for(let c=0; c<cols; c++){ let idx = r*cols + c; let h = 0.2; if(useRealVisualizer&&isAudioCtxSetup&&analyser){ h = 0.2 + (dataArray[(idx*2)%dataArray.length]||0)/255 * 4.0; } else { h = 0.2 + Math.abs(Math.sin(vizTime + idx*0.5)) * activeAudio.volume * 3.0; } let x = (c - cols/2 + 0.5) * spacing; let z = (r - rows/2 + 0.5) * spacing; let base = nodes.length; nodes.push([x-0.2, -1.2, z-0.2], [x+0.2, -1.2, z-0.2], [x+0.2, -1.2, z+0.2], [x-0.2, -1.2, z+0.2]); nodes.push([x-0.2, -1.2+h, z-0.2], [x+0.2, -1.2+h, z-0.2], [x+0.2, -1.2+h, z+0.2], [x-0.2, -1.2+h, z+0.2]); edges.push([base+0,base+1], [base+1,base+2], [base+2,base+3], [base+3,base+0], [base+4,base+5], [base+5,base+6], [base+6,base+7], [base+7,base+4], [base+0,base+4], [base+1,base+5], [base+2,base+6], [base+3,base+7]); } } }
+          else if(s === 12){ const segs = 14, layers = 10, scale = 0.08; for(let j=0; j<=layers; j++){ let v = j/layers * Math.PI; for(let i=0; i<segs; i++){ let u = i/segs * 2 * Math.PI; let x = scale * (16 * Math.sin(u)**3) * Math.sin(v); let y = scale * (13 * Math.cos(u) - 5 * Math.cos(2*u) - 2 * Math.cos(3*u) - Math.cos(4*u)) * Math.sin(v); let z = scale * 15 * Math.cos(v); nodes.push([x, -y, z]); let curr = j*segs + i; if (j < layers) edges.push([curr, (j+1)*segs + i]); edges.push([curr, j*segs + ((i+1)%segs)]); } } }
+          else if(s === 13){ const rungs = 12; for(let i=0; i<rungs; i++){ let y = (i - rungs/2) * 0.25; let a = i * 0.6 + vizTime; nodes.push([Math.cos(a)*0.8, y, Math.sin(a)*0.8]); nodes.push([Math.cos(a+Math.PI)*0.8, y, Math.sin(a+Math.PI)*0.8]); edges.push([i*2, i*2+1]); if(i > 0){ edges.push([i*2, (i-1)*2], [i*2+1, (i-1)*2+1]); } } }
+          else if(s === 14){ const rings = 12, pts = 12; for(let i=0; i<=rings; i++){ let v = i/rings * Math.PI; for(let j=0; j<pts; j++){ let u = j/pts * Math.PI*2; let bump = 0; if(useRealVisualizer&&isAudioCtxSetup&&analyser){ bump = (dataArray[(i*pts+j) % 64]||0)/255 * 0.8; } else { bump = Math.abs(Math.sin(vizTime + i + j))*0.3*activeAudio.volume; } let r = 0.8 + bump; nodes.push([r*Math.sin(v)*Math.cos(u), r*Math.cos(v), r*Math.sin(v)*Math.sin(u)]); let curr = i*pts + j; if(i < rings) edges.push([curr, curr+pts]); edges.push([curr, i*pts + ((j+1)%pts)]); } } }
+          else if(s === 15){ const eyeShiftX = Math.sin(vizTime * 2) * 0.15; const eyeShiftY = Math.cos(vizTime * 3) * 0.05; let nLen = nodes.length; for(let i=0; i<20; i++){ nodes.push([Math.cos(i/20*Math.PI*2), Math.sin(i/20*Math.PI*2), 0]); edges.push([nLen+i, nLen+((i+1)%20)]); } nLen = nodes.length; for(let i=0; i<8; i++){ nodes.push([-0.35 + eyeShiftX + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + eyeShiftY + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); edges.push([nLen+i, nLen+((i+1)%8)]); } nLen = nodes.length; for(let i=0; i<8; i++){ nodes.push([0.35 + eyeShiftX + Math.cos(i/8*Math.PI*2)*0.15, -0.35 + eyeShiftY + Math.sin(i/8*Math.PI*2)*0.15, 0.2]); edges.push([nLen+i, nLen+((i+1)%8)]); } nLen = nodes.length; for(let i=0; i<10; i++){ nodes.push([Math.cos(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, -Math.sin(Math.PI*0.8 - i/9*Math.PI*0.6)*0.6, 0.2]); if(i>0) edges.push([nLen+i-1, nLen+i]); } }
+          else if(s === 16){ for(let z=-0.2; z<=0.2; z+=0.4){ let base = nodes.length; for(let i=0; i<10; i++){ let a = i * Math.PI/5 - Math.PI/2; let r = i%2===0 ? 1.2 : 0.5; if(useRealVisualizer&&isAudioCtxSetup&&analyser) r += (dataArray[2]||0)/255 * 0.2; nodes.push([r*Math.cos(a), r*Math.sin(a), z]); edges.push([base+i, base + ((i+1)%10)]); } if(z === 0.2){ for(let i=0; i<10; i++) edges.push([i, i+10]); } } }
+          else if(s === 17){ const petals = 6, layers = 4; for(let l=1; l<=layers; l++){ let radius = l * 0.35; let z = (layers - l) * -0.25; let layerBase = nodes.length; const pts = 36; for(let i=0; i<pts; i++){ let a = i * Math.PI*2 / pts; let r = radius * (1 + 0.5 * Math.sin(petals * a)); if(useRealVisualizer&&isAudioCtxSetup&&analyser){ r += (dataArray[l*4]||0)/255 * 0.6; } nodes.push([r*Math.cos(a), r*Math.sin(a), z + r*0.5]); if(i>0) edges.push([layerBase+i-1, layerBase+i]); } edges.push([layerBase+pts-1, layerBase]); if(l > 1){ let prevBase = layerBase - pts; for(let i=0; i<pts; i+=3) edges.push([prevBase+i, layerBase+i]); } } }
+          else if(s === 18){ for(let z=-0.15; z<=0.15; z+=0.3){ let base = nodes.length; const pts = 20; for(let i=0; i<pts; i++){ let a = i * Math.PI*2 / pts; nodes.push([Math.cos(a)*1.2, Math.sin(a)*1.2, z]); edges.push([base+i, base + ((i+1)%pts)]); } let cIdx = nodes.length; nodes.push([0, 0, z]); nodes.push([0, 1.2, z]); nodes.push([0, -1.2, z]); nodes.push([-Math.cos(Math.PI/4)*1.2, -Math.sin(Math.PI/4)*1.2, z]); nodes.push([Math.cos(Math.PI/4)*1.2, -Math.sin(Math.PI/4)*1.2, z]); edges.push([cIdx, cIdx+1], [cIdx, cIdx+2], [cIdx, cIdx+3], [cIdx, cIdx+4]); if(z === 0.15){ for(let i=0; i<pts+5; i++) edges.push([i, i+(pts+5)]); } } }
+          else if(s === 19){ const wrist = [0, -1.2, 0]; const palmL = [-0.5, -0.6, 0.1], palmR = [0.5, -0.6, 0.1]; const knPinky = [-0.7, 0.1, 0.2], knRing = [-0.3, 0.3, 0.2], knMid = [0.2, 0.3, 0.2], knIndex = [0.7, 0.1, 0.2]; const thBase = [0.8, -0.4, 0.3], thMid = [1.1, 0.0, 0.4], thTip = [1.3, 0.3, 0.5]; nodes.push(wrist, palmL, palmR, knPinky, knRing, knMid, knIndex, thBase, thMid, thTip); edges.push([0,1],[0,2],[1,2],[1,3],[2,6],[3,4],[4,5],[5,6]); edges.push([2,7],[7,8],[8,9]); const f = [ {k: 3, len: 0.5, dx: -0.2}, {k: 4, len: 0.8, dx: -0.1}, {k: 5, len: 0.9, dx: 0.0}, {k: 6, len: 0.7, dx: 0.2} ]; f.forEach(finger => { let baseNode = nodes[finger.k]; let mid = [baseNode[0] + finger.dx, baseNode[1] + finger.len*0.5, baseNode[2] - 0.1]; let tip = [baseNode[0] + finger.dx*1.5, baseNode[1] + finger.len, baseNode[2] - 0.2]; nodes.push(mid, tip); edges.push([finger.k, nodes.length-2], [nodes.length-2, nodes.length-1]); }); let numNodes = nodes.length; for(let i=0; i<numNodes; i++) { nodes.push([nodes[i][0], nodes[i][1], nodes[i][2] - 0.3]); edges.push([i, i+numNodes]); } let b = numNodes; edges.push([b+0,b+1],[b+0,b+2],[b+1,b+2],[b+1,b+3],[b+2,b+6],[b+3,b+4],[b+4,b+5],[b+5,b+6]); edges.push([b+2,b+7],[b+7,b+8],[b+8,b+9]); f.forEach((finger, i) => edges.push([b+finger.k, b+10+(i*2)], [b+10+(i*2), b+11+(i*2)])); }
+          else if(s === 20){ nodes.push([0, 1.2, 0]); nodes.push([0, -1.2, 0]); const sides = 8; for(let i=0; i<sides; i++){ let a = i * Math.PI*2 / sides; nodes.push([Math.cos(a)*0.6, 0.4, Math.sin(a)*0.6]); nodes.push([Math.cos(a)*1.0, 0.0, Math.sin(a)*1.0]); } for(let i=0; i<sides; i++){ let topRing = 2 + i*2, nextTop = 2 + ((i+1)%sides)*2; let girdle = 3 + i*2, nextGirdle = 3 + ((i+1)%sides)*2; edges.push([0, topRing], [topRing, nextTop], [topRing, girdle], [girdle, nextGirdle], [girdle, 1]); } }
           
-          if(l > 1){
-             let prevBase = layerBase - pts;
-             for(let i=0; i<pts; i+=3) edges.push([prevBase+i, layerBase+i]);
+          if (s !== 11 && s !== 14) {
+              window.shapeCache[s] = { nodes, edges };
           }
-        }
       }
-      else if(s === 18){
-        for(let z=-0.15; z<=0.15; z+=0.3){
-          let base = nodes.length;
-          const pts = 20;
-          for(let i=0; i<pts; i++){
-            let a = i * Math.PI*2 / pts;
-            nodes.push([Math.cos(a)*1.2, Math.sin(a)*1.2, z]);
-            edges.push([base+i, base + ((i+1)%pts)]);
-          }
-          let cIdx = nodes.length;
-          nodes.push([0, 0, z]);
-          nodes.push([0, 1.2, z]);
-          nodes.push([0, -1.2, z]);
-          nodes.push([-Math.cos(Math.PI/4)*1.2, -Math.sin(Math.PI/4)*1.2, z]);
-          nodes.push([Math.cos(Math.PI/4)*1.2, -Math.sin(Math.PI/4)*1.2, z]);
-          
-          edges.push([cIdx, cIdx+1], [cIdx, cIdx+2], [cIdx, cIdx+3], [cIdx, cIdx+4]);
-          
-          if(z === 0.15){
-             for(let i=0; i<pts+5; i++) edges.push([i, i+(pts+5)]);
-          }
-        }
-      }
-      else if(s === 19){
-        const wrist = [0, -1.2, 0];
-        const palmL = [-0.5, -0.6, 0.1], palmR = [0.5, -0.6, 0.1];
-        const knPinky = [-0.7, 0.1, 0.2], knRing = [-0.3, 0.3, 0.2], knMid = [0.2, 0.3, 0.2], knIndex = [0.7, 0.1, 0.2];
-        const thBase = [0.8, -0.4, 0.3], thMid = [1.1, 0.0, 0.4], thTip = [1.3, 0.3, 0.5];
-        
-        nodes.push(wrist, palmL, palmR, knPinky, knRing, knMid, knIndex, thBase, thMid, thTip);
-        edges.push([0,1],[0,2],[1,2],[1,3],[2,6],[3,4],[4,5],[5,6]);
-        edges.push([2,7],[7,8],[8,9]);
 
-        const f = [ {k: 3, len: 0.5, dx: -0.2}, {k: 4, len: 0.8, dx: -0.1}, {k: 5, len: 0.9, dx: 0.0}, {k: 6, len: 0.7, dx: 0.2} ];
-        f.forEach(finger => {
-           let baseNode = nodes[finger.k];
-           let mid = [baseNode[0] + finger.dx, baseNode[1] + finger.len*0.5, baseNode[2] - 0.1];
-           let tip = [baseNode[0] + finger.dx*1.5, baseNode[1] + finger.len, baseNode[2] - 0.2];
-           nodes.push(mid, tip);
-           edges.push([finger.k, nodes.length-2], [nodes.length-2, nodes.length-1]);
-        });
-        
-        let numNodes = nodes.length;
-        for(let i=0; i<numNodes; i++) {
-           nodes.push([nodes[i][0], nodes[i][1], nodes[i][2] - 0.3]); 
-           edges.push([i, i+numNodes]);
-        }
-        
-        let b = numNodes;
-        edges.push([b+0,b+1],[b+0,b+2],[b+1,b+2],[b+1,b+3],[b+2,b+6],[b+3,b+4],[b+4,b+5],[b+5,b+6]);
-        edges.push([b+2,b+7],[b+7,b+8],[b+8,b+9]);
-        f.forEach((finger, i) => edges.push([b+finger.k, b+10+(i*2)], [b+10+(i*2), b+11+(i*2)]));
-      }
-      else if(s === 20){
-        nodes.push([0, 1.2, 0]);
-        nodes.push([0, -1.2, 0]);
-        const sides = 8;
-        for(let i=0; i<sides; i++){
-          let a = i * Math.PI*2 / sides;
-          nodes.push([Math.cos(a)*0.6, 0.4, Math.sin(a)*0.6]); 
-          nodes.push([Math.cos(a)*1.0, 0.0, Math.sin(a)*1.0]); 
-        }
-        for(let i=0; i<sides; i++){
-          let topRing = 2 + i*2, nextTop = 2 + ((i+1)%sides)*2;
-          let girdle = 3 + i*2, nextGirdle = 3 + ((i+1)%sides)*2;
-          edges.push([0, topRing], [topRing, nextTop], [topRing, girdle], [girdle, nextGirdle], [girdle, 1]);
-        }
-      }
-      const finalAngleX = window.shapeAngleX + vizManualRotX;
-      const finalAngleY = window.shapeAngleY + vizManualRotY;
+      const finalAngleX = window.shapeAngleX;
+      const finalAngleY = window.shapeAngleY;
       const sinX=Math.sin(finalAngleX), cosX=Math.cos(finalAngleX);
       const sinY=Math.sin(finalAngleY), cosY=Math.cos(finalAngleY);
 
@@ -1419,6 +1131,61 @@ function _vizLoop(){
       vizCtx.globalAlpha = 1.0;
       vizCtx.stroke();
       vizCtx.globalCompositeOperation = 'source-over';
+    }
+    
+    else if (threeModes.includes(vizMode)) {
+        if (tTerrain) tTerrain.material.color.set(color);
+        
+    if (vizMode === 'terrain') {
+            tTerrain.visible = true;
+            tTunnelGroup.visible = false;
+
+            const pos = tTerrain.geometry.attributes.position;
+            const flySpeed = vizTime * 6;
+
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+                
+                let audioBump = 0;
+                if(useRealVisualizer && isAudioCtxSetup && analyser) {
+                    const idx = Math.min(63, Math.abs(Math.floor(x * 0.8)));
+                    audioBump = (dataArray[idx] || 0) / 255;
+                } else {
+                    audioBump = Math.abs(Math.sin(x * 0.2 + vizTime)) * activeAudio.volume;
+                }
+                let y = Math.sin(x * 0.15) * 2.5 + Math.cos((z + flySpeed) * 0.15) * 2.5;
+                const centerFocus = Math.max(0, 1 - Math.abs(x) / 40);
+                y += (audioBump * 14) * centerFocus;
+
+                pos.setY(i, y);
+            }
+            pos.needsUpdate = true;
+        }
+        else if (vizMode === 'tunnel') {
+            tTerrain.visible = false;
+            tTunnelGroup.visible = true;
+
+            tTunnelGroup.children.forEach((ring, i) => {
+                ring.material.color.set(i % 3 === 0 ? '#ff4060' : color);
+                let audioBump = 0;
+                if(useRealVisualizer&&isAudioCtxSetup&&analyser) {
+                     audioBump = (dataArray[i] || 0) / 255;
+                } else {
+                     audioBump = Math.abs(Math.sin(vizTime + i)) * activeAudio.volume;
+                }
+                
+                ring.scale.setScalar(1 + audioBump * 0.4);
+                ring.position.z += 0.08; 
+                ring.position.x = Math.sin(vizTime * 0.5 + i * 0.1) * 0.5;
+                ring.position.y = Math.cos(vizTime * 0.4 + i * 0.1) * 0.5;
+                ring.rotation.z = vizTime + (i * 0.2);
+
+                if (ring.position.z > 2) ring.position.z -= 30;
+            });
+        }
+
+        tRenderer.render(tScene, tCamera);
     }
   }
   rafId=requestAnimationFrame(_vizLoop);
@@ -2099,7 +1866,7 @@ function toggleGlobeAutoRotate() {
   showToast(gState.autoRotate ? '⟳ Auto-rotate on' : 'Auto-rotate off');
 }
 function toggleFullscreen() {
-  const canvasWrap = document.getElementById('visualizerCanvas');
+  const canvasWrap = document.getElementById('vizContainer');
   const body = document.body;
 
   const isNativeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
@@ -2126,7 +1893,7 @@ function toggleFullscreen() {
     }
   }
 }
-document.getElementById('visualizerCanvas').addEventListener('dblclick', toggleFullscreen);
+document.getElementById('vizContainer').addEventListener('dblclick', toggleFullscreen);
 </script>
 </body>
 </html>
