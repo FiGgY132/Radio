@@ -544,6 +544,7 @@ let tScene, tCamera, tRenderer, tTerrain, tTunnelGroup;
 let isThreeVizReady = false;
 let threeVizCanvas;
 
+// --- GLOBALS FOR GC-OPTIMIZED RENDER LOOPS ---
 const DYN_MAX_NODES = 1000;
 const DYN_MAX_EDGES = 1000;
 const dynNodesPool = Array.from({length: DYN_MAX_NODES}, () => [0,0,0]);
@@ -558,6 +559,7 @@ let cachedScreenScale = 300;
 let cachedBaseThickness = 1.5;
 let waveformArray = null;
 let prevVizMode = null;
+// ---------------------------------------------
 
 function initThreeViz() {
     if (isThreeVizReady) return;
@@ -604,7 +606,7 @@ const vizResizeObs = new ResizeObserver(entries => {
     vizCtx.scale(dpr, dpr);
 
     cachedScreenScale = Math.min(cvW, cvH) * 1.3;
-    cachedBaseThickness = Math.max(1.5, Math.min(cvW, cvH) / 200);
+    cachedBaseThickness = Math.max(1.0, Math.min(cvW, cvH) / 350); 
     
     if (isThreeVizReady) {
         tRenderer.setPixelRatio(dpr);
@@ -946,7 +948,7 @@ function _vizLoop(){
   const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain'];
   if(trailModes.includes(vizMode)) {
     vizCtx.globalCompositeOperation = 'source-over';
-    vizCtx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    vizCtx.fillStyle = (vizMode === 'cube' || vizMode === 'blobs') ? 'rgba(0, 0, 0, 0.45)' : 'rgba(0, 0, 0, 0.25)';
     vizCtx.fillRect(0, 0, W, H);
   } else {
     vizCtx.clearRect(0, 0, W, H);
@@ -1085,14 +1087,7 @@ function _vizLoop(){
       window.shapeAngleY += speedY * window.shapeSpinDir;
       
       if(bass > 0.8 && vizTime - lastBeatTime > 1.0){
-        if (window.vizShapeIdx === 11) {
-            if (Date.now() - window.lastShapeChange > 10000) {
-                let nextShape = Math.floor(Math.random() * 21);
-                while(nextShape === 11) nextShape = Math.floor(Math.random() * 21);
-                window.vizShapeIdx = nextShape;
-                window.lastShapeChange = Date.now();
-            }
-        } else {
+        if (Date.now() - window.lastShapeChange > 4000) { 
             let nextShape = Math.floor(Math.random() * 21);
             while(nextShape === window.vizShapeIdx) nextShape = Math.floor(Math.random() * 21);
             window.vizShapeIdx = nextShape;
@@ -1320,8 +1315,7 @@ function _vizLoop(){
       vizCtx.strokeStyle = `hsl(${hue}, 100%, 65%)`;
       
       vizCtx.globalCompositeOperation = 'lighter';
-      
-      vizCtx.lineWidth = cachedBaseThickness * 4;
+      vizCtx.lineWidth = cachedBaseThickness * 2.5; 
       vizCtx.globalAlpha = 0.25;
       vizCtx.stroke();
       
@@ -1330,8 +1324,7 @@ function _vizLoop(){
       vizCtx.stroke();
       vizCtx.globalCompositeOperation = 'source-over';
     }
-    
-    else if (threeModes.includes(vizMode)) {
+        else if (threeModes.includes(vizMode)) {
         if (tTerrain) tTerrain.material.color.set(color);
         
         if (vizMode === 'terrain') {
