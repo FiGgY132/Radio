@@ -542,38 +542,27 @@ function initThreeViz() {
     if (isThreeVizReady) return;
     threeVizCanvas = document.getElementById('threeVizCanvas');
     tScene = new THREE.Scene();
-    
-    // FOG explicitly stops the infinite tunnel rings from popping in/out at the far edge
-    tScene.fog = new THREE.FogExp2(0x000000, 0.045);
-    
+    tScene.fog = new THREE.FogExp2(0x000000, 0.045); 
     tCamera = new THREE.PerspectiveCamera(60, cvW / cvH, 0.1, 100);
-    tCamera.position.set(0, -1.8, 5); // Tilted down for default viewing
-
+    tCamera.position.set(0, -8.8, -50);
     tRenderer = new THREE.WebGLRenderer({ canvas: threeVizCanvas, alpha: true, antialias: true });
     tRenderer.setSize(cvW, cvH);
-
-    // --- Terrain Geometry ---
-    // Expanded significantly to support panning without clipping edges
     const planeGeo = new THREE.PlaneGeometry(60, 40, 60, 40);
     planeGeo.rotateX(-Math.PI / 2);
     const terrainMat = new THREE.MeshBasicMaterial({ color: 0x00e5a0, wireframe: true, transparent: true, opacity: 0.5 });
     tTerrain = new THREE.Mesh(planeGeo, terrainMat);
-    tTerrain.position.set(0, -3, -10);
+    tTerrain.position.set(0, -5, 1);
     tScene.add(tTerrain);
-
-    // --- Tunnel Geometry ---
     tTunnelGroup = new THREE.Group();
     const ringGeo = new THREE.RingGeometry(1.5, 1.6, 24);
     const ringMat = new THREE.MeshBasicMaterial({ color: 0x00e5a0, wireframe: true, side: THREE.DoubleSide });
     
-    // Increased to 35 rings to push them deep into the fog distance
     for(let i = 0; i < 35; i++) {
         const ring = new THREE.Mesh(ringGeo, ringMat.clone());
         ring.position.z = -i * 1.2;
         tTunnelGroup.add(ring);
     }
     tScene.add(tTunnelGroup);
-
     isThreeVizReady = true;
 }
 
