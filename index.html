@@ -405,9 +405,9 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
       </div>
     </div>
     
-    <div id="vizContainer">
-      <canvas id="visualizerCanvas" width="220" height="100" aria-hidden="true"></canvas>
-      <canvas id="threeVizCanvas"></canvas>
+<div id="vizContainer">
+      <canvas id="visualizerCanvas" aria-hidden="true" style="width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></canvas>
+      <canvas id="threeVizCanvas" style="width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></canvas>
     </div>
 
     <div class="player-controls">
@@ -918,9 +918,8 @@ function _vizLoop(){
     rafId = requestAnimationFrame(_vizLoop);
     return;
   }
-
+  const threeModes = ['terrain', 'tunnel'];
   if (vizMode !== prevVizMode) {
-      const threeModes = ['terrain', 'tunnel'];
       const isThree = threeModes.includes(vizMode);
       vizCanvas.style.display = isThree ? 'none' : 'block';
       if (document.getElementById('threeVizCanvas')) {
