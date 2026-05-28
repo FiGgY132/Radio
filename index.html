@@ -566,6 +566,7 @@ function initThreeViz() {
     tCamera.position.set(0, -1.8, 5); 
 
     tRenderer = new THREE.WebGLRenderer({ canvas: threeVizCanvas, alpha: true, antialias: true });
+    tRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     tRenderer.setSize(cvW, cvH);
 
     const planeGeo = new THREE.PlaneGeometry(60, 40, 60, 40);
@@ -593,8 +594,10 @@ const vizResizeObs = new ResizeObserver(entries => {
   for(let e of entries){
     cvW = e.contentRect.width;
     cvH = e.contentRect.height;
-    vizCanvas.width = cvW;
-    vizCanvas.height = cvH;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); 
+    vizCanvas.width = cvW * dpr;
+    vizCanvas.height = cvH * dpr;
+    vizCtx.scale(dpr, dpr);
     cachedScreenScale = Math.min(cvW, cvH) * 1.3;
     cachedBaseThickness = Math.max(1.5, Math.min(cvW, cvH) / 200);
     if (isThreeVizReady) {
