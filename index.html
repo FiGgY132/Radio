@@ -120,8 +120,12 @@ main.globe-active{overflow:hidden;padding:0;}
 .now-playing-inner{display:inline-block;font-size:0.7rem;font-family:var(--font-mono);color:var(--accent);}
 .now-playing-inner.scrolling{animation:npScroll 20s linear infinite;padding-right:80px;}
 
-#vizContainer {display: none; height: 160px; width: 100%; max-width: 550px; min-width: 100px; flex: 1; margin: 0 10px; position: relative;}
-#vizContainer.active {display: block;}
+/* CSS FULLSCREEN AND CANVAS FIXES */
+#vizContainer { display: none; height: 160px; width: 100%; max-width: 550px; min-width: 100px; flex: 1; margin: 0 10px; position: relative;}
+#vizContainer.active { display: block; }
+#vizContainer:-webkit-full-screen { max-width: none !important; margin: 0 !important; height: 100vh !important; background: var(--bg); }
+#vizContainer:fullscreen { max-width: none !important; margin: 0 !important; height: 100vh !important; background: var(--bg); }
+#vizContainer canvas { width: 100% !important; height: 100% !important; position: absolute; left: 0; top: 0; }
 
 .player-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .icon-btn{background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;font-size:0.9rem;padding:0;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
@@ -405,9 +409,9 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
       </div>
     </div>
     
-<div id="vizContainer">
-      <canvas id="visualizerCanvas" aria-hidden="true" style="width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></canvas>
-      <canvas id="threeVizCanvas" style="width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></canvas>
+    <div id="vizContainer">
+      <canvas id="visualizerCanvas" aria-hidden="true"></canvas>
+      <canvas id="threeVizCanvas"></canvas>
     </div>
 
     <div class="player-controls">
@@ -594,13 +598,16 @@ const vizResizeObs = new ResizeObserver(entries => {
   for(let e of entries){
     cvW = e.contentRect.width;
     cvH = e.contentRect.height;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); 
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     vizCanvas.width = cvW * dpr;
     vizCanvas.height = cvH * dpr;
     vizCtx.scale(dpr, dpr);
+
     cachedScreenScale = Math.min(cvW, cvH) * 1.3;
     cachedBaseThickness = Math.max(1.5, Math.min(cvW, cvH) / 200);
+    
     if (isThreeVizReady) {
+        tRenderer.setPixelRatio(dpr);
         tRenderer.setSize(cvW, cvH);
         tCamera.aspect = cvW / cvH;
         tCamera.updateProjectionMatrix();
@@ -902,7 +909,7 @@ function initTrueVisualizer(){
   const AC=window.AudioContext||window.webkitAudioContext;audioCtx=new AC();
   analyser=audioCtx.createAnalyser();analyser.fftSize=128;
   dataArray=new Uint8Array(analyser.frequencyBinCount);
-  waveformArray = new Uint8Array(analyser.fftSize);
+  waveformArray = new Uint8Array(analyser.fftSize); 
   bassNode=audioCtx.createBiquadFilter();bassNode.type='lowshelf';bassNode.frequency.value=250;
   midNode=audioCtx.createBiquadFilter();midNode.type='peaking';midNode.frequency.value=1000;midNode.Q.value=1;
   trebleNode=audioCtx.createBiquadFilter();trebleNode.type='highshelf';trebleNode.frequency.value=6000;
@@ -921,7 +928,9 @@ function _vizLoop(){
     rafId = requestAnimationFrame(_vizLoop);
     return;
   }
+
   const threeModes = ['terrain', 'tunnel'];
+
   if (vizMode !== prevVizMode) {
       const isThree = threeModes.includes(vizMode);
       vizCanvas.style.display = isThree ? 'none' : 'block';
@@ -2066,7 +2075,7 @@ function toggleGlobeAutoRotate() {
   showToast(gState.autoRotate ? '⟳ Auto-rotate on' : 'Auto-rotate off');
 }
 function toggleFullscreen() {
-  const canvasWrap = document.getElementById('visualizerCanvas');
+  const canvasWrap = document.getElementById('vizContainer');
   const body = document.body;
 
   const isNativeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
@@ -2093,7 +2102,7 @@ function toggleFullscreen() {
     }
   }
 }
-document.getElementById('visualizerCanvas').addEventListener('dblclick', toggleFullscreen);
+document.getElementById('vizContainer').addEventListener('dblclick', toggleFullscreen);
 </script>
 </body>
 </html>
