@@ -1037,7 +1037,7 @@ function _vizLoop(){
     else if(vizMode==='copper'){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[7]||0)/255;}else{v=Math.abs(Math.sin(vizTime))*activeAudio.volume;}for(let i=0;i<6;i++){const y=H/2+Math.sin(vizTime*0.5+i*1.2)*(H/2.2)*(1+v*0.3);const grad=vizCtx.createLinearGradient(0,y-10,0,y+10);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(0.5,i%2===0?color:'#ff4060');grad.addColorStop(1,'rgba(0,0,0,0)');vizCtx.fillStyle=grad;vizCtx.fillRect(0,y-10,W,20);}}
     else if(vizMode==='snerfek'){
       vizCtx.globalCompositeOperation = 'lighter';
-      const depth = 40; 
+      const depth = 88; 
       
       for(let i=depth; i>=0; i--) {
         const zOffset = (vizTime * 4) % 1;
@@ -1076,7 +1076,7 @@ function _vizLoop(){
       vizCtx.globalCompositeOperation = 'source-over';
     }
     else if(vizMode==='plasma'){
-      const size = 10;
+      const size = 21;
       for(let y=0; y<H; y+=size) {
         for(let x=0; x<W; x+=size) {
           let v = 0;
@@ -1084,14 +1084,14 @@ function _vizLoop(){
           else v = activeAudio.volume * 0.5;
 
           const v1 = Math.sin(x*0.02 + vizTime*0.5);
-          const v2 = Math.sin(y*0.02 + vizTime*0.4);
-          const v3 = Math.sin((x+y)*0.02 - vizTime*0.3);
+          const v2 = Math.sin(y*0.02 + vizTime*0.3);
+          const v3 = Math.sin((x+y)*0.02 - vizTime*0.4);
           const v4 = Math.sin(Math.sqrt(x*x + y*y)*0.02 + v*5);
           const sum = v1 + v2 + v3 + v4;
 
-          const hue = (sum * 45 + vizTime*15) % 360;
+          const hue = (sum * 45 + vizTime*v1) % 360;
           vizCtx.fillStyle = `hsl(${hue}, 80%, ${30 + v*30}%)`;
-          vizCtx.fillRect(x, y, size, size);
+          vizCtx.fillRect(x, y, size*v1, size*v2);
         }
       }
     }
