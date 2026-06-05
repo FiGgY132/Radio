@@ -1119,10 +1119,10 @@ function _vizLoop(){
 
     else if(vizMode==='blobs'){
       vizCtx.globalCompositeOperation='lighter';
-      for(let i=0;i<8;i++){
+      for(let i=0;i<18;i++){
         let bump=0;
         if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-          bump=(dataArray[i*8+2]||0)/255;
+          bump=(dataArray[i*18+2]||0)/255;
         }else{
           bump=Math.abs(Math.sin(vizTime*(1+i*0.2)))*activeAudio.volume;
         }
@@ -1135,7 +1135,7 @@ function _vizLoop(){
         grad.addColorStop(0,color);
         grad.addColorStop(1,'rgba(0,0,0,0)');
         
-        vizCtx.globalAlpha=0.6;
+        vizCtx.globalAlpha=0.7;
         vizCtx.fillStyle=grad;
         vizCtx.beginPath();
         vizCtx.arc(px,py,r,0,Math.PI*2);
@@ -1283,8 +1283,8 @@ function _vizLoop(){
                   }
               }
               else if (s === 15) {
-                  const eyeShiftX = Math.sin(vizTime * 2) * 0.15; 
-                  const eyeShiftY = Math.cos(vizTime * 3) * 0.05;
+                  const eyeShiftX = Math.sin(vizTime * 6) * 0.35; 
+                  const eyeShiftY = Math.cos(vizTime * 8) * 0.15;
                   let nLen = ni;
                   for(let i=0; i<20; i++){ 
                       dynNodesPool[ni][0]=Math.cos(i/20*Math.PI*2); dynNodesPool[ni][1]=Math.sin(i/20*Math.PI*2); dynNodesPool[ni][2]=0; ni++;
