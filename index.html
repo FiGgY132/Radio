@@ -436,6 +436,7 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <div class="viz-mode-btn" data-viz="snerfek" onclick="setVizMode('snerfek')" title="Snerfek Bars">⇶</div>
         <div class="viz-mode-btn" data-viz="plasma" onclick="setVizMode('plasma')" title="Plasma">✺</div>
         <div class="viz-mode-btn" data-viz="moire" onclick="setVizMode('moire')" title="Moiré">🌀</div>
+        <div class="viz-mode-btn" data-viz="dancers" onclick="setVizMode('dancers')" title="Cyber Dancers">🕺</div>
       </div>
       <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen Visuals">⛶</button>
       <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
@@ -542,10 +543,10 @@ const vizCanvas=document.getElementById('visualizerCanvas');
 const vizCtx=vizCanvas.getContext('2d');
 let cvW = 220, cvH = 100;
 
-let tScene, tCamera, tRenderer, tTerrain, tTunnelGroup;
+let tScene, tCamera, tRenderer, tTerrain, tTunnelGroup, tDancerGroup, tRoomGrid;
+let dancers = [];
 let isThreeVizReady = false;
 let threeVizCanvas;
-
 const DYN_MAX_NODES = 1000;
 const DYN_MAX_EDGES = 1000;
 const dynNodesPool = Array.from({length: DYN_MAX_NODES}, () => [0,0,0]);
@@ -592,6 +593,70 @@ function initThreeViz() {
         tTunnelGroup.add(ring);
     }
     tScene.add(tTunnelGroup);
+    tDancerGroup = new THREE.Group();
+    tScene.add(tDancerGroup);
+
+    const roomGeo = new THREE.BoxGeometry(30, 15, 60, 15, 8, 30);
+    const roomMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.15 });
+    tRoomGrid = new THREE.Mesh(roomGeo, roomMat);
+    tScene.add(tRoomGrid);
+
+    const dancerMat = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
+    
+    function makeLimb(w, h, d, posY) {
+        const grp = new THREE.Group();
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), dancerMat);
+        mesh.position.y = posY;
+        grp.add(mesh);
+        return grp;
+    }
+
+    function createDancer(xPos, zPos) {
+        const master = new THREE.Group();
+        master.position.set(xPos, 0, zPos);
+        
+        const torso = makeLimb(0.8, 1.4, 0.4, 0.7);
+        master.add(torso);
+        
+        const head = makeLimb(0.5, 0.5, 0.5, 0.25);
+        head.position.y = 1.5;
+        torso.add(head);
+        
+        const armL = makeLimb(0.25, 1.0, 0.25, -0.5);
+        armL.position.set(-0.6, 1.3, 0);
+        torso.add(armL);
+        const forearmL = makeLimb(0.2, 1.0, 0.2, -0.5);
+        forearmL.position.y = -1.0;
+        armL.add(forearmL);
+        
+        const armR = makeLimb(0.25, 1.0, 0.25, -0.5);
+        armR.position.set(0.6, 1.3, 0);
+        torso.add(armR);
+        const forearmR = makeLimb(0.2, 1.0, 0.2, -0.5);
+        forearmR.position.y = -1.0;
+        armR.add(forearmR);
+        
+        const legL = makeLimb(0.35, 1.2, 0.35, -0.6);
+        legL.position.set(-0.25, -0.1, 0);
+        master.add(legL);
+        const shinL = makeLimb(0.3, 1.2, 0.3, -0.6);
+        shinL.position.y = -1.2;
+        legL.add(shinL);
+        
+        const legR = makeLimb(0.35, 1.2, 0.35, -0.6);
+        legR.position.set(0.25, -0.1, 0);
+        master.add(legR);
+        const shinR = makeLimb(0.3, 1.2, 0.3, -0.6);
+        shinR.position.y = -1.2;
+        legR.add(shinR);
+        
+        tDancerGroup.add(master);
+        return { master, torso, head, armL, forearmL, armR, forearmR, legL, shinL, legR, shinR };
+    }
+
+    dancers.push(createDancer(-2.5, 0)); 
+    dancers.push(createDancer(2.5, 0));  
+    dancers.push(createDancer(0, -3));   
 
     isThreeVizReady = true;
 }
@@ -604,6 +669,7 @@ const vizResizeObs = new ResizeObserver(entries => {
     vizCanvas.width = cvW * dpr;
     vizCanvas.height = cvH * dpr;
     vizCtx.scale(dpr, dpr);
+
     cachedScreenScale = Math.min(cvW, cvH) * 1.3;
     cachedBaseThickness = Math.max(1.0, Math.min(cvW, cvH) / 350); 
     
@@ -930,7 +996,7 @@ function _vizLoop(){
     return;
   }
 
-  const threeModes = ['terrain', 'tunnel'];
+  const threeModes = ['terrain', 'tunnel', 'dancers'];
 
   if (vizMode !== prevVizMode) {
       const isThree = threeModes.includes(vizMode);
@@ -1037,7 +1103,7 @@ function _vizLoop(){
     else if(vizMode==='copper'){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[7]||0)/255;}else{v=Math.abs(Math.sin(vizTime))*activeAudio.volume;}for(let i=0;i<6;i++){const y=H/2+Math.sin(vizTime*0.5+i*1.2)*(H/2.2)*(1+v*0.3);const grad=vizCtx.createLinearGradient(0,y-10,0,y+10);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(0.5,i%2===0?color:'#ff4060');grad.addColorStop(1,'rgba(0,0,0,0)');vizCtx.fillStyle=grad;vizCtx.fillRect(0,y-10,W,20);}}
     else if(vizMode==='snerfek'){
       vizCtx.globalCompositeOperation = 'lighter';
-      const depth = 88; 
+      const depth = 40; 
       
       for(let i=depth; i>=0; i--) {
         const zOffset = (vizTime * 4) % 1;
@@ -1076,7 +1142,7 @@ function _vizLoop(){
       vizCtx.globalCompositeOperation = 'source-over';
     }
     else if(vizMode==='plasma'){
-      const size = 21;
+      const size = 10;
       for(let y=0; y<H; y+=size) {
         for(let x=0; x<W; x+=size) {
           let v = 0;
@@ -1084,14 +1150,14 @@ function _vizLoop(){
           else v = activeAudio.volume * 0.5;
 
           const v1 = Math.sin(x*0.02 + vizTime*0.5);
-          const v2 = Math.sin(y*0.02 + vizTime*0.3);
-          const v3 = Math.sin((x+y)*0.02 - vizTime*0.4);
+          const v2 = Math.sin(y*0.02 + vizTime*0.4);
+          const v3 = Math.sin((x+y)*0.02 - vizTime*0.3);
           const v4 = Math.sin(Math.sqrt(x*x + y*y)*0.02 + v*5);
           const sum = v1 + v2 + v3 + v4;
 
-          const hue = (sum * 45 + vizTime*v1) % 360;
+          const hue = (sum * 45 + vizTime*15) % 360;
           vizCtx.fillStyle = `hsl(${hue}, 80%, ${30 + v*30}%)`;
-          vizCtx.fillRect(x, y, size*v1, size*v2);
+          vizCtx.fillRect(x, y, size, size);
         }
       }
     }
@@ -1108,10 +1174,10 @@ function _vizLoop(){
 
       vizCtx.globalCompositeOperation = 'lighter';
       for(let r=5; r<W; r+=10 + v*8) {
-        vizCtx.strokeStyle = color;
+        vizCtx.strokeStyle = color; 
         vizCtx.beginPath(); vizCtx.arc(cx1, cy1, r, 0, Math.PI*2); vizCtx.stroke();
         
-        vizCtx.strokeStyle = '#ff4060';
+        vizCtx.strokeStyle = '#ff4060'; 
         vizCtx.beginPath(); vizCtx.arc(cx2, cy2, r, 0, Math.PI*2); vizCtx.stroke();
       }
       vizCtx.globalCompositeOperation = 'source-over';
@@ -1119,10 +1185,10 @@ function _vizLoop(){
 
     else if(vizMode==='blobs'){
       vizCtx.globalCompositeOperation='lighter';
-      for(let i=0;i<18;i++){
+      for(let i=0;i<8;i++){
         let bump=0;
         if(useRealVisualizer&&isAudioCtxSetup&&analyser){
-          bump=(dataArray[i*18+2]||0)/255;
+          bump=(dataArray[i*8+2]||0)/255;
         }else{
           bump=Math.abs(Math.sin(vizTime*(1+i*0.2)))*activeAudio.volume;
         }
@@ -1135,7 +1201,7 @@ function _vizLoop(){
         grad.addColorStop(0,color);
         grad.addColorStop(1,'rgba(0,0,0,0)');
         
-        vizCtx.globalAlpha=0.7;
+        vizCtx.globalAlpha=0.6;
         vizCtx.fillStyle=grad;
         vizCtx.beginPath();
         vizCtx.arc(px,py,r,0,Math.PI*2);
@@ -1283,8 +1349,8 @@ function _vizLoop(){
                   }
               }
               else if (s === 15) {
-                  const eyeShiftX = Math.sin(vizTime * 6) * 0.35; 
-                  const eyeShiftY = Math.cos(vizTime * 8) * 0.15;
+                  const eyeShiftX = Math.sin(vizTime * 2) * 0.15; 
+                  const eyeShiftY = Math.cos(vizTime * 3) * 0.05;
                   let nLen = ni;
                   for(let i=0; i<20; i++){ 
                       dynNodesPool[ni][0]=Math.cos(i/20*Math.PI*2); dynNodesPool[ni][1]=Math.sin(i/20*Math.PI*2); dynNodesPool[ni][2]=0; ni++;
@@ -1413,13 +1479,14 @@ function _vizLoop(){
       vizCtx.stroke();
       vizCtx.globalCompositeOperation = 'source-over';
     }
-    
     else if (threeModes.includes(vizMode)) {
         if (tTerrain) tTerrain.material.color.set(color);
         
         if (vizMode === 'terrain') {
             tTerrain.visible = true;
             tTunnelGroup.visible = false;
+            tDancerGroup.visible = false;
+            tRoomGrid.visible = false;
             
             const camPanX = Math.sin(vizTime * 0.3) * 4; 
             tCamera.position.set(camPanX, -1.8, 5); 
@@ -1449,6 +1516,8 @@ function _vizLoop(){
         else if (vizMode === 'tunnel') {
             tTerrain.visible = false;
             tTunnelGroup.visible = true;
+            tDancerGroup.visible = false;
+            tRoomGrid.visible = false;
             
             tCamera.position.set(0, 0, 5);
             tCamera.lookAt(0, 0, 0);
@@ -1474,6 +1543,49 @@ function _vizLoop(){
                 if (ring.position.z > 2) {
                     ring.position.z -= 42; 
                 }
+            });
+        }
+        else if (vizMode === 'dancers') {
+            tTerrain.visible = false;
+            tTunnelGroup.visible = false;
+            tDancerGroup.visible = true;
+            tRoomGrid.visible = true;
+            
+            const camPanX = Math.sin(vizTime * 0.5) * 1.5;
+            tCamera.position.set(camPanX, 0, 7);
+            tCamera.lookAt(camPanX * 0.5, 1, 0);
+            
+            let bass = 0;
+            if(useRealVisualizer&&isAudioCtxSetup&&analyser) bass = (dataArray[2]||0)/255;
+            else bass = Math.abs(Math.sin(vizTime*2))*activeAudio.volume;
+
+            tRoomGrid.position.z = (vizTime * 8) % 2; 
+            tRoomGrid.material.opacity = 0.15 + (bass * 0.2); 
+
+            dancers.forEach((d, i) => {
+                const t = vizTime * (4 + i*0.1); 
+                
+                d.master.position.y = -1.5 + Math.abs(Math.sin(t)) * 0.6;
+                d.master.scale.setScalar(1 + bass * 0.15);
+                
+                d.torso.rotation.z = Math.sin(t * 0.5) * 0.15;
+                d.torso.rotation.x = Math.sin(t * 0.25) * 0.2;
+                
+                d.head.rotation.x = Math.sin(t * 2) * 0.3 + bass;
+                
+                d.armL.rotation.x = Math.sin(t) * 1.2;
+                d.armL.rotation.z = -0.2;
+                d.forearmL.rotation.x = -0.5 - Math.abs(Math.sin(t+1)) * 0.8;
+                
+                d.armR.rotation.x = Math.sin(t + Math.PI) * 1.2;
+                d.armR.rotation.z = 0.2;
+                d.forearmR.rotation.x = -0.5 - Math.abs(Math.sin(t+1+Math.PI)) * 0.8;
+                
+                d.legL.rotation.x = -Math.sin(t) * 0.8;
+                d.shinL.rotation.x = Math.max(0, -Math.sin(t)) * 1.0;
+                
+                d.legR.rotation.x = -Math.sin(t + Math.PI) * 0.8;
+                d.shinR.rotation.x = Math.max(0, -Math.sin(t + Math.PI)) * 1.0;
             });
         }
 
@@ -2158,7 +2270,7 @@ function toggleGlobeAutoRotate() {
   showToast(gState.autoRotate ? '⟳ Auto-rotate on' : 'Auto-rotate off');
 }
 function toggleFullscreen() {
-  const canvasWrap = document.getElementById('vizContainer');
+  const canvasWrap = document.getElementById('visualizerCanvas');
   const body = document.body;
 
   const isNativeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
@@ -2185,7 +2297,9 @@ function toggleFullscreen() {
     }
   }
 }
-document.getElementById('vizContainer').addEventListener('dblclick', toggleFullscreen);
+document.getElementById('visualizerCanvas').addEventListener('dblclick', toggleFullscreen);
 </script>
 </body>
 </html>
+
+}
