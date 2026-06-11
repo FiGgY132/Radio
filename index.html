@@ -437,7 +437,9 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <div class="viz-mode-btn" data-viz="plasma" onclick="setVizMode('plasma')" title="Plasma">✺</div>
         <div class="viz-mode-btn" data-viz="moire" onclick="setVizMode('moire')" title="Moiré">🌀</div>
         <div class="viz-mode-btn" data-viz="dancers" onclick="setVizMode('dancers')" title="Cyber Dancers">🕺</div>
+		<div class="viz-mode-btn" data-viz="saltire" onclick="setVizMode('saltire')" title="Saltire">🏴󠁧󠁢󠁳󠁣󠁴󠁿</div>
       </div>
+	  <button class="icon-btn" id="autoVizBtn" onclick="toggleAutoViz()" title="Auto-Cycle Visualizers">🔁</button>
       <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen Visuals">⛶</button>
       <button class="icon-btn" onclick="shareStation()" title="Share">📤</button>
       <button class="icon-btn" onclick="moreLikeThis()" title="More like this">🔍</button>
@@ -602,10 +604,21 @@ function initThreeViz() {
     tScene.add(tRoomGrid);
 
     const dancerMat = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
-    
-    function makeLimb(w, h, d, posY) {
+	
+	function makeLimb(w, h, d, posY) {
         const grp = new THREE.Group();
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), dancerMat);
+        const geo = new THREE.BoxGeometry(w, h, d);
+        const mesh = new THREE.Mesh(geo, dancerMat);
+        mesh.position.y = posY;
+        grp.add(mesh);
+        return grp;
+		}
+    
+	function makeTaperedLimb(rTop, rBot, h, posY) {
+        const grp = new THREE.Group();
+        const geo = new THREE.CylinderGeometry(rTop, rBot, h, 4);
+        geo.rotateY(Math.PI / 4);
+        const mesh = new THREE.Mesh(geo, dancerMat);
         mesh.position.y = posY;
         grp.add(mesh);
         return grp;
@@ -619,19 +632,21 @@ function initThreeViz() {
         const head = makeLimb(0.4, 0.45, 0.4, 0.2); 
         head.position.y = 1.6;
         torso.add(head);
+        
         const armL = makeLimb(0.2, 0.9, 0.2, -0.45);
         armL.position.set(-0.5, 1.3, 0); 
         torso.add(armL);
-        const forearmL = makeLimb(0.18, 0.9, 0.18, -0.45);
+        const forearmL = makeTaperedLimb(0.12, 0.03, 0.9, -0.45);
         forearmL.position.y = -0.9;
         armL.add(forearmL);
         
         const armR = makeLimb(0.2, 0.9, 0.2, -0.45);
         armR.position.set(0.5, 1.3, 0);
         torso.add(armR);
-        const forearmR = makeLimb(0.18, 0.9, 0.18, -0.45);
+        const forearmR = makeTaperedLimb(0.12, 0.03, 0.9, -0.45);
         forearmR.position.y = -0.9;
         armR.add(forearmR);
+        
         const legL = makeLimb(0.3, 1.1, 0.3, -0.55);
         legL.position.set(-0.22, 0.0, 0);
         master.add(legL);
@@ -644,6 +659,7 @@ function initThreeViz() {
         const shinR = makeLimb(0.25, 1.1, 0.25, -0.55);
         shinR.position.y = -1.1;
         legR.add(shinR);
+        
         tDancerGroup.add(master);
         return { master, torso, head, armL, forearmL, armR, forearmR, legL, shinL, legR, shinR };
     }
@@ -981,6 +997,29 @@ function setVizMode(m){vizMode=m;document.querySelectorAll('.viz-mode-btn').forE
 function startVisualizer(){if(!vizRunning){vizRunning=true;_vizLoop();}}
 function stopVisualizer(){vizRunning=false;if(rafId)cancelAnimationFrame(rafId);rafId=null;}
 
+let autoVizTimer = null;
+let autoVizIndex = 0;
+const ALL_VIZ_MODES = ['bars', 'wave', 'radial', 'tracker', 'sym', 'glitch', 'matrix', 'copper', 'tunnel', 'terrain', 'blobs', 'cube', 'snerfek', 'plasma', 'moire', 'dancers', 'saltire'];
+
+function toggleAutoViz() {
+  const btn = document.getElementById('autoVizBtn');
+  if (autoVizTimer) {
+    clearInterval(autoVizTimer);
+    autoVizTimer = null;
+    btn.classList.remove('active-btn');
+    showToast("Auto-cycle off");
+  } else {
+    btn.classList.add('active-btn');
+    autoVizIndex = ALL_VIZ_MODES.indexOf(vizMode);
+    if (autoVizIndex === -1) autoVizIndex = 0;
+    
+    showToast("Auto-cycle on (12s)");
+    autoVizTimer = setInterval(() => {
+      autoVizIndex = (autoVizIndex + 1) % ALL_VIZ_MODES.length;
+      setVizMode(ALL_VIZ_MODES[autoVizIndex]);
+    }, 12000);
+  }
+}
 function _vizLoop(){
   if(!vizRunning)return;
   const W = cvW, H = cvH;
@@ -1175,7 +1214,41 @@ function _vizLoop(){
       }
       vizCtx.globalCompositeOperation = 'source-over';
     }
+	else if(vizMode==='saltire'){
+      vizCtx.fillStyle = '#005EB8';
+      vizCtx.fillRect(0, 0, W, H);
 
+      let v = 0;
+      if(useRealVisualizer && isAudioCtxSetup && analyser) {
+        v = (dataArray[2] || 0) / 255;
+      } else {
+        v = Math.abs(Math.sin(vizTime*2)) * activeAudio.volume;
+      }
+      const waveFreq = 0.015;
+      const waveAmp = 12;
+      const waveSpeed = 2.5;
+      vizCtx.lineWidth = 15 + (v * 45);
+      vizCtx.strokeStyle = '#FFFFFF';
+      vizCtx.lineCap = 'square';
+      vizCtx.beginPath();
+      for(let x = -20; x <= W + 20; x += 10) {
+        const y = (x * (H/W)) + Math.sin(x * waveFreq + vizTime * waveSpeed) * waveAmp;
+        if(x === -20) vizCtx.moveTo(x, y);
+        else vizCtx.lineTo(x, y);
+      }
+      vizCtx.stroke();
+      vizCtx.beginPath();
+      for(let x = -20; x <= W + 20; x += 10) {
+        const y = (H - (x * (H/W))) + Math.sin(x * waveFreq + vizTime * waveSpeed + Math.PI) * waveAmp;
+        if(x === -20) vizCtx.moveTo(x, y);
+        else vizCtx.lineTo(x, y);
+      }
+      vizCtx.stroke();
+      if (v > 0.6) {
+        vizCtx.fillStyle = `rgba(255, 255, 255, ${(v - 0.6) * 0.4})`;
+        vizCtx.fillRect(0, 0, W, H);
+      }
+    }
     else if(vizMode==='blobs'){
       vizCtx.globalCompositeOperation='lighter';
       for(let i=0;i<8;i++){
