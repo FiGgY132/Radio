@@ -1132,7 +1132,37 @@ function _vizLoop(){
         }
       }
     }
-    else if(vizMode==='copper'){let v=0;if(useRealVisualizer&&isAudioCtxSetup&&analyser){v=(dataArray[7]||0)/255;}else{v=Math.abs(Math.sin(vizTime))*activeAudio.volume;}for(let i=0;i<6;i++){const y=H/2+Math.sin(vizTime*0.5+i*1.2)*(H/2.2)*(1+v*0.3);const grad=vizCtx.createLinearGradient(0,y-10,0,y+10);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(0.5,i%2===0?color:'#ff4060');grad.addColorStop(1,'rgba(0,0,0,0)');vizCtx.fillStyle=grad;vizCtx.fillRect(0,y-10,W,20);}}
+    else if(vizMode==='copper'){
+      let v = 0;
+      if(useRealVisualizer && isAudioCtxSetup && analyser) {
+        v = (dataArray[3] || 0) / 255;
+      } else {
+        v = Math.abs(Math.sin(vizTime)) * activeAudio.volume;
+      }
+      for(let i = 0; i < 7; i++){
+        vizCtx.beginPath();
+        vizCtx.strokeStyle = i % 2 === 0 ? color : '#ff4060';
+        vizCtx.lineWidth = 6 + (v * 18);
+        vizCtx.lineCap = 'round';
+        vizCtx.globalAlpha = 0.8;
+
+        for(let x = -20; x <= W + 20; x += 15) {
+          const waveFreq = 0.008;
+          const waveSpeed = 1.5;
+          const phase = i * (Math.PI / 3.5);
+          const yOffset = Math.sin(x * waveFreq + vizTime * waveSpeed + phase) * (H / 2.5);
+          const y = (H / 2) + yOffset;
+
+          if(x === -20) {
+            vizCtx.moveTo(x, y);
+          } else {
+            vizCtx.lineTo(x, y);
+          }
+        }
+        vizCtx.stroke();
+      }
+      vizCtx.globalAlpha = 1.0; 
+    }
     else if(vizMode==='snerfek'){
       vizCtx.globalCompositeOperation = 'lighter';
       const depth = 40; 
