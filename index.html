@@ -1132,36 +1132,62 @@ function _vizLoop(){
         }
       }
     }
-    else if(vizMode==='copper'){
+else if(vizMode==='copper'){
       let v = 0;
       if(useRealVisualizer && isAudioCtxSetup && analyser) {
         v = (dataArray[3] || 0) / 255;
       } else {
         v = Math.abs(Math.sin(vizTime)) * activeAudio.volume;
       }
-      for(let i = 0; i < 7; i++){
-        vizCtx.beginPath();
-        vizCtx.strokeStyle = i % 2 === 0 ? color : '#ff4060';
-        vizCtx.lineWidth = 6 + (v * 18);
-        vizCtx.lineCap = 'round';
-        vizCtx.globalAlpha = 0.8;
+      const numStrands = 3;
+      const sliceW = 4;
+      const amp = H / 3;
+      const freq = 0.008;
+      const speed = 0.35;
 
-        for(let x = -20; x <= W + 20; x += 15) {
-          const waveFreq = 0.008;
-          const waveSpeed = 1.5;
-          const phase = i * (Math.PI / 3.5);
-          const yOffset = Math.sin(x * waveFreq + vizTime * waveSpeed + phase) * (H / 2.5);
-          const y = (H / 2) + yOffset;
+      vizCtx.lineWidth = sliceW + 1;
+      vizCtx.lineCap = 'butt';
 
-          if(x === -20) {
-            vizCtx.moveTo(x, y);
-          } else {
-            vizCtx.lineTo(x, y);
-          }
+      for (let x = 0; x <= W; x += sliceW) {
+        const waveCenter = (H / 2) + Math.sin(x * 0.005 + vizTime * 0.8) * (H / 8) * (1 + v);
+        let strands = [];
+        for (let i = 0; i < numStrands; i++) {
+          const phase = (i / numStrands) * Math.PI * 2;
+          const angle = x * freq + vizTime * speed + phase;
+
+          strands.push({
+            y: waveCenter + Math.sin(angle) * amp,
+            z: Math.cos(angle),
+            id: i
+          });
         }
-        vizCtx.stroke();
+        strands.sort((a, b) => a.z - b.z);
+
+        const ribbonThickness = 25 + (v * 15);
+
+        for (let i = 0; i < numStrands; i++) {
+          const strand = strands[i];
+          vizCtx.strokeStyle = (strand.id % 2 === 0) ? color : '#ff4060';
+          vizCtx.globalAlpha = 1.0;
+          vizCtx.beginPath();
+          vizCtx.moveTo(x, strand.y - ribbonThickness / 2);
+          vizCtx.lineTo(x, strand.y + ribbonThickness / 2);
+          vizCtx.stroke();
+          vizCtx.beginPath();
+          vizCtx.moveTo(x, strand.y - ribbonThickness / 2);
+          vizCtx.lineTo(x, strand.y + ribbonThickness / 2);
+          
+          if (strand.z < 0) {
+            vizCtx.strokeStyle = '#000000';
+            vizCtx.globalAlpha = Math.abs(strand.z) * 0.85;
+          } else {
+            vizCtx.strokeStyle = '#ffffff';
+            vizCtx.globalAlpha = strand.z * 0.3;
+          }
+          vizCtx.stroke();
+        }
       }
-      vizCtx.globalAlpha = 1.0; 
+      vizCtx.globalAlpha = 1.0;
     }
     else if(vizMode==='snerfek'){
       vizCtx.globalCompositeOperation = 'lighter';
