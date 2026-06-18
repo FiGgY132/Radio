@@ -17,6 +17,10 @@
 [data-theme="cyberpunk"]{--bg:#0f0f0f;--bg2:#1f1f1f;--card:#1a1a00;--card-hover:#2a2a00;--border:#ff003c;--txt:#fcee09;--txt2:#00f0ff;--accent:#00f0ff;--accent2:#ff003c;--danger:#ff003c;--player-bg:#000;--viz-color:#fcee09;--glow:rgba(0,240,255,0.4);--scan-opacity:0.02;--grid-bg:linear-gradient(rgba(255,0,60,0.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,0,60,0.1) 1px,transparent 1px);--grid-size:30px;--card-radius:0px;}
 [data-theme="coffee"]{--bg:#f4ece2;--bg2:#ebdacc;--card:#fff;--card-hover:#fdfaf7;--border:#d5c3b3;--txt:#4a3b32;--txt2:#7a6b62;--accent:#c97a34;--accent2:#8c5b35;--danger:#b83b3b;--player-bg:#fff;--viz-color:#c97a34;--glow:rgba(201,122,52,0.15);--scan-opacity:0;--grid-bg:none;--card-radius:12px;}
 [data-theme="hacker"]{--bg:#000;--bg2:#050505;--card:#0a0a0a;--card-hover:#111;--border:#003300;--txt:#00ff00;--txt2:#008800;--accent:#00ff00;--accent2:#00cc00;--danger:#ff0000;--player-bg:#000;--viz-color:#00ff00;--glow:rgba(0,255,0,0.3);--scan-opacity:0.02;--grid-bg:none;--card-radius:0px;}
+[data-theme="caledonia"]{--bg:#0b1320;--bg2:#111d30;--card:rgba(17,29,48,0.7);--card-hover:rgba(28,45,71,0.9);--border:rgba(0,94,184,0.3);--txt:#e0e6ed;--txt2:#8e9cb0;--accent:#ffffff;--accent2:#005eb8;--danger:#d92323;--player-bg:#080e18;--viz-color:#005eb8;--glow:rgba(0,94,184,0.3);--scan-opacity:0;--grid-bg:none;--card-radius:8px;}
+[data-theme="blueprint"]{--bg:#0a365c;--bg2:#0d4270;--card:rgba(255,255,255,0.05);--card-hover:rgba(255,255,255,0.1);--border:rgba(255,255,255,0.2);--txt:#ffffff;--txt2:#8cb4d6;--accent:#ffcc00;--accent2:#ffffff;--danger:#ff4060;--player-bg:#072b4a;--viz-color:#ffcc00;--glow:rgba(255,204,0,0.3);--scan-opacity:0;--grid-bg:linear-gradient(rgba(255,255,255,0.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.1) 1px,transparent 1px);--grid-size:40px;--card-radius:0px;}
+[data-theme="dashboard"]{--bg:#0f0f11;--bg2:#161619;--card:#1a1a1d;--card-hover:#222226;--border:#2a2a30;--txt:#e8e8e8;--txt2:#7a7a85;--accent:#ff6600;--accent2:#ff3300;--danger:#cc0000;--player-bg:#0a0a0c;--viz-color:#ff6600;--glow:rgba(255,102,0,0.2);--scan-opacity:0;--grid-bg:none;--card-radius:12px;--glass:none;}
+[data-theme="unearthed"]{--bg:#1c1815;--bg2:#26211c;--card:#2e2822;--card-hover:#383129;--border:#4a4136;--txt:#e3d8cd;--txt2:#9e9285;--accent:#d4af37;--accent2:#b58d22;--danger:#a83232;--player-bg:#14110e;--viz-color:#d4af37;--glow:rgba(212,175,55,0.2);--scan-opacity:0.02;--grid-bg:none;--card-radius:6px;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font-display);background-color:var(--bg);color:var(--txt);height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;transition:background-color 0.4s,color 0.4s;position:relative;}
 #ambientBg{position:fixed;inset:0;z-index:0;pointer-events:none;transition:background 2s ease;opacity:0.15;}
@@ -63,6 +67,10 @@ button:hover{border-color:var(--accent);color:var(--accent);}
 .theme-dot[data-t="cyberpunk"]{background:conic-gradient(#ff003c,#00f0ff,#fcee09);}
 .theme-dot[data-t="coffee"]{background:conic-gradient(#c97a34,#ebdacc,#f4ece2);}
 .theme-dot[data-t="hacker"]{background:conic-gradient(#00ff00,#003300,#000);}
+.theme-dot[data-t="caledonia"]{background:conic-gradient(#005eb8,#ffffff,#0b1320);}
+.theme-dot[data-t="blueprint"]{background:conic-gradient(#ffcc00,#ffffff,#0a365c);}
+.theme-dot[data-t="dashboard"]{background:conic-gradient(#ff6600,#ff3300,#0f0f11);}
+.theme-dot[data-t="unearthed"]{background:conic-gradient(#d4af37,#26211c,#1c1815);}
 
 main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;position:relative;z-index:1;}
 main.globe-active{overflow:hidden;padding:0;}
@@ -268,13 +276,17 @@ main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
         <button class="tab" id="tabGlobe" onclick="switchTab('globe')">🌍 Globe</button>
       </div>
       <div class="theme-btns" title="Switch Theme">
-        <div class="theme-dot active" data-t="cosmos" onclick="setTheme('cosmos')"></div>
-        <div class="theme-dot" data-t="synthwave" onclick="setTheme('synthwave')"></div>
-        <div class="theme-dot" data-t="crt" onclick="setTheme('crt')"></div>
-        <div class="theme-dot" data-t="arctic" onclick="setTheme('arctic')"></div>
-        <div class="theme-dot" data-t="cyberpunk" onclick="setTheme('cyberpunk')"></div>
-        <div class="theme-dot" data-t="coffee" onclick="setTheme('coffee')"></div>
-        <div class="theme-dot" data-t="hacker" onclick="setTheme('hacker')"></div>
+        <div class="theme-dot active" data-t="cosmos" onclick="setTheme('cosmos')" title="Cosmos"></div>
+        <div class="theme-dot" data-t="synthwave" onclick="setTheme('synthwave')" title="SynthWave"></div>
+        <div class="theme-dot" data-t="crt" onclick="setTheme('crt')" title="CRT"></div>
+        <div class="theme-dot" data-t="arctic" onclick="setTheme('arctic')" title= "Artic"></div>
+        <div class="theme-dot" data-t="cyberpunk" onclick="setTheme('cyberpunk')" title = "Cyberpunk"></div>
+        <div class="theme-dot" data-t="coffee" onclick="setTheme('coffee')" title="Coffee"></div>
+        <div class="theme-dot" data-t="hacker" onclick="setTheme('hacker')" title = "Hacker"></div>
+		<div class="theme-dot" data-t="caledonia" onclick="setTheme('caledonia')" title="Caledonia"></div>
+        <div class="theme-dot" data-t="blueprint" onclick="setTheme('blueprint')" title="Blueprint"></div>
+        <div class="theme-dot" data-t="dashboard" onclick="setTheme('dashboard')" title="Dashboard"></div>
+        <div class="theme-dot" data-t="unearthed" onclick="setTheme('unearthed')" title="Unearthed"></div>
       </div>
     </div>
   </div>
@@ -1132,7 +1144,7 @@ function _vizLoop(){
         }
       }
     }
-else if(vizMode==='copper'){
+	else if(vizMode==='copper'){
       let v = 0;
       if(useRealVisualizer && isAudioCtxSetup && analyser) {
         v = (dataArray[3] || 0) / 255;
