@@ -1688,59 +1688,64 @@ const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain
       		} else {
         		bass = Math.abs(Math.sin(vizTime*2)) * activeAudio.volume;
       		}
+      		const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      		const pW = Math.floor(W * dpr);
+      		const pH = Math.floor(H * dpr);
+
       		if (!window.mdCanvas) {
         		window.mdCanvas = document.createElement('canvas');
         		window.mdCtx = window.mdCanvas.getContext('2d');
       		}
-      		if (window.mdCanvas.width !== W || window.mdCanvas.height !== H) {
-        		window.mdCanvas.width = W;
-        		window.mdCanvas.height = H;
+      		if (window.mdCanvas.width !== pW || window.mdCanvas.height !== pH) {
+        		window.mdCanvas.width = pW;
+        		window.mdCanvas.height = pH;
       		}
-      		window.mdCtx.clearRect(0, 0, W, H);
-      		window.mdCtx.drawImage(vizCanvas, 0, 0, W, H);
+      		window.mdCtx.clearRect(0, 0, pW, pH);
+      		window.mdCtx.drawImage(vizCanvas, 0, 0, pW, pH);
       		vizCtx.save();
       		vizCtx.translate(W/2, H/2);
       
-      		const rot = Math.sin(vizTime * 0.15) * 0.04 + (bass * 0.03);
-      		const zoom = 1.03 + (bass * 0.05);
+      		const rot = Math.sin(vizTime * 0.15) * 0.04 + (bass * 0.04);
+      		const zoom = 1.02 + (bass * 0.06); 
       
       		vizCtx.rotate(rot);
       		vizCtx.scale(zoom, zoom);
       		vizCtx.drawImage(window.mdCanvas, -W/2, -H/2, W, H);
       		vizCtx.restore();
-      		vizCtx.globalCompositeOperation = 'lighter';
+      		vizCtx.globalCompositeOperation = 'source-over';
       		vizCtx.beginPath();
+      
       		const hue = (vizTime * 60 + bass * 120) % 360;
       		vizCtx.strokeStyle = `hsl(${hue}, 100%, 65%)`;
-      		vizCtx.lineWidth = 2 + (bass * 4);
+      		vizCtx.lineWidth = 3 + (bass * 4);
+      		vizCtx.lineCap = 'round';
+      		vizCtx.lineJoin = 'round';
       
-      		const pts = 128;
+      		const pts = 120;
       		if(useRealVisualizer && isAudioCtxSetup && analyser && waveformArray) {
         		analyser.getByteTimeDomainData(waveformArray);
       		}
-      		for (let i = 0; i <= pts; i++) {
-        		const idx = i % pts;
+      
+		      for (let i = 0; i <= pts; i++) {
+        		const idx = i % pts; 
         		let val = 0;
         
         		if(useRealVisualizer && isAudioCtxSetup && analyser && waveformArray) {
             		val = (waveformArray[idx] / 128) - 1; 
         		} else {
-            		val = Math.sin(i * 0.1 + vizTime) * activeAudio.volume;
+            		val = Math.sin(i * 0.15 + vizTime) * activeAudio.volume;
         		}
         		const angle = (i / pts) * Math.PI * 2 + (vizTime * 0.8);
-        		const radius = (H / 4) + (val * (H / 3)) + (bass * 20);
+        		const radius = (H / 4) + (val * (H / 3.5)) + (bass * 25);
         		const x = W/2 + Math.cos(angle) * radius;
         		const y = H/2 + Math.sin(angle) * radius;
-        
         		if (i === 0) vizCtx.moveTo(x, y);
         		else vizCtx.lineTo(x, y);
       		}
-      
       		vizCtx.closePath();
       		vizCtx.stroke();
-      		vizCtx.globalCompositeOperation = 'source-over';
     		}
-        else if (vizMode === 'dancers') {
+        	else if (vizMode === 'dancers') {
             tTerrain.visible = false;
             tTunnelGroup.visible = false;
             tDancerGroup.visible = true;
