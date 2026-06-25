@@ -1688,6 +1688,8 @@ const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain
       		} else {
         		bass = Math.abs(Math.sin(vizTime*2)) * activeAudio.volume;
       		}
+			vizCtx.fillStyle = '#000000';
+      		vizCtx.fillRect(0, 0, W, H);
       		if (window.mdCanvas && window.mdCanvas.width > 0) {
         		vizCtx.save();
         		vizCtx.translate(W/2, H/2);
