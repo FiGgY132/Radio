@@ -1055,7 +1055,7 @@ function _vizLoop(){
 
   vizCtx.globalAlpha=1.0;
   
-const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain', 'snerfek'];
+const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain', 'snerfek', 'milkdrop'];
   if(trailModes.includes(vizMode)) {
     vizCtx.globalCompositeOperation = 'source-over';
     let fillAlpha = (vizMode === 'cube' || vizMode === 'blobs') ? '0.45' : (vizMode === 'milkdrop' ? '0.04' : '0.25');
@@ -1688,8 +1688,8 @@ const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain
       		} else {
         		bass = Math.abs(Math.sin(vizTime*2)) * activeAudio.volume;
       		}
-			vizCtx.fillStyle = '#000000';
-      		vizCtx.fillRect(0, 0, W, H);
+			//vizCtx.fillStyle = '#000000';
+      		//vizCtx.fillRect(0, 0, W, H);
       		if (window.mdCanvas && window.mdCanvas.width > 0) {
         		vizCtx.save();
         		vizCtx.translate(W/2, H/2);
