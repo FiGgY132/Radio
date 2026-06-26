@@ -1615,72 +1615,7 @@ const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain
       vizCtx.stroke();
       vizCtx.globalCompositeOperation = 'source-over';
     }
-    else if (threeModes.includes(vizMode)) {
-        if (tTerrain) tTerrain.material.color.set(color);
-        
-        if (vizMode === 'terrain') {
-            tTerrain.visible = true;
-            tTunnelGroup.visible = false;
-            tDancerGroup.visible = false;
-            tRoomGrid.visible = false;
-            
-            const camPanX = Math.sin(vizTime * 0.3) * 4; 
-            tCamera.position.set(camPanX, -1.8, 5); 
-            tCamera.lookAt(camPanX * 0.5, -2, -10);
-
-            const pos = tTerrain.geometry.attributes.position;
-            const flySpeed = vizTime * 4;
-
-            for (let i = 0; i < pos.count; i++) {
-                const x = pos.getX(i);
-                const z = pos.getZ(i);
-                
-                let audioBump = 0;
-                if(useRealVisualizer&&isAudioCtxSetup&&analyser) {
-                    const idx = Math.min(63, Math.abs(Math.floor(x * 1.5)));
-                    audioBump = (dataArray[idx] || 0) / 255;
-                } else {
-                    audioBump = Math.abs(Math.sin(x * 0.2 + vizTime)) * activeAudio.volume;
-                }
-                
-                let y = Math.sin(x * 0.3) * 1.5 + Math.cos((z + flySpeed) * 0.3) * 1.5;
-                y += (audioBump * 3.5);
-                pos.setY(i, y);
-            }
-            pos.needsUpdate = true;
-        } 
-        else if (vizMode === 'tunnel') {
-            tTerrain.visible = false;
-            tTunnelGroup.visible = true;
-            tDancerGroup.visible = false;
-            tRoomGrid.visible = false;
-            
-            tCamera.position.set(0, 0, 5);
-            tCamera.lookAt(0, 0, 0);
-
-            tTunnelGroup.children.forEach((ring, i) => {
-                ring.material.color.set(i % 3 === 0 ? '#ff4060' : color);
-                
-                let audioBump = 0;
-                if(useRealVisualizer&&isAudioCtxSetup&&analyser) {
-                     audioBump = (dataArray[i % 64] || 0) / 255;
-                } else {
-                     audioBump = Math.abs(Math.sin(vizTime + i)) * activeAudio.volume;
-                }
-                
-                ring.scale.setScalar(1 + audioBump * 0.4);
-                ring.position.z += 0.12; 
-                
-                const zDepth = ring.position.z;
-                ring.position.x = Math.sin(vizTime * 0.8 + zDepth * 0.15) * 0.7;
-                ring.position.y = Math.cos(vizTime * 0.6 + zDepth * 0.15) * 0.7;
-                ring.rotation.z = vizTime + (i * 0.2);
-
-                if (ring.position.z > 2) {
-                    ring.position.z -= 42; 
-                }
-            });
-        }
+		
 		else if(vizMode==='milkdrop'){
       		let bass = 0;
       		if(useRealVisualizer && isAudioCtxSetup && analyser) {
@@ -1754,6 +1689,72 @@ const trailModes = ['cube', 'blobs', 'wave', 'radial', 'sym', 'tunnel', 'terrain
 		      }
 		    }
 
+    else if (threeModes.includes(vizMode)) {
+        if (tTerrain) tTerrain.material.color.set(color);
+        
+        if (vizMode === 'terrain') {
+            tTerrain.visible = true;
+            tTunnelGroup.visible = false;
+            tDancerGroup.visible = false;
+            tRoomGrid.visible = false;
+            
+            const camPanX = Math.sin(vizTime * 0.3) * 4; 
+            tCamera.position.set(camPanX, -1.8, 5); 
+            tCamera.lookAt(camPanX * 0.5, -2, -10);
+
+            const pos = tTerrain.geometry.attributes.position;
+            const flySpeed = vizTime * 4;
+
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+                
+                let audioBump = 0;
+                if(useRealVisualizer&&isAudioCtxSetup&&analyser) {
+                    const idx = Math.min(63, Math.abs(Math.floor(x * 1.5)));
+                    audioBump = (dataArray[idx] || 0) / 255;
+                } else {
+                    audioBump = Math.abs(Math.sin(x * 0.2 + vizTime)) * activeAudio.volume;
+                }
+                
+                let y = Math.sin(x * 0.3) * 1.5 + Math.cos((z + flySpeed) * 0.3) * 1.5;
+                y += (audioBump * 3.5);
+                pos.setY(i, y);
+            }
+            pos.needsUpdate = true;
+        } 
+        else if (vizMode === 'tunnel') {
+            tTerrain.visible = false;
+            tTunnelGroup.visible = true;
+            tDancerGroup.visible = false;
+            tRoomGrid.visible = false;
+            
+            tCamera.position.set(0, 0, 5);
+            tCamera.lookAt(0, 0, 0);
+
+            tTunnelGroup.children.forEach((ring, i) => {
+                ring.material.color.set(i % 3 === 0 ? '#ff4060' : color);
+                
+                let audioBump = 0;
+                if(useRealVisualizer&&isAudioCtxSetup&&analyser) {
+                     audioBump = (dataArray[i % 64] || 0) / 255;
+                } else {
+                     audioBump = Math.abs(Math.sin(vizTime + i)) * activeAudio.volume;
+                }
+                
+                ring.scale.setScalar(1 + audioBump * 0.4);
+                ring.position.z += 0.12; 
+                
+                const zDepth = ring.position.z;
+                ring.position.x = Math.sin(vizTime * 0.8 + zDepth * 0.15) * 0.7;
+                ring.position.y = Math.cos(vizTime * 0.6 + zDepth * 0.15) * 0.7;
+                ring.rotation.z = vizTime + (i * 0.2);
+
+                if (ring.position.z > 2) {
+                    ring.position.z -= 42; 
+                }
+            });
+        }
         	else if (vizMode === 'dancers') {
             tTerrain.visible = false;
             tTunnelGroup.visible = false;
